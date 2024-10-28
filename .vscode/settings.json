@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "MyAnalysisSpicy.C": "cpp",
+        "FitProjectionData.C": "cpp",
+        "Jpsi_binPt_and_runN.C": "cpp"
+    }
+}

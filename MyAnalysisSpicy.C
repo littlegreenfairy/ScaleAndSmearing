@@ -6,8 +6,10 @@
 #include <vector>
 #include <iostream>
 #include <TH2D.h>
+#include <TH3D.h>
 #include <TProfile.h>
 #include <TColor.h>
+
 
 ///////////////////////////////////// Funzioni globali /////////////////////////////////
 void SetPadMargins(TCanvas *canvas, int padIndex) {
@@ -145,11 +147,8 @@ void MyAnalysisSpicy::Init(TTree *tree) {
 
 // Collega le variabili ai branch
 
-    if(ntupla == 0){ //solo per i dati
+    
     fChain->SetBranchAddress("runNumber", &runNumber, &b_runNumber);
-    //fChain->SetBranchAddress("lumiBlock", lumiBlock, &b_lumiBlock);
-    }
-
     fChain->SetBranchAddress("eleID", eleID, &b_eleID);
     fChain->SetBranchAddress("chargeEle", chargeEle, &b_chargeEle);
     fChain->SetBranchAddress("ptEle", ptEle, &b_ptEle);
@@ -252,78 +251,51 @@ void MyAnalysisSpicy::Loop() {
 
     //ora faccio gli istogrammi
     TH1F *h_ptEle = new TH1F("h_ptEle", "P_t of Electron;p_{T} (GeV);A.U.", 60, 0, 40);
-    TH1F *h_ptEle_2 = new TH1F("h_ptEle_2", "P_t of second Electron;p_{T} (GeV);A.U.", 60, 0, 40); //Pt del secondo elettrone
     TH1F *h_etaEle = new TH1F("h_etaEle", "Eta of Electron;#eta;A.U.", 30, -1.5, 1.5);
     TH1F *h_phiEle = new TH1F("h_phiEle", "Phi of Electron;#phi;A.U.", 30, -3.14, 3.14);
 
-    TH1F *h_rawEnergySCEle = new TH1F("h_rawEnergySCEle", "Raw energy of Electron SuperCluster", 100, 0, 100);
-    TH1F *h_energyEle = new TH1F("h_EnergyEle", " energyEle", 100, 0, 100);
-    TH1F *h_energy_5x5SC = new TH1F("h_energy_5x5SC", " energy_5x5SC", 100, 0, 100);
-    TH1F *h_energy_ECAL_ele = new TH1F("h_energy_ECAL_ele", "energy_ECAL_ele", 100, 0, 100);
-    TH1F *h_energy_ECAL_pho = new TH1F("h_energy_ECAL_pho", "energy_ECAL_pho", 100, 0, 100);
-
-    TH1F *h_BMass = new TH1F("h_BMass", "Invariant Mass of B;Mass [GeV];A.U.", 100, 0, 10);
     TH1F *h_invMass = new TH1F("h_invMass", "Invariant Mass with LM eleID cuts;Mass [GeV];A.U.", 100, 0, 6);
-    TH1F *h_invMass_5x5SC = new TH1F("h_invMass_5x5SC", "Invariant Mass (5x5 Supercluster);Mass [GeV];A.U.", 100, 0, 6);
-    //TH1F *h_invMass_ECAL_ele = new TH1F("h_invMass_ECAL_ele", "Invariant Mass (ECAL ele);Mass [GeV];A.U.", 60, 0, 6); //bin da 0.1
-    TH1F *h_invMass_ECAL_pho = new TH1F("h_invMass_ECAL_pho", "Invariant Mass (ECAL pho);Mass [GeV];A.U.", 100, 0, 6);
     TH1F *h_invMass_rawSC = new TH1F("h_invMass_rawSC", "Invariant Mass (raw Supercluster);Mass [GeV];A.U.", 100, 0, 6);
-    TH1F *h_invMass_rawSC_esSC = new TH1F("h_invMass_rawSC_esSC", "Invariant Mass (raw SC + ES SC);Mass [GeV];A.U.", 100, 0, 6);
-    TH1F *h_my_invMass = new TH1F("h_my_invMass", "Invariant Mass reconstructed from kinematics; Mass [GeV];A.U.", 100, 0, 6);
-
-    //TH1F *h_dxyEle = new TH1F("h_dxyEle", "Displacement on transverse plane [mm];dxy [mm];A.U.", 30, 0, 1.5); 
-    TH1F *h_dzEle = new TH1F("h_dzEle", "Displacement along z [mm];dz [mm];A.U.", 30, -1.2, 1.2);  
-    TH1F *h_ipEle = new TH1F("h_ipEle", "Impact parameter [mm];ip [mm];A.U.", 30, -1.2, 1.2); 
-
-    TH1F *h_dxySignificance = new TH1F("h_dxySignificance", "Significance of dxy; ;A.U.", 40, -10, 10);   
-    TH1F *h_dzSignificance = new TH1F("h_dzSignificance", "Significance of dz; ;A.U.", 40, -10, 10);   
-    TH1F *h_ipSignificance = new TH1F("h_ipSignificance", "Significance of IP; ;A.U.", 40, -10, 10);
-
-    //creo degli istogrammi con tagli diversi
     TH1F *h_invMass_nocuts = new TH1F("h_invMass_nocuts", "Invariant Mass without cuts;Mass [GeV];A.U.", 100, 0, 6);
-    TH1F *h_invMass_LLcut = new TH1F("h_invMass_LLcut", "Invariant Mass with LL eleID cuts;Mass [GeV];A.U.", 100, 0, 6); // cut with only loose electrons (at least)
-    TH1F *h_invMass_ECAL_ele_nocuts = new TH1F("h_invMass_ECAL_ele_nocuts", "ECAL invariant Mass without eleID cuts;Mass [GeV];A.U.", 100, 0, 6);
-    TH1F *h_invMass_ECAL_ele_LLcut = new TH1F("h_invMass_ECAL_ele_LLcut", "ECAL invariant Mass with LL eleID cuts;Mass [GeV];A.U.", 50, 0, 6); // cut with only loose electrons (at least)
-    TH1F *h_invMass_rawSC_nocuts = new TH1F("h_invMass_rawSC_nocuts", "Raw invariant Mass without cuts;Mass [GeV];A.U.", 100, 0, 6);
 
-    //Istogrammi per le variabili della J_Psi con selezione
-    TH1F *h_Beta_JPsi = new TH1F("h_Beta_JPsi", "#beta value of J/#psi; #beta; A.U.", 30, 0, 1);
-    TH1F *h_BetaGamma_JPsi = new TH1F("h_BetaGamma_JPsi", "#beta#gamma value of J/#psi; #beta#gamma; A.U.", 30, 0, 20);
-    TH1F *h_Rapidity_JPsi = new TH1F("h_Rapidity_JPsi", "Rapidity value of J/#psi; Rapidity; A.U.", 30, -5, 5);
-    TH1F *h_phi_JPsi = new TH1F("h_phi_JPsi", "Phi of J/#psi; #phi; A.U.", 30, -3.14, 3.14);
-    TH1F *h_eta_JPsi = new TH1F("h_eta_JPsi", "Pseudorapidity of J/#psi; Pseudorapidity; A.U.", 30, -5, 5);
     TH1F *h_Pt_JPsi_all = new TH1F("h_Pt_JPsi_all", "Pt of J/#psi ; p_{T}; A.U.", 30, 0 , 60); //quello dichiarato nel costruttore contiene solo regione di segnale
 
-    //Istogrammi per le variabili della J_Psi senza selezione
-    TH1F *h_Beta_JPsi_nocuts = new TH1F("h_Beta_JPsi_nocuts", "#beta value of J/#psi; #beta; A.U.", 30, 0, 1);
-    TH1F *h_BetaGamma_JPsi_nocuts = new TH1F("h_BetaGamma_JPsi_nocuts", "#beta#gamma value of J/#psi; #beta#gamma; A.U.", 30, 0, 20);
-    TH1F *h_Rapidity_JPsi_nocuts = new TH1F("h_Rapidity_JPsi_nocuts", "Rapidity value of J/#psi; Rapidity; A.U.", 30, -5, 5);
-    TH1F *h_phi_JPsi_nocuts = new TH1F("h_phi_JPsi_nocuts", "Phi of J/#psi; #phi; A.U.", 30, -3.14, 3.14);
-    TH1F *h_eta_JPsi_nocuts = new TH1F("h_eta_JPsi_nocuts", "Pseudorapidity of J/#psi; Pseudorapidity; A.U.", 30, -5, 5);
     TH1F *h_Pt_JPsi_all_nocuts = new TH1F("h_Pt_JPsi_all_nocuts", "p_{T} of J/#psi; p_{T}; A.U.", 30, 0 , 60);
 
     //Istogrammi differenza displacement
     TH1F *h_delta_dxy = new TH1F("h_delta_dxy", "|dxy[0] - dxy[1]|;|dxy[0] - dxy[1]|;A.U.", 40, 0, 0.2);
-    TH1F *h_delta_dz = new TH1F("h_delta_dz", "|dz[0] - dz[1]|;|dz[0] - dz[1]|;A.U.", 40, 0, 0.3);
-    TH1F *h_delta_ip = new TH1F("h_delta_ip", "|ip[0] - ip[1]|;|ip[0] - ip[1]|;A.U.", 40, 0, 0.4);
 
     //LowE ID nella regione di fondo e di segnale
     TH1F *h_LowE_pfmvaIdEle = new TH1F("h_LowE_pfmvaIdEle", "Multivariate ID; LowE_pfmvaIdEle; A.U.", 50, -12, 7); // fondo + segnale
     TH1F *h_LowE_pfmvaIdEle_sign = new TH1F("h_LowE_pfmvaIdEle_sign", "Multivariate ID in the Signal region; LowE_pfmvaIdEle; A.U.", 50, -12, 7);
     TH1F *h_LowE_pfmvaIdEle_back = new TH1F("h_LowE_pfmvaIdEle_back", "Multivariate ID in the Background region; LowE_pfmvaIdEle; A.U.", 50, -12, 7);
 
-    //Fondo stimato dai dati
-    TH1F *h_invmass_background = new TH1F("h_invmass_background", "data driven background;Invariant mass [Gev];A.U.", 100, 0, 6);
 
     //Bin personalizzati per l'asse di Pt
-    double Ptbins[] = {4, 7, 8, 10, 14, 40};  
+    double Ptbins[] = {4, 7, 9, 11, 14, 20, 40}; 
     int nbinsPt = sizeof(Ptbins)/sizeof(double) - 1; 
+    //Bin personalizzati per l'asse run Number
+    int nbinsRunN = 5; //numero di bin (simmetrici) sul run Number
+    double yMin = 360000;
+    double yMax = 362500;
+    double yBins[] = {360000, 360800, 361200, 361600, 362050, 362500};
+
+    //Bin per la massa invariante
+    int nbinsZ = 150;
+    double zMin = 0;
+    double zMax = 6;
+    double zBins[nbinsZ + 1];
+    double zStep = (zMax - zMin) / nbinsZ;
+    for (int i = 0; i <= nbinsZ; ++i) {
+        zBins[i] = zMin + i * zStep;
+    }
+
     TH2D *h_scale_vs_pt = new TH2D("h_scale_vs_pt", "TH2D of invariant mass and p_{T}[0];p_{T}[0];Invariant Mass (ECAL) [GeV]", nbinsPt, Ptbins, 150, 0, 6);
     TH2D *h_rawSC_vs_pt = new TH2D("h_rawSC_vs_pt", "TH2D of raw invMass and p_{T}[0]; p_{T}[0]; Raw SC invMass [GeV]", nbinsPt, Ptbins, 150, 0, 6);
 
-    //Istogramma 2D di massa invariante vs run number
-    TH2D *h_invmass_runNumber_eta0_06 = new TH2D("h_invmass_runNumber_eta0_06", "TH2D of invariant mass and run Number, 0 < eta < 0.6; runNumber ;Invariant Mass (ECAL) [GeV]", 15, 360000, 362500, 150, 2.6, 3.1);
-    TH2D *h_invmass_runNumber_eta06_12 = new TH2D("h_invmass_runNumber_eta06_12", "TH2D of invariant mass and run Number, 0.6 < eta < 1.22; runNumber ;Invariant Mass (ECAL) [GeV]", 15, 360000, 362500, 150, 2.6, 3.1);
+    TH3D *h_scalevs_pt_runN = new TH3D("h_scalevs_pt_runN", "Istogramma 3D invMass vs pT and run Number; p_{T}[0]; Run Number; m(e^{+}e^{-}) [GeV]",nbinsPt, Ptbins, nbinsRunN, yBins, nbinsZ, zBins);
+
+
     //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
     //                                                          LOOP SULLE ENTRIES (con riempimento istogrammi)
     //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -335,11 +307,6 @@ void MyAnalysisSpicy::Loop() {
         if (ientry < 0) break; //se è negativo c'è stato un problema con il caricamento del file
         fChain->GetEntry(jentry);
 
-        // Filtro gli eventi se necessario, con cut
-
-        //calcolo la massa invariante
-        double my_invMass;
-        my_invMass = sqrt(2*ptEle[0]*ptEle[1]*(cosh(etaEle[0]-etaEle[1]) - cos(phiEle[0] - phiEle[1])));
 
         //ricostruisco il quadrimpulso dei due elettroni e della JPsi
         TLorentzVector P_ele1, P_ele2, P_JPsi;
@@ -348,31 +315,16 @@ void MyAnalysisSpicy::Loop() {
         P_JPsi = P_ele1 + P_ele2;
         double Beta_jpsi, BetaGamma_jpsi;
 
-
-
         // Riempio gli istogrammi con i valori delle variabili e normalizzo
 
-        if(Cut(jentry)){
+        if(Cut(jentry)){  //Applica il filtro sugli eventi
         h_ptEle->Fill(ptEle[0]);
-        h_ptEle_2->Fill(ptEle[1]);
         h_etaEle->Fill(etaEle[0]);
         h_phiEle->Fill(phiEle[0]);
         
-        h_rawEnergySCEle->Fill(rawEnergySCEle[0]);
-        h_energyEle->Fill(energyEle[0]);
-        h_energy_5x5SC->Fill(energy_5x5SC[0]);
-        h_energy_ECAL_ele->Fill(energy_ECAL_ele[0]);
-        h_energy_ECAL_pho->Fill(energy_ECAL_pho[0]);
-
-
-        h_BMass->Fill(BMass);
         h_invMass->Fill(invMass);
-        h_invMass_5x5SC->Fill(invMass_5x5SC);
         h_invMass_ECAL_ele->Fill(invMass_ECAL_ele);
-        h_invMass_ECAL_pho->Fill(invMass_ECAL_pho);
         h_invMass_rawSC->Fill(invMass_rawSC);
-        h_invMass_rawSC_esSC->Fill(invMass_rawSC_esSC);
-        h_my_invMass->Fill(my_invMass);
 
         
         //riempio l'istogramma 2d solo se i due elettroni sono nello stesso bin di pt
@@ -380,73 +332,37 @@ void MyAnalysisSpicy::Loop() {
         bin_index_pt0 = h_scale_vs_pt->GetXaxis()->FindBin(ptEle[0]);
         bin_index_pt1 = h_scale_vs_pt->GetXaxis()->FindBin(ptEle[1]);
         if(bin_index_pt0 == bin_index_pt1){
-        h_scale_vs_pt->Fill(ptEle[0],invMass_ECAL_ele);
+        h_scale_vs_pt->Fill(ptEle[0],invMass_ECAL_ele); //qui siamo inclusivi nel run number
         h_rawSC_vs_pt->Fill(ptEle[0], invMass_rawSC);
 
-        //riempio l'istogramma massa invariante vs runNumber
-        if(ntupla == 0 && invMass_ECAL_ele > 2.7 && invMass_ECAL_ele < 3.3){
-            if(fabs(etaEle[0]) < 0.6 && fabs(etaEle[1]) < 0.6){
-            h_invmass_runNumber_eta0_06->Fill(runNumber, invMass_ECAL_ele);  //Selezione spacca e pesa della regione di segnale
-            }else if(fabs(etaEle[0]) > 0.6 && fabs(etaEle[1]) > 0.6){
-            h_invmass_runNumber_eta06_12->Fill(runNumber, invMass_ECAL_ele);   
-            }
-        }
+        //riempio l'histo 3D, tanto i 2 elettroni dello stesso evento sono sempre nello stesso bin di run number
+        h_scalevs_pt_runN->Fill(ptEle[0], runNumber, invMass_ECAL_ele);
         }
 
         //variabili di displacement
         h_dxyEle->Fill(fabs(dxyEle[0]*10)); //passo in mm
-        h_dzEle->Fill(dzEle[0]*10);
-        h_ipEle->Fill(ipEle[0]*10);
-
-        h_dxySignificance->Fill(dxyEle[0]/dxyErrEle[0]);
-        h_dzSignificance->Fill(dzEle[0]/dxyEle[0]);
-        h_ipSignificance->Fill(ipEle[0]/ipErrEle[0]);
 
         //spread nel displacement dei due elettroni
         h_delta_dxy->Fill(fabs(dxyEle[0] -  dxyEle[1]));
-        h_delta_dz->Fill(fabs(dzEle[0] -  dzEle[1]));
-        h_delta_ip->Fill(fabs(ipEle[0] -  ipEle[1]));
-
-
-        //Riempio istogrammi nella regione di segnale
 
         if(invMass_ECAL_ele > 2.7 && invMass_ECAL_ele < 3.3){
              h_Pt_JPsi->Fill(P_JPsi.Pt());
         }
 
         //riempio gli istogrammi delle variabili della JPsi 
-
-        h_Beta_JPsi->Fill(P_JPsi.P() / P_JPsi.E());
-        h_BetaGamma_JPsi->Fill(P_JPsi.P() / P_JPsi.M());
-        h_Rapidity_JPsi->Fill(P_JPsi.Rapidity());
-        h_phi_JPsi->Fill(P_JPsi.Phi());
-        h_eta_JPsi->Fill(P_JPsi.Eta());
         h_Pt_JPsi_all->Fill(P_JPsi.Pt());
        
         }
 
-        //istogramma del fondo con !Cut
-
-        if(chargeEle[0]*chargeEle[1] > 0 && ptEle[0] > 2 && ptEle[1] > 2 && triggeringEle[0] ==1.0 && triggeringEle[1] ==1.0 && (eleID[0]*eleID[1]>= 48) ){
-            h_invmass_background->Fill(invMass_ECAL_ele);
-        }
-
         h_invMass_nocuts->Fill(invMass);
-        h_invMass_ECAL_ele_nocuts->Fill(invMass_ECAL_ele);
-        h_invMass_rawSC_nocuts->Fill(invMass_rawSC);
 
         //Istogrammi delle variabili della JPsi senza nessun taglio
-        h_Beta_JPsi_nocuts->Fill(P_JPsi.P() / P_JPsi.E());
-        h_BetaGamma_JPsi_nocuts->Fill(P_JPsi.P() / P_JPsi.M());
-        h_Rapidity_JPsi_nocuts->Fill(P_JPsi.Rapidity());
-        h_phi_JPsi_nocuts->Fill(P_JPsi.Phi());
-        h_eta_JPsi_nocuts->Fill(P_JPsi.Eta());
         h_Pt_JPsi_all_nocuts->Fill(P_JPsi.Pt());
 
         //LowE ID senza tagli
         h_LowE_pfmvaIdEle->Fill(LowE_pfmvaIdEle[0]);
         //LowE ID nella regione di segnale e nelle sidebands
-        if(invMass_ECAL_ele > 2.6 && invMass_ECAL_ele < 3.1){
+        if(invMass_ECAL_ele > 2.7 && invMass_ECAL_ele < 3.3){
             h_LowE_pfmvaIdEle_sign->Fill(LowE_pfmvaIdEle[0]);
         }else{
             h_LowE_pfmvaIdEle_back->Fill(LowE_pfmvaIdEle[0]);
@@ -470,48 +386,7 @@ void MyAnalysisSpicy::Loop() {
     //                                                                PLOT
     //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-    //istogramma 2d massa invariante vs runNumber
-    if(ntupla == 0){
-    /*TCanvas *c1 = new TCanvas("c1", "Canvas", 800, 600);
-    h_invmass_runNumber->SetStats(kFALSE);
-    h_invmass_runNumber->Draw("COLZ");
-    c1->SaveAs("invMass_runNumber.png");*/
-    //Profilo della massa invariante vs il run number
-    //primo bin su eta
-    TProfile *prof_rNumber_1 = h_invmass_runNumber_eta0_06->ProfileX("prof_rNumber 0 < #eta < 0.6");  // Nome dell'oggetto
-    prof_rNumber_1->SetTitle("Mean invariant mass vs run Number");  // Imposta il titolo
-    prof_rNumber_1->GetXaxis()->SetTitle("Run Number");  // Titolo asse X per il profilo
-    prof_rNumber_1->GetYaxis()->SetTitle("Mean Invariant Mass [GeV]");  // Titolo asse Y per il profilo
-    prof_rNumber_1->GetYaxis()->SetRangeUser(2.85, 3);
-    prof_rNumber_1->SetLineColor(kMagenta);        // Imposta il colore della linea (kBlue è un esempio)
-    prof_rNumber_1->SetLineWidth(2);            // Imposta lo spessore della linea
-    prof_rNumber_1->SetMarkerColor(kMagenta);       // Imposta il colore dei marker (kRed è un esempio)
-    prof_rNumber_1->SetMarkerStyle(20);
-
-    //secondo bin su eta
-    TProfile *prof_rNumber_2 = h_invmass_runNumber_eta06_12->ProfileX("prof_rNumber 0.6 < #eta < 1.2");  // Nome dell'oggetto
-    prof_rNumber_2->SetTitle("Mean invariant mass vs run Number");  // Imposta il titolo
-    prof_rNumber_2->GetXaxis()->SetTitle("Run Number");  // Titolo asse X per il profilo
-    prof_rNumber_2->GetYaxis()->SetTitle("Mean Invariant Mass [GeV]");  // Titolo asse Y per il profilo
-    prof_rNumber_2->GetYaxis()->SetRangeUser(2.85, 3);
-    prof_rNumber_2->SetLineColor(kGreen);        // Imposta il colore della linea (kBlue è un esempio)
-    prof_rNumber_2->SetLineWidth(2);            // Imposta lo spessore della linea
-    prof_rNumber_2->SetMarkerColor(kGreen);       // Imposta il colore dei marker (kRed è un esempio)
-    prof_rNumber_2->SetMarkerStyle(20);
-
-    TCanvas *c2 = new TCanvas("c2", "Canvas 2", 800, 600);
-    prof_rNumber_1->SetStats(kFALSE);
-    prof_rNumber_1->Draw("EP");  // Disegna il profilo con punti ed errori
-    prof_rNumber_2->SetStats(kFALSE);
-    prof_rNumber_2->Draw("EP SAME");
-    // Aggiungi la legenda
-    TLegend *legend = new TLegend(0.7, 0.8, 0.9, 0.9);  // Definisce la posizione della legenda
-    legend->AddEntry(prof_rNumber_1, "0 < #eta < 0.6", "l");  // Aggiunge la prima curva alla legenda
-    legend->AddEntry(prof_rNumber_2, "0.6 < #eta < 1.2", "l");  // Aggiunge la seconda curva
-    legend->Draw();
-    c2->SaveAs("MeanInvmass_vs_runNumber.png");
-    }
-
+    
     //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
     //                                                          SCRITTURA SUI FILE
     //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -523,8 +398,8 @@ void MyAnalysisSpicy::Loop() {
          outputFile = new TFile("outputHistograms_DATA_partF.root", "RECREATE");
          cutFile = new TFile("cutcomparison_DATA_partF.root",  "RECREATE");
     }else{
-         outputFile = new TFile("outputHistograms_MC_LLcut.root", "RECREATE");
-         cutFile = new TFile("cutcomparison_MC_LLcut.root",  "RECREATE");
+         outputFile = new TFile("outputHistograms_MC.root", "RECREATE");
+         cutFile = new TFile("cutcomparison_MC.root",  "RECREATE");
     }
     outputFile->cd();
     //massa invariante (tracker, ECAL, Raw)
@@ -533,29 +408,15 @@ void MyAnalysisSpicy::Loop() {
     h_invMass_rawSC->Write();
     //P_t dei due elettroni
     h_ptEle->Write();
-    h_ptEle_2->Write();
     //variabili cinematiche non mass-related
     h_phiEle->Write();
     h_etaEle->Write();
     h_dxyEle->Write();
-    h_dzEle->Write();
-    h_ipEle->Write();
-    //significanza del displacement
-    h_dxySignificance->Write();
-    h_dzSignificance->Write();
-    h_ipSignificance->Write();
 
     //spread nel displacement dei due elettroni
     h_delta_dxy->Write();
-    h_delta_dz->Write();
-    h_delta_ip->Write();
 
     //Variabili Jpsi
-    h_Beta_JPsi->Write();
-    h_BetaGamma_JPsi->Write();
-    h_Rapidity_JPsi->Write();
-    h_phi_JPsi->Write();
-    h_eta_JPsi->Write();
     h_Pt_JPsi_all->Write();
 
     //Transverse momentum della JPsi
@@ -578,8 +439,16 @@ void MyAnalysisSpicy::Loop() {
     proj_rawSC->Write();
     }
     proj_full->Write();
-    h_invmass_background->Write();
-
+    ////////////////////////////////////////////////////// ora binno sia in pt che sul Run number (Questa cosa solo nei dati!)
+    if(ntupla == 0){
+    for(int i=0; i < nbinsPt; i++){ //scorre sui bin di pt
+        for(int j=0; j < nbinsRunN; j++){  //scorre sui bin della run number
+          TH1D* proj_invmass = h_scalevs_pt_runN->ProjectionZ(Form("proj_bins_%d_%d", i+1, j+1), i+1, i+1, j+1, j+1);  //proietto sulla massa invariante binwise
+          proj_invmass->SetTitle(Form("%2.1lf GeV < p_{T} < %2.1lf GeV - Run Number in [%f, %f]", h_scalevs_pt_runN->GetXaxis()->GetBinLowEdge(i+1), (h_scalevs_pt_runN->GetXaxis()->GetBinLowEdge(i+1) + h_scalevs_pt_runN->GetXaxis()->GetBinWidth(i+1)), h_scalevs_pt_runN->GetYaxis()->GetBinLowEdge(j+1), (h_scalevs_pt_runN->GetYaxis()->GetBinLowEdge(j+1) + h_scalevs_pt_runN->GetYaxis()->GetBinWidth(j+1))));
+          proj_invmass->Write();
+        }
+    }
+    }
     outputFile->Close();
     delete outputFile;
     //////////////////////////////////////////////////////
@@ -588,26 +457,12 @@ void MyAnalysisSpicy::Loop() {
     h_invMass->Write();
     h_invMass_ECAL_ele->Write();
     h_invMass_nocuts->Write();
-    h_invMass_ECAL_ele_nocuts->Write();
-    h_invMass_LLcut->Write();
-    h_invMass_ECAL_ele_LLcut->Write();
-    h_invMass_rawSC_nocuts->Write();
     h_invMass_rawSC->Write();
 
     //isto JPsi con tagli
-    h_Beta_JPsi->Write();
-    h_BetaGamma_JPsi->Write();
-    h_Rapidity_JPsi->Write();
-    h_phi_JPsi->Write();
-    h_eta_JPsi->Write();
     h_Pt_JPsi_all->Write();
 
     //isto JPsi senza tagli
-    h_Beta_JPsi_nocuts->Write();
-    h_BetaGamma_JPsi_nocuts->Write();
-    h_Rapidity_JPsi_nocuts->Write();
-    h_phi_JPsi_nocuts->Write();
-    h_eta_JPsi_nocuts->Write();
     h_Pt_JPsi_all_nocuts->Write();
 
     cutFile->Close();
@@ -625,10 +480,10 @@ void MyAnalysisSpicy::Loop() {
 
 
 void MyAnalysisSpicy::ReweightOnPt(){ 
-    TFile *dataHistFile = TFile::Open("outputHistograms_DATA_partF.root", "UPDATE"); //outputHistograms_DATA_LLcut.root
+    TFile *dataHistFile = TFile::Open("outputHistograms_DATA_partF.root", "UPDATE"); 
     TH1F *h_ptjpsi_data = (TH1F*)dataHistFile->Get("h_Pt_JPsi");
 
-    TFile *mcHistFile = TFile::Open("outputHistograms_MC_LLcut.root","UPDATE");
+    TFile *mcHistFile = TFile::Open("outputHistograms_MC.root","UPDATE");
     TH1F *h_ptjpsi_mc = (TH1F*)mcHistFile->Get("h_Pt_JPsi");
 
     TH2D *h_scale_vs_pt = new TH2D("h_scale_vs_pt", "TH2D of invariant mass and P_{T}[0];P_{T}[0];Invariant Mass (ECAL)", 20, 0, 40, 150, 0, 6);
@@ -662,19 +517,19 @@ void MyAnalysisSpicy::ReweightOnPt(){
         P_ele2.SetPtEtaPhiE(ptEle[1],etaEle[1],phiEle[1],energy_ECAL_ele[1]);
         P_JPsi = P_ele1 + P_ele2;
         //Riempio l'istogramma con la massa ripesata e anche dxy post reweighting
-    int binidx = h_Pt_JPsi->FindBin(P_JPsi.Pt());
-    int nBins_w = histoWeights->GetNbinsX(); 
-    if(binidx != 0 && binidx != nBins_w + 1) { // no underflow o overflow
-    double weight = histoWeights->GetBinContent(binidx);
+        int binidx = h_Pt_JPsi->FindBin(P_JPsi.Pt());
+        int nBins_w = histoWeights->GetNbinsX(); 
+        if(binidx != 0 && binidx != nBins_w + 1) { // no underflow o overflow
+        double weight = histoWeights->GetBinContent(binidx);
 
-    int bin_index_pt0, bin_index_pt1;
-    // Riempimento degli istogrammi con il valore pesato
-    h_invMass_ECAL_ele->Fill(invMass_ECAL_ele, weight);
-    h_dxyEle->Fill(dxyEle[0] * 10, weight);
-    //riempio l'istogramma 2d solo se i due elettroni sono nello stesso bin di pt
-    bin_index_pt0 = h_scale_vs_pt->GetXaxis()->FindBin(ptEle[0]);
-    bin_index_pt1 = h_scale_vs_pt->GetXaxis()->FindBin(ptEle[1]);
-    if(bin_index_pt0 == bin_index_pt1)h_scale_vs_pt->Fill(ptEle[0],invMass_ECAL_ele, weight);
+        int bin_index_pt0, bin_index_pt1;
+        // Riempimento degli istogrammi con il valore pesato
+        h_invMass_ECAL_ele->Fill(invMass_ECAL_ele, weight);
+        h_dxyEle->Fill(dxyEle[0] * 10, weight);
+        //riempio l'istogramma 2d solo se i due elettroni sono nello stesso bin di pt
+        bin_index_pt0 = h_scale_vs_pt->GetXaxis()->FindBin(ptEle[0]);
+        bin_index_pt1 = h_scale_vs_pt->GetXaxis()->FindBin(ptEle[1]);
+        if(bin_index_pt0 == bin_index_pt1)h_scale_vs_pt->Fill(ptEle[0],invMass_ECAL_ele, weight);
 
 
             } 
@@ -691,7 +546,8 @@ void MyAnalysisSpicy::ReweightOnPt(){
     h_invMass_rew1->Write();
     prof->Write("", TObject::kOverwrite);
     h_dxyEle->Write("", TObject::kOverwrite);
-    Reweighted = 1;
+
+    Reweighted = 1;  //Notifica ripesamento
     //chiudo i file che ho aperto
     mcHistFile->Close();
     dataHistFile->Close();
@@ -707,23 +563,14 @@ void MyAnalysisSpicy::ReweightOnDxy(){
     TFile *dataHistFile = TFile::Open("outputHistograms_DATA_partF.root", "UPDATE");
     TH1F *h_dxy_data = (TH1F*)dataHistFile->Get("h_dxyEle");
 
-    TFile *mcHistFile = TFile::Open("outputHistograms_MC_LLcut.root", "UPDATE");
+    TFile *mcHistFile = TFile::Open("outputHistograms_MC.root", "UPDATE");
     TH1F *h_dxy_mc = (TH1F*)mcHistFile->Get("h_dxyEle");
 
     //Bin personalizzati per l'asse di Pt
-    double Ptbins[] = {4, 7, 8, 10, 14, 40};  
+    double Ptbins[] = {4, 7, 9, 11, 14, 20, 40};  
     int nbinsPt = sizeof(Ptbins)/sizeof(double) - 1; 
     TH2D *h_scale_vs_pt = new TH2D("h_scale_vs_pt", "TH2D of invariant mass and p_{T}[0];p_{T}[0];Invariant Mass (ECAL) [GeV]", nbinsPt, Ptbins, 150, 0, 6);
     TH2D *h_rawSC_vs_pt = new TH2D("h_rawSC_vs_pt", "TH2D of raw invMass and p_{T}[0]; p_{T}[0]; Raw SC invMass [GeV]", nbinsPt, Ptbins, 150, 0, 6);
-    vector<TH1F*> histo_track_intervals; //massa invariante ricostruita con track info binnata in pt
-    for(int i=0; i<nbinsPt ; i++){
-        //std::string histName_ecal = "invmass_ecal_" + std::to_string(i);
-        std::string histName_track = "invmass_track_" + std::to_string(i);
-        //TH1F *hist_ecal = new TH1F(histName_ecal.c_str(), histName_ecal.c_str(), 100, 0, 6);
-        TH1F *hist_track = new TH1F(histName_track.c_str(), histName_track.c_str(), 100, 0, 6);
-        //histo_ecal_intervals.push_back(hist_ecal);
-        histo_track_intervals.push_back(hist_track);
-    }
 
     // Copio l'istogramma del MC che voglio ripesare
     TH1F* h_dxy_mc_copy = (TH1F*)h_dxy_mc->Clone("h_dxy_mc_copy");
@@ -752,7 +599,6 @@ void MyAnalysisSpicy::ReweightOnDxy(){
     int nBins_w = histoWeights->GetNbinsX(); 
     if(binidx != 0 && binidx != nBins_w + 1) { // no underflow o overflow
     double weight = histoWeights->GetBinContent(binidx);
-
     // Riempimento degli istogrammi con il valore pesato
     h_invMass_ECAL_ele->Fill(invMass_ECAL_ele, weight);
 
@@ -762,10 +608,7 @@ void MyAnalysisSpicy::ReweightOnDxy(){
     bin_index_pt0 = h_scale_vs_pt->GetXaxis()->FindBin(ptEle[0]);
     bin_index_pt1 = h_scale_vs_pt->GetXaxis()->FindBin(ptEle[1]);
     if(bin_index_pt0 == bin_index_pt1 && bin_index_pt0 != 0 && bin_index_pt0 != (nbinsPt+1)){
-        //std::cout << ptEle[0] << " " << ptEle[1] << "bin ele0: "<< h_scale_vs_pt->GetXaxis()->FindBin(ptEle[0]) << "bin ele1: " << h_scale_vs_pt->GetXaxis()->FindBin(ptEle[0]) << std::endl;
         h_scale_vs_pt->Fill(ptEle[0],invMass_ECAL_ele, weight);
-        //riempio gli istogrammi della massa invariante con track info
-        histo_track_intervals[bin_index_pt0 -1]->Fill(invMass);
         //riempio anche l'istogramma con la massa raw SC
         h_rawSC_vs_pt->Fill(ptEle[0], invMass_rawSC, weight);
     }
@@ -778,9 +621,7 @@ void MyAnalysisSpicy::ReweightOnDxy(){
     h_invMass_ECAL_ele->Scale(1.0/h_invMass_ECAL_ele->Integral());
     TProfile *prof = h_scale_vs_pt->ProfileX("mean inv Mass vs p_{T} after 2 reweights"); //voglio usarlo per vedere il profilo della massa invariante
 
-    //Intervalli in Pt su cui binnare la projection
     ////////////////////////////////////
-    Int_t nBins = 5; 
     mcHistFile->cd();
 
    for(int i=0; i < nbinsPt; i++){
@@ -790,21 +631,19 @@ void MyAnalysisSpicy::ReweightOnDxy(){
     //faccio la projection anche della massa raw SC
     proj_rawSC->SetTitle(Form("Raw Mass - %2.1lf GeV < p_{T} < %2.1lf GeV", h_rawSC_vs_pt->GetXaxis()->GetBinLowEdge(i+1), (h_rawSC_vs_pt->GetXaxis()->GetBinLowEdge(i+1) + h_rawSC_vs_pt->GetXaxis()->GetBinWidth(i+1))));
     mcHistFile->Write("", TObject::kOverwrite);
-    histo_track_intervals[i]->Write("", TObject::kOverwrite);
     
    }
-   //histo_track_intervals[nbinsPt-1]->Write("", TObject::kOverwrite); //mancava l'ultimo
    TH1D* proj_full = h_scale_vs_pt->ProjectionY("invmass_fullrange");
 
-    
     ///////////////////////////////////
-
     //aggiorno il contenuto degli istogrammi nel file .root e notifico che il ripesamento è stato effettuato
     TH1F *h_invMass_rew2 = (TH1F*)h_invMass_ECAL_ele->Clone("ECAL invMass reweighted on Pt_JPsi and dxy");
     h_invMass_rew2->Write("", TObject::kOverwrite);
     prof->Write("", TObject::kOverwrite);
     h_scale_vs_pt->Write("", TObject::kOverwrite);
     Reweighted = 2;
+
+
     //chiudo i file che ho aperto
     mcHistFile->Close();
     dataHistFile->Close();
