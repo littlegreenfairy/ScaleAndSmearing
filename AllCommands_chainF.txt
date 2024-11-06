@@ -46,3 +46,4 @@ MyAnalysisSpicy analysis_mc(tree_mc, 1);
 analysis_mc.Loop();
 analysis_mc.ReweightOnPt();
 analysis_mc.ReweightOnDxy();
+analysis.ApplyCorrections();

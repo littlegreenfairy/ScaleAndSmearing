@@ -138,6 +138,7 @@ public:
 
    virtual void ReweightOnPt();
    virtual void ReweightOnDxy();
+   virtual void ApplyCorrections();
 
     //N.B entry = evento
 

@@ -254,9 +254,9 @@ void MyAnalysisSpicy::Loop() {
     TH1F *h_etaEle = new TH1F("h_etaEle", "Eta of Electron;#eta;A.U.", 30, -1.5, 1.5);
     TH1F *h_phiEle = new TH1F("h_phiEle", "Phi of Electron;#phi;A.U.", 30, -3.14, 3.14);
 
-    TH1F *h_invMass = new TH1F("h_invMass", "Invariant Mass with LM eleID cuts;Mass [GeV];A.U.", 100, 0, 6);
-    TH1F *h_invMass_rawSC = new TH1F("h_invMass_rawSC", "Invariant Mass (raw Supercluster);Mass [GeV];A.U.", 100, 0, 6);
-    TH1F *h_invMass_nocuts = new TH1F("h_invMass_nocuts", "Invariant Mass without cuts;Mass [GeV];A.U.", 100, 0, 6);
+    TH1F *h_invMass = new TH1F("h_invMass", "Invariant Mass with LM eleID cuts;Mass [GeV];A.U.", 120, 0, 6);
+    TH1F *h_invMass_rawSC = new TH1F("h_invMass_rawSC", "Invariant Mass (raw Supercluster);Mass [GeV];A.U.", 120, 0, 6);
+    TH1F *h_invMass_nocuts = new TH1F("h_invMass_nocuts", "Invariant Mass without cuts;Mass [GeV];A.U.", 120, 0, 6);
 
     TH1F *h_Pt_JPsi_all = new TH1F("h_Pt_JPsi_all", "Pt of J/#psi ; p_{T}; A.U.", 30, 0 , 60); //quello dichiarato nel costruttore contiene solo regione di segnale
 
@@ -278,10 +278,10 @@ void MyAnalysisSpicy::Loop() {
     int nbinsRunN = 5; //numero di bin (simmetrici) sul run Number
     double yMin = 360000;
     double yMax = 362500;
-    double yBins[] = {360000, 360800, 361200, 361600, 362050, 362500};
+    double yBins[] = {360000, 360800, 361200, 361600, 362070, 362500};
 
     //Bin per la massa invariante
-    int nbinsZ = 150;
+    int nbinsZ = 120;
     double zMin = 0;
     double zMax = 6;
     double zBins[nbinsZ + 1];
@@ -290,8 +290,11 @@ void MyAnalysisSpicy::Loop() {
         zBins[i] = zMin + i * zStep;
     }
 
-    TH2D *h_scale_vs_pt = new TH2D("h_scale_vs_pt", "TH2D of invariant mass and p_{T}[0];p_{T}[0];Invariant Mass (ECAL) [GeV]", nbinsPt, Ptbins, 150, 0, 6);
-    TH2D *h_rawSC_vs_pt = new TH2D("h_rawSC_vs_pt", "TH2D of raw invMass and p_{T}[0]; p_{T}[0]; Raw SC invMass [GeV]", nbinsPt, Ptbins, 150, 0, 6);
+    TH2D *h_scale_vs_pt = new TH2D("h_scale_vs_pt", "TH2D of invariant mass and p_{T}[0];p_{T}[0];Invariant Mass (ECAL) [GeV]", nbinsPt, Ptbins, 120, 0, 6);
+    TH2D *h_rawSC_vs_pt = new TH2D("h_rawSC_vs_pt", "TH2D of raw invMass and p_{T}[0]; p_{T}[0]; Raw SC invMass [GeV]", nbinsPt, Ptbins, 120, 0, 6);
+
+    TH2D *h_invmass_runNumber_eta0_06 = new TH2D("h_invmass_runNumber_eta0_06", "TH2D of invariant mass and run Number, 0 < eta < 0.6; runNumber ;Invariant Mass (ECAL) [GeV]", 15, 360000, 362500, 120, 2.7, 3.3);
+    TH2D *h_invmass_runNumber_eta06_12 = new TH2D("h_invmass_runNumber_eta06_12", "TH2D of invariant mass and run Number, 0.6 < eta < 1.22; runNumber ;Invariant Mass (ECAL) [GeV]", 15, 360000, 362500, 120, 2.7, 3.3);
 
     TH3D *h_scalevs_pt_runN = new TH3D("h_scalevs_pt_runN", "Istogramma 3D invMass vs pT and run Number; p_{T}[0]; Run Number; m(e^{+}e^{-}) [GeV]",nbinsPt, Ptbins, nbinsRunN, yBins, nbinsZ, zBins);
 
@@ -337,6 +340,15 @@ void MyAnalysisSpicy::Loop() {
 
         //riempio l'histo 3D, tanto i 2 elettroni dello stesso evento sono sempre nello stesso bin di run number
         h_scalevs_pt_runN->Fill(ptEle[0], runNumber, invMass_ECAL_ele);
+
+        //riempio gli istogrammi massa invariante vs runNumber
+        if(ntupla == 0 && invMass_ECAL_ele > 2.7 && invMass_ECAL_ele < 3.3){
+            if(fabs(etaEle[0]) < 0.6 && fabs(etaEle[1]) < 0.6){
+            h_invmass_runNumber_eta0_06->Fill(runNumber, invMass_ECAL_ele);  //Selezione spacca e pesa della regione di segnale
+            }else if(fabs(etaEle[0]) > 0.6 && fabs(etaEle[1]) > 0.6){
+            h_invmass_runNumber_eta06_12->Fill(runNumber, invMass_ECAL_ele);   
+            }
+        }
         }
 
         //variabili di displacement
@@ -385,7 +397,43 @@ void MyAnalysisSpicy::Loop() {
    //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
     //                                                                PLOT
     //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+    if(ntupla == 0){
+    //Profilo della massa invariante vs il run number
+    //primo bin su eta
+    TProfile *prof_rNumber_1 = h_invmass_runNumber_eta0_06->ProfileX("prof_rNumber 0 < #eta < 0.6");  // Nome dell'oggetto
+    prof_rNumber_1->SetTitle("Mean invariant mass vs run Number");  // Imposta il titolo
+    prof_rNumber_1->GetXaxis()->SetTitle("Run Number");  // Titolo asse X per il profilo
+    prof_rNumber_1->GetYaxis()->SetTitle("Mean Invariant Mass [GeV]");  // Titolo asse Y per il profilo
+    prof_rNumber_1->GetYaxis()->SetRangeUser(2.85, 3.2);
+    prof_rNumber_1->SetLineColor(kMagenta);        // Imposta il colore della linea (kBlue è un esempio)
+    prof_rNumber_1->SetLineWidth(2);            // Imposta lo spessore della linea
+    prof_rNumber_1->SetMarkerColor(kMagenta);       // Imposta il colore dei marker (kRed è un esempio)
+    prof_rNumber_1->SetMarkerStyle(20);
 
+    //secondo bin su eta
+    TProfile *prof_rNumber_2 = h_invmass_runNumber_eta06_12->ProfileX("prof_rNumber 0.6 < #eta < 1.2");  // Nome dell'oggetto
+    prof_rNumber_2->SetTitle("Mean invariant mass vs run Number");  // Imposta il titolo
+    prof_rNumber_2->GetXaxis()->SetTitle("Run Number");  // Titolo asse X per il profilo
+    prof_rNumber_2->GetYaxis()->SetTitle("Mean Invariant Mass [GeV]");  // Titolo asse Y per il profilo
+    prof_rNumber_2->GetYaxis()->SetRangeUser(2.85, 3.2);
+    prof_rNumber_2->SetLineColor(kGreen);        // Imposta il colore della linea (kBlue è un esempio)
+    prof_rNumber_2->SetLineWidth(2);            // Imposta lo spessore della linea
+    prof_rNumber_2->SetMarkerColor(kGreen);       // Imposta il colore dei marker (kRed è un esempio)
+    prof_rNumber_2->SetMarkerStyle(20);
+
+    TCanvas *c2 = new TCanvas("c2", "Canvas 2", 800, 600);
+    prof_rNumber_1->SetStats(kFALSE);
+    prof_rNumber_1->Draw("EP");  // Disegna il profilo con punti ed errori
+    prof_rNumber_2->SetStats(kFALSE);
+    prof_rNumber_2->Draw("EP SAME");
+    // Aggiungi la legenda
+    TLegend *legend = new TLegend(0.7, 0.8, 0.9, 0.9);  // Definisce la posizione della legenda
+    legend->AddEntry(prof_rNumber_1, "0 < #eta < 0.6", "l");  // Aggiunge la prima curva alla legenda
+    legend->AddEntry(prof_rNumber_2, "0.6 < #eta < 1.2", "l");  // Aggiunge la seconda curva
+    legend->Draw();
+    c2->SaveAs("MeanInvmass_vs_runNumber.png");
+    delete c2;
+    }
     
     //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
     //                                                          SCRITTURA SUI FILE
@@ -486,7 +534,7 @@ void MyAnalysisSpicy::ReweightOnPt(){
     TFile *mcHistFile = TFile::Open("outputHistograms_MC.root","UPDATE");
     TH1F *h_ptjpsi_mc = (TH1F*)mcHistFile->Get("h_Pt_JPsi");
 
-    TH2D *h_scale_vs_pt = new TH2D("h_scale_vs_pt", "TH2D of invariant mass and P_{T}[0];P_{T}[0];Invariant Mass (ECAL)", 20, 0, 40, 150, 0, 6);
+    TH2D *h_scale_vs_pt = new TH2D("h_scale_vs_pt", "TH2D of invariant mass and P_{T}[0];P_{T}[0];Invariant Mass (ECAL)", 20, 0, 40, 120, 0, 6);
     //// Istogrammi massa invariante ecal vs track
 
     // Copio l'istogramma del MC che voglio ripesare
@@ -569,8 +617,8 @@ void MyAnalysisSpicy::ReweightOnDxy(){
     //Bin personalizzati per l'asse di Pt
     double Ptbins[] = {4, 7, 9, 11, 14, 20, 40};  
     int nbinsPt = sizeof(Ptbins)/sizeof(double) - 1; 
-    TH2D *h_scale_vs_pt = new TH2D("h_scale_vs_pt", "TH2D of invariant mass and p_{T}[0];p_{T}[0];Invariant Mass (ECAL) [GeV]", nbinsPt, Ptbins, 150, 0, 6);
-    TH2D *h_rawSC_vs_pt = new TH2D("h_rawSC_vs_pt", "TH2D of raw invMass and p_{T}[0]; p_{T}[0]; Raw SC invMass [GeV]", nbinsPt, Ptbins, 150, 0, 6);
+    TH2D *h_scale_vs_pt = new TH2D("h_scale_vs_pt", "TH2D of invariant mass and p_{T}[0];p_{T}[0];Invariant Mass (ECAL) [GeV]", nbinsPt, Ptbins, 120, 0, 6);
+    TH2D *h_rawSC_vs_pt = new TH2D("h_rawSC_vs_pt", "TH2D of raw invMass and p_{T}[0]; p_{T}[0]; Raw SC invMass [GeV]", nbinsPt, Ptbins, 120, 0, 6);
 
     // Copio l'istogramma del MC che voglio ripesare
     TH1F* h_dxy_mc_copy = (TH1F*)h_dxy_mc->Clone("h_dxy_mc_copy");
@@ -650,4 +698,119 @@ void MyAnalysisSpicy::ReweightOnDxy(){
     delete mcHistFile;
     delete dataHistFile;
 
+}
+
+//// Funzione per la validazione delle correzioni di singolo elettrone
+void MyAnalysisSpicy::ApplyCorrections(){
+
+    TFile *dataHistFile = TFile::Open("outputHistograms_DATA_partF.root", "UPDATE"); //Apro il file su cui salverò le quantità con la correzione applicata
+    TFile *corrections_file = TFile::Open("scale_corrections.root", "READ"); //apro il file che contiene le correzioni di scala
+
+    //Estraggo l'istogramma con le correzioni di singolo elettrone
+    TH2D *corr_1ele = (TH2D*)corrections_file->Get("h_corr_1ele");
+
+    //definisco binning vari per gli istogrammi
+    int Nbins_invm = 120, nbinsPt =6, nbinsRunN = 5;
+    double invm_min = 0;
+    double invm_max = 6;
+    double invmBins[Nbins_invm + 1];
+    double invmStep = (invm_max - invm_min) / Nbins_invm;
+    for (int i = 0; i <= Nbins_invm; ++i) {
+        invmBins[i] = invm_min + i * invmStep;
+    }
+
+    double Ptbins[] = {4, 7, 9, 11, 14, 20, 40}; 
+    double runNbins[] = {360000, 360800, 361200, 361600, 362070, 362500};
+
+    TH3D *h_invMass_ECAL_corrected = new TH3D("h_invMass_ECAL_corrected", "Invariant mass from energies with scale corrections applied; p_{T}[0]; Run Number; m(e^{+}e^{-}) [GeV]",nbinsPt, Ptbins, nbinsRunN, runNbins, Nbins_invm, invmBins);
+    TH3D *h_invMass_ECAL_check = new TH3D("h_invMass_ECAL_check", "Invariant mass computed from ECAL energies; p_{T}[0]; Run Number; m(e^{+}e^{-}) [GeV]",nbinsPt, Ptbins, nbinsRunN, runNbins, Nbins_invm, invmBins); //stessa di prima ma senza applicare correzioni (per controllare che corrisponda a quella nelle ntuple)
+    TH3D *h_invMass_ECAL_corr_offdiag = new TH3D("h_invMass_ECAL_corr_offdiag", "Invariant mass with scale corrections applied - off diagonal categories; p_{T}[0]; Run Number; m(e^{+}e^{-}) [GeV]",nbinsPt, Ptbins, nbinsRunN, runNbins, Nbins_invm, invmBins);
+    
+    TH1F *h_invmass_fromscratch = new TH1F("h_invmass_fromscratch", "Invariant mass from scratch", 120, 0, 6);
+    TH1F *h_invmass_fromscratch_corr = new TH1F("h_invmass_fromscratch_corr", "Invariant mass from scratch - corrected", 120, 0, 6);
+
+    Long64_t nentries = fChain->GetEntriesFast(); 
+    double ene1_corrected, ene2_corrected; //queste variabili conterranno le energie dei 2 elettroni corrette dalla scala
+    double costheta; //coseno dell'angolo compreso tra i due impulsi 
+    int ptidx_1, ptidx_2, runidx; //indici dei bin per i 2 elettroni (per trovare quale correzione applicare)
+
+    for (Long64_t jentry = 0; jentry < nentries; jentry++) {
+        Long64_t ientry = LoadTree(jentry);
+        if (ientry < 0) break; //se è negativo c'è stato un problema con il caricamento del file
+        fChain->GetEntry(jentry);
+
+        if(Cut(jentry)){
+            //Calcolo l'angolo compreso tra i due impulsi
+            TLorentzVector P_ele1, P_ele2;
+            P_ele1.SetPtEtaPhiE(ptEle[0],etaEle[0],phiEle[0],energy_ECAL_ele[0]);
+            P_ele2.SetPtEtaPhiE(ptEle[1],etaEle[1],phiEle[1],energy_ECAL_ele[1]);
+            costheta = P_ele1.Vect().Dot(P_ele2.Vect()) / (P_ele1.Vect().Mag() * P_ele2.Vect().Mag());
+            //controllo in che bin di Pt e Run number sono gli elettroni e correggo le energie di ECAL
+            ptidx_1 = h_invMass_ECAL_corrected->GetXaxis()->FindBin(ptEle[0]);
+            runidx = h_invMass_ECAL_corrected->GetYaxis()->FindBin(runNumber); //è lo stesso per entrambi gli elettroni obv
+            ptidx_2 = h_invMass_ECAL_corrected->GetXaxis()->FindBin(ptEle[1]);
+
+            //Calcolo la massa invariante di controllo e riempio l'istogramma
+            h_invMass_ECAL_check->Fill(ptEle[0], runNumber, sqrt(2*energy_ECAL_ele[0]*energy_ECAL_ele[1]*(1 - costheta)));
+            //Calcolo la massa invariante corretta e riempio l'istogramma
+            ene1_corrected = corr_1ele->GetBinContent(ptidx_1, runidx) * energy_ECAL_ele[0];
+            ene2_corrected = corr_1ele->GetBinContent(ptidx_2, runidx) * energy_ECAL_ele[1];
+
+            h_invMass_ECAL_corrected->Fill(ptEle[0], runNumber, sqrt(2 * ene1_corrected * ene2_corrected*(1 - costheta)));
+            h_invmass_fromscratch->Fill(sqrt(2 * energy_ECAL_ele[0] * energy_ECAL_ele[1]*(1 - costheta)));
+            h_invmass_fromscratch_corr->Fill(sqrt(2 * ene1_corrected * ene2_corrected*(1 - costheta)));
+            if(ptidx_1 != ptidx_2)h_invMass_ECAL_corr_offdiag->Fill(ptEle[0], runNumber, sqrt(2 * ene1_corrected * ene2_corrected*(1 - costheta)));
+            
+        }
+
+    }
+    //scrivo sul file gli istogrammi
+    dataHistFile->cd();
+    h_invMass_ECAL_check->Write();
+    h_invMass_ECAL_corrected->Write();
+    h_invMass_ECAL_corr_offdiag->Write();
+
+    //Proietto gli istogrammi sul piano yz per vedere la massa invariante vs run number
+    TH2D *h2D_runN_invM_check = (TH2D*)h_invMass_ECAL_check->Project3D("yz");
+    TH2D *h2D_runN_invM_corr = (TH2D*)h_invMass_ECAL_corrected->Project3D("yz");
+    TH2D *h2D_runN_invM_corr_offdiag = (TH2D*)h_invMass_ECAL_corr_offdiag->Project3D("yz");
+    //profili della massa invariante vs run number
+    TProfile *invMass_vsrun_check = h2D_runN_invM_check->ProfileY("invMass_vsrun_check");
+    TProfile *invMass_vsrun_corr = h2D_runN_invM_corr->ProfileY("invMass_vsrun_corr");
+    TProfile *invMass_vsrun_corr_offdiag = h2D_runN_invM_corr_offdiag->ProfileY("invMass_vsrun_corr_offdiag");
+
+    //Salvo anche i profili
+    h2D_runN_invM_check->Write();
+    h2D_runN_invM_corr->Write();
+    h2D_runN_invM_corr_offdiag->Write();
+
+    h_invmass_fromscratch->Write();
+    h_invmass_fromscratch_corr->Write();
+
+    invMass_vsrun_check->Write();
+    invMass_vsrun_corr->Write();
+    invMass_vsrun_corr_offdiag->Write();
+
+    //creo un file per le projection da fittare vs run number
+   // TFile *verifycorr_file = new TFile("scale_validation.root", "RECREATE");
+
+
+    int Nbinsrun = 5;
+
+    //Calcolo le projection in bin di Run number (inclusive in Pt)
+   /*for(int i=1; i<=Nbinsrun; i++){
+        TH1D* proj_check = h2D_runN_invM_check->ProjectionX(Form("invm_check_runbin_%d", i), i, i);
+        TH1D* proj_corr = h2D_runN_invM_corr->ProjectionX(Form("invm_corr_runbin_%d", i), i, i);
+        TH1D* proj_corr_offdiag = h2D_runN_invM_corr_offdiag->ProjectionX(Form("invm_corr_offdiag_runbin_%d", i), i, i);
+        proj_check->Write();
+        proj_corr->Write();
+        proj_corr_offdiag->Write();
+        std::cout << "bin" << i << std::endl;
+    }
+    verifycorr_file->Close();
+    delete verifycorr_file;*/
+
+
+    dataHistFile->Close();
+    delete dataHistFile;
 }

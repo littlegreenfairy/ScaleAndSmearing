@@ -2,6 +2,14 @@
     "files.associations": {
         "MyAnalysisSpicy.C": "cpp",
         "FitProjectionData.C": "cpp",
-        "Jpsi_binPt_and_runN.C": "cpp"
+        "Jpsi_binPt_and_runN.C": "cpp",
+        "MyAnalysisSpicy_old.C": "cpp",
+        "FitProjectionMC.C": "cpp",
+        "FitProjectionData_attempt2.C": "cpp",
+        "FitData.C": "cpp",
+        "FitProjectionData_attempt2_partF.C": "cpp",
+        "ScaleAndSmearing.C": "cpp",
+        "VerifyCorrections.C": "cpp",
+        "FitProfilePostcorr.C": "cpp"
     }
 }
