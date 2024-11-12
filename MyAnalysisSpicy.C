@@ -104,6 +104,7 @@ MyAnalysisSpicy::MyAnalysisSpicy(TTree *tree, Int_t n) : fChain(0), ntupla(n) {
     h_invMass_ECAL_ele = new TH1F("h_invMass_ECAL_ele", "Invariant Mass (ECAL ele);Mass [GeV];A.U.", 120, 0, 6);
     h_dxyEle = new TH1F("h_dxyEle", "Displacement on transverse plane [mm];dxy [mm];A.U.", 30, 0, 1.5);
     h_Pt_JPsi = new TH1F("h_Pt_JPsi", "Transverse momentum of J/#Psi; P_{T} [GeV]; A.U.", 30, 0, 60); //verrà riempito solo nella regione di segnale
+    h_nPV = new TH1F("h_nPV", "Number of interaction vertices; nPV; A.U.", 30, 0, 70);
 }
 
   // n=0 per i dati, n=1 per il MC
@@ -116,6 +117,7 @@ MyAnalysisSpicy::~MyAnalysisSpicy() {
     delete h_invMass_ECAL_ele;
     delete h_dxyEle;
     delete h_Pt_JPsi;
+    delete h_nPV;
 }
 
 // Carica una specifica entry dal TTree
@@ -149,6 +151,7 @@ void MyAnalysisSpicy::Init(TTree *tree) {
 
     
     fChain->SetBranchAddress("runNumber", &runNumber, &b_runNumber);
+    fChain->SetBranchAddress("nPV", &nPV);
     fChain->SetBranchAddress("eleID", eleID, &b_eleID);
     fChain->SetBranchAddress("chargeEle", chargeEle, &b_chargeEle);
     fChain->SetBranchAddress("ptEle", ptEle, &b_ptEle);
@@ -271,6 +274,7 @@ void MyAnalysisSpicy::Loop() {
     TH1F *h_LowE_pfmvaIdEle_back = new TH1F("h_LowE_pfmvaIdEle_back", "Multivariate ID in the Background region; LowE_pfmvaIdEle; A.U.", 50, -12, 7);
 
 
+
     //Bin personalizzati per l'asse di Pt
     double Ptbins[] = {4, 7, 9, 11, 14, 20, 40}; 
     int nbinsPt = sizeof(Ptbins)/sizeof(double) - 1; 
@@ -357,6 +361,9 @@ void MyAnalysisSpicy::Loop() {
         //spread nel displacement dei due elettroni
         h_delta_dxy->Fill(fabs(dxyEle[0] -  dxyEle[1]));
 
+        //pileup
+        h_nPV->Fill(static_cast<Int_t>(nPV));
+
         if(invMass_ECAL_ele > 2.7 && invMass_ECAL_ele < 3.3){
              h_Pt_JPsi->Fill(P_JPsi.Pt());
         }
@@ -385,6 +392,7 @@ void MyAnalysisSpicy::Loop() {
 
 
     h_invMass_ECAL_ele->Scale(1.0/ h_invMass_ECAL_ele->Integral());
+    h_nPV->Scale(1.0/ h_nPV->Integral());
     TProfile *prof = h_scale_vs_pt->ProfileX("mean inv Mass vs p_{T} without reweight");
     TH1D* proj_full = h_scale_vs_pt->ProjectionY("invmass_fullrange");
 
@@ -463,6 +471,9 @@ void MyAnalysisSpicy::Loop() {
 
     //spread nel displacement dei due elettroni
     h_delta_dxy->Write();
+    
+    //pileup
+    h_nPV->Write();
 
     //Variabili Jpsi
     h_Pt_JPsi_all->Write();
@@ -554,6 +565,7 @@ void MyAnalysisSpicy::ReweightOnPt(){
     //svuoto gli istogrammi che dovrò ripesare
     h_invMass_ECAL_ele->Reset();
     h_dxyEle->Reset();
+    h_nPV->Reset();
 
      for (Long64_t jentry = 0; jentry < nentries; jentry++) {
         Long64_t ientry = LoadTree(jentry);
@@ -574,6 +586,7 @@ void MyAnalysisSpicy::ReweightOnPt(){
         // Riempimento degli istogrammi con il valore pesato
         h_invMass_ECAL_ele->Fill(invMass_ECAL_ele, weight);
         h_dxyEle->Fill(dxyEle[0] * 10, weight);
+        h_nPV->Fill(static_cast<Int_t>(nPV));
         //riempio l'istogramma 2d solo se i due elettroni sono nello stesso bin di pt
         bin_index_pt0 = h_scale_vs_pt->GetXaxis()->FindBin(ptEle[0]);
         bin_index_pt1 = h_scale_vs_pt->GetXaxis()->FindBin(ptEle[1]);
@@ -586,6 +599,7 @@ void MyAnalysisSpicy::ReweightOnPt(){
     
     h_dxyEle->Scale(1.0/ h_dxyEle->Integral());
     h_invMass_ECAL_ele->Scale(1.0/h_invMass_ECAL_ele->Integral());
+    h_nPV->Scale(1.0/ h_nPV->Integral());
 
     TProfile *prof = h_scale_vs_pt->ProfileX("mean inv Mass vs P_t after 1 reweight"); //voglio usarlo per vedere il profilo della massa invariante
     //aggiorno il contenuto degli istogrammi nel file .root e notifico che il ripesamento è stato effettuato
@@ -594,6 +608,7 @@ void MyAnalysisSpicy::ReweightOnPt(){
     h_invMass_rew1->Write();
     prof->Write("", TObject::kOverwrite);
     h_dxyEle->Write("", TObject::kOverwrite);
+    h_nPV->Write("", TObject::kOverwrite);
 
     Reweighted = 1;  //Notifica ripesamento
     //chiudo i file che ho aperto
@@ -636,6 +651,7 @@ void MyAnalysisSpicy::ReweightOnDxy(){
 
     //svuoto gli istogrammi che dovrò ripesare
     h_invMass_ECAL_ele->Reset();
+    h_nPV->Reset();
 
      for (Long64_t jentry = 0; jentry < nentries; jentry++) {
         Long64_t ientry = LoadTree(jentry);
@@ -644,6 +660,90 @@ void MyAnalysisSpicy::ReweightOnDxy(){
         if(Cut(jentry)){
         //Riempio l'istogramma con la massa ripesata e anche dxy post reweighting
     int binidx = h_dxyEle->FindBin(dxyEle[0]);
+    int nBins_w = histoWeights->GetNbinsX(); 
+    if(binidx != 0 && binidx != nBins_w + 1) { // no underflow o overflow
+    double weight = histoWeights->GetBinContent(binidx);
+    // Riempimento degli istogrammi con il valore pesato
+    h_invMass_ECAL_ele->Fill(invMass_ECAL_ele, weight);
+    h_nPV->Fill(static_cast<Int_t>(nPV), weight);
+
+
+    //riempio l'istogramma 2d solo se i due elettroni sono nello stesso bin di pt
+    int bin_index_pt0, bin_index_pt1;
+    bin_index_pt0 = h_scale_vs_pt->GetXaxis()->FindBin(ptEle[0]);
+    bin_index_pt1 = h_scale_vs_pt->GetXaxis()->FindBin(ptEle[1]);
+    if(bin_index_pt0 == bin_index_pt1 && bin_index_pt0 != 0 && bin_index_pt0 != (nbinsPt+1)){
+        h_scale_vs_pt->Fill(ptEle[0],invMass_ECAL_ele, weight);
+        //riempio anche l'istogramma con la massa raw SC
+        h_rawSC_vs_pt->Fill(ptEle[0], invMass_rawSC, weight);
+    }
+
+
+            } 
+        }  
+    }
+
+    h_invMass_ECAL_ele->Scale(1.0/h_invMass_ECAL_ele->Integral());
+    h_nPV->Scale(1.0/ h_nPV->Integral());
+    TProfile *prof = h_scale_vs_pt->ProfileX("mean inv Mass vs p_{T} after 2 reweights"); //voglio usarlo per vedere il profilo della massa invariante
+    ///////////////////////////////////
+    //aggiorno il contenuto degli istogrammi nel file .root e notifico che il ripesamento è stato effettuato
+    TH1F *h_invMass_rew2 = (TH1F*)h_invMass_ECAL_ele->Clone("ECAL invMass reweighted on Pt_JPsi and dxy");
+    h_invMass_rew2->Write("", TObject::kOverwrite);
+    prof->Write("", TObject::kOverwrite);
+    h_scale_vs_pt->Write("", TObject::kOverwrite);
+    h_nPV->Write("", TObject::kOverwrite);
+    Reweighted = 2;
+
+
+    //chiudo i file che ho aperto
+    mcHistFile->Close();
+    dataHistFile->Close();
+    delete mcHistFile;
+    delete dataHistFile;
+
+}
+
+
+////////////////////////////////////////////////// Ripesamento sul pileup (numero di vertici)
+void MyAnalysisSpicy::ReweightOnPileup(){
+    
+    TFile *dataHistFile = TFile::Open("outputHistograms_DATA_partF.root", "UPDATE");
+    TH1F *h_nPV_data = (TH1F*)dataHistFile->Get("h_nPV");
+
+    TFile *mcHistFile = TFile::Open("outputHistograms_MC.root", "UPDATE");
+    TH1F *h_nPV_mc = (TH1F*)mcHistFile->Get("h_nPV");
+
+    //Bin personalizzati per l'asse di Pt
+    double Ptbins[] = {4, 7, 9, 11, 14, 20, 40};  
+    int nbinsPt = sizeof(Ptbins)/sizeof(double) - 1; 
+    TH2D *h_scale_vs_pt = new TH2D("h_scale_vs_pt", "TH2D of invariant mass and p_{T}[0];p_{T}[0];Invariant Mass (ECAL) [GeV]", nbinsPt, Ptbins, 120, 0, 6);
+    TH2D *h_rawSC_vs_pt = new TH2D("h_rawSC_vs_pt", "TH2D of raw invMass and p_{T}[0]; p_{T}[0]; Raw SC invMass [GeV]", nbinsPt, Ptbins, 120, 0, 6);
+
+    // Copio l'istogramma del MC che voglio ripesare
+    TH1F* h_nPV_mc_copy = (TH1F*)h_nPV_mc->Clone("h_nPV_mc_copy");
+
+    h_nPV_mc_copy->Scale(1.0/ h_nPV_mc_copy->Integral());
+    h_nPV_data->Scale(1.0/h_nPV_data->Integral());
+
+    TH1F *histoWeights;
+    histoWeights = Weights(h_nPV_mc_copy, h_nPV_data);
+    h_nPV_mc->Multiply(histoWeights); //posso usarlo per controllare che il Reweighting si chiuda
+
+    //ora devo loopare sulle entries per applicare i pesi sia alla massa invariante che a dxy
+
+    Long64_t nentries = fChain->GetEntriesFast(); 
+
+    //svuoto gli istogrammi che dovrò ripesare
+    h_invMass_ECAL_ele->Reset();
+
+     for (Long64_t jentry = 0; jentry < nentries; jentry++) {
+        Long64_t ientry = LoadTree(jentry);
+        if (ientry < 0) break; //se è negativo c'è stato un problema con il caricamento del file
+        fChain->GetEntry(jentry);
+        if(Cut(jentry)){
+        //Riempio l'istogramma con la massa ripesata e anche dxy post reweighting
+    int binidx = h_nPV->FindBin(static_cast<Int_t>(nPV));
     int nBins_w = histoWeights->GetNbinsX(); 
     if(binidx != 0 && binidx != nBins_w + 1) { // no underflow o overflow
     double weight = histoWeights->GetBinContent(binidx);
@@ -667,7 +767,8 @@ void MyAnalysisSpicy::ReweightOnDxy(){
     }
 
     h_invMass_ECAL_ele->Scale(1.0/h_invMass_ECAL_ele->Integral());
-    TProfile *prof = h_scale_vs_pt->ProfileX("mean inv Mass vs p_{T} after 2 reweights"); //voglio usarlo per vedere il profilo della massa invariante
+    h_nPV->Scale(1.0/ h_nPV->Integral());
+    TProfile *prof = h_scale_vs_pt->ProfileX("mean inv Mass vs p_{T} after 3 reweights"); //voglio usarlo per vedere il profilo della massa invariante
 
     ////////////////////////////////////
     mcHistFile->cd();
@@ -685,11 +786,12 @@ void MyAnalysisSpicy::ReweightOnDxy(){
 
     ///////////////////////////////////
     //aggiorno il contenuto degli istogrammi nel file .root e notifico che il ripesamento è stato effettuato
-    TH1F *h_invMass_rew2 = (TH1F*)h_invMass_ECAL_ele->Clone("ECAL invMass reweighted on Pt_JPsi and dxy");
-    h_invMass_rew2->Write("", TObject::kOverwrite);
+    TH1F *h_invMass_rew3 = (TH1F*)h_invMass_ECAL_ele->Clone("ECAL invMass reweighted on Pt_JPsi,  dxy and nPV");
+    h_invMass_rew3->Write("", TObject::kOverwrite);
     prof->Write("", TObject::kOverwrite);
     h_scale_vs_pt->Write("", TObject::kOverwrite);
-    Reweighted = 2;
+    h_nPV->Write("", TObject::kOverwrite);
+    Reweighted = 3;
 
 
     //chiudo i file che ho aperto
@@ -699,6 +801,9 @@ void MyAnalysisSpicy::ReweightOnDxy(){
     delete dataHistFile;
 
 }
+
+
+
 
 //// Funzione per la validazione delle correzioni di singolo elettrone
 void MyAnalysisSpicy::ApplyCorrections(){

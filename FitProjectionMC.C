@@ -57,11 +57,12 @@ void FitProjectionMC() {
     //bin2
     means[1] = 3.05;
     sigmas[1] = 0.1702;
-    meanInf[1] = 3;
+    meanInf[1] = 3.01;
     //bin3 
-    means[2] = 3.09;
+    means[2] = 3.1;
     meanSup[2] = 3.2;
     sigmas[2] = 0.13;
+    meanInf[2] = 3.04;
     //bin 4
     //bin 5
     sigmas[4] = 0.07;
@@ -80,7 +81,7 @@ void FitProjectionMC() {
     
 
 
-    int rebin_factor[Nbins] = {1, 2, 1, 1, 1, 1};
+    int rebin_factor[Nbins] = {1, 1, 2, 1, 1, 1};
 
     // Loop su tutti gli istogrammi
     for (int i = 0; i < Nbins; i++) {

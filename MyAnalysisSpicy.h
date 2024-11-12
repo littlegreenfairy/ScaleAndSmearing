@@ -24,12 +24,14 @@ public:
     TH1F *h_invMass_ECAL_ele;
     TH1F *h_dxyEle;
     TH1F *h_Pt_JPsi;
+    TH1F *h_nPV;
 
 
     const Int_t ntupla; // =0 per i dati e =1 per il MC, così il codice sa su cosa sta loopando
 
                                        //leaf types
     //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+    Char_t          nPV;
     Int_t           runNumber;
     Int_t           eleID[3];
     Short_t         chargeEle[3];
@@ -83,6 +85,7 @@ public:
     //TBranch         *b_lumiBlock;
 
     //
+    TBranch        *b_nPV;
     TBranch        *b_eleID;
     TBranch        *b_chargeEle;
     TBranch        *b_ptEle;      
@@ -138,6 +141,7 @@ public:
 
    virtual void ReweightOnPt();
    virtual void ReweightOnDxy();
+   virtual void ReweightOnPileup();
    virtual void ApplyCorrections();
 
     //N.B entry = evento
