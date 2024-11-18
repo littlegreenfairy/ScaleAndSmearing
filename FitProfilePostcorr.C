@@ -110,11 +110,25 @@ void FitProfilePostcorr(){
     graph_mucorr_offdiag->SetMarkerColor(violaCMS);
     graph_mucorr_offdiag->Draw("PE SAME");
 
+    //line for MC value
+    TLine *meanLine = new TLine(graph_mucheck->GetXaxis()->GetXmin(), 3.0488,
+                            graph_mucheck->GetXaxis()->GetXmax(), 3.0488);
+    meanLine->SetLineColor(bluCMS);
+    meanLine->SetLineWidth(2);
+    meanLine->Draw();
+    double sigma = 0.0003;
+    TBox *sigmaBand = new TBox(graph_mucheck->GetXaxis()->GetXmin(), 3.0488 - sigma,
+                           graph_mucheck->GetXaxis()->GetXmax(), 3.0488 + sigma);
+    sigmaBand->SetFillColorAlpha(bluCMS, 0.3);  // Gray with 30% transparency
+    sigmaBand->Draw("SAME");
+
     // Add a legend
     TLegend *legend = new TLegend(0.6, 0.8, 0.9, 0.9);  // Position the legend in the top-right corner
     legend->AddEntry(graph_mucheck, "m_{J/#psi} without corrections", "p");
     legend->AddEntry(graph_mucorr, "corrected m_{J/#psi}", "p");
     legend->AddEntry(graph_mucorr_offdiag, "corrected m_{J/#psi} (only off-diag) ", "p");
+    legend->AddEntry(meanLine, "MC estimate", "l");
+    legend->AddEntry(sigmaBand, " MC #pm1#sigma", "f");
     legend->Draw();
 
     c->Update();
@@ -173,7 +187,7 @@ void Fit_binRunN(TH2D* invmass_vsrun, TGraphErrors *graph_mu_vsrun, double* binc
         std::cerr << "Impossibile trovare il TTree fitResults." << std::endl;
         return;
     }
-
+    std::cout << "print 2" << std::endl;
     // Variabili per contenere i valori letti dal TTree
     double nL_ini, inc_nL, alphaL_ini, inc_alphaL, nR_ini, inc_nR, alphaR_ini, inc_alphaR;
     // Collega le variabili ai rami del TTree
@@ -190,8 +204,9 @@ void Fit_binRunN(TH2D* invmass_vsrun, TGraphErrors *graph_mu_vsrun, double* binc
     c1->Divide(3,2);
     for(int i=1; i<=Nbinsrun; i++){
         TString projName = Form("%s_runbin_%d", invmass_vsrun->GetName(), i);
+        std::cout << "print 3" << std::endl;
         TH1D* proj = invmass_vsrun->ProjectionX(projName, i, i);
-
+        std::cout << "print 4" << std::endl;
         ///Fit della projection
         //....oooOO0OOooo........oooOO0OOooo.... FONDO ....oooOO0OOooo........oooOO0OOooo....
         RooRealVar mass("mass", "m(e^{+}e^{-})", 0, 6); 
@@ -362,3 +377,6 @@ void Fit_binRunN(TH2D* invmass_vsrun, TGraphErrors *graph_mu_vsrun, double* binc
     c1->SaveAs(Form("FitVerifications/%s_ProjectionsInRunNumberBins.png", invmass_vsrun->GetName()));
     delete c1;
 }
+
+
+

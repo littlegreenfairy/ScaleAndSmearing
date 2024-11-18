@@ -202,7 +202,60 @@ void FitProjectionMC() {
 
 
     }
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //                                          FIT INCLUSIVO IN PT                                           
 
+    TH1F *hist_inclusive = (TH1F*)file->Get("h_invmass_ECAL_3reweights");
+    // Definisci la variabile di massa invariante
+        RooRealVar mass("mass", "m(e^{+}e^{-})", 2.2, 3.9); 
+
+        // Converto l'istogramma in un RooDataHist
+        RooDataHist data_incl("data_incl", "Dataset from histogram", mass, hist_inclusive);
+
+        // Definisci i parametri della Crystal Ball asimmetrica
+        RooRealVar cb_mean("cb_mean", "Mean of CB", means[2], meanInf[2], meanSup[2]);
+        RooRealVar cb_sigma("cb_sigma", "Sigma of CB", sigmas[2], 0.1 * sigmas[2], 2 * sigmas[2]);
+        RooRealVar cb_alphaL("cb_alphaL", "AlphaL of CB", alphaLs[2], 0.1, 15.0);
+        RooRealVar cb_nL("cb_nL", "nL of CB", nLs[2], 0.1, 200.0);
+        RooRealVar cb_alphaR("cb_alphaR", "AlphaR of CB", alphaRs[2], 0.1, 15.0);
+        RooRealVar cb_nR("cb_nR", "nR of CB", nRs[2], 0.1, 100.0);
+
+        // Crea la Crystal Ball asimmetrica 
+        RooCrystalBall cb("cb", "Asymmetric Crystal Ball", mass, cb_mean, cb_sigma, cb_alphaL, cb_nL, cb_alphaR, cb_nR);
+
+        // Esegui il fit
+        RooFitResult *fit_result_simplex = cb.fitTo(data_incl, RooFit::Minimizer("Minuit2", "Simplex"), RooFit::MaxCalls(1000000), RooFit::Save(),  RooFit::SumW2Error(true), RooFit::PrintLevel(-1));
+
+        RooFitResult *fit_result = cb.fitTo(data_incl, RooFit::Minimizer("Minuit2", "Migrad"), RooFit::MaxCalls(10000000), RooFit::Save(), RooFit::SumW2Error(true), RooFit::PrintLevel(-1));
+        ////////////////////////////////////////////////////////
+        TCanvas *canvas_incl = new TCanvas("canvas_incl","Fit inclusive in p_{T}", 900, 700);
+        RooPlot *frame = mass.frame();
+        frame->SetTitle("");
+        data_incl.plotOn(frame);
+        cb.plotOn(frame, RooFit::LineColor(bluCMS), RooFit::LineWidth(5));
+        frame->GetXaxis()->SetTitle("m(e^{+}e^{-}) [GeV]");
+
+        double chi2 = frame->chiSquare();
+        // Stampare il chi-quadro sul plot
+        TPaveText *paveText = new TPaveText(0.7, 0.75, 0.9, 0.9, "NDC");
+        //paveText->AddText(Form("#chi^{2} = %.2f", chi2));
+        paveText->AddText(Form("#mu = %.4f +/- %.4f", cb_mean.getVal(), cb_mean.getError()));
+        paveText->AddText(Form("#sigma = %.4f +/- %.4f", cb_sigma.getVal(), cb_sigma.getError()));
+        if (fit_result->status() == 0) {
+        paveText->AddText("Fit converged");
+        } else {
+        paveText->AddText("Fit did not converge");
+        paveText->AddText(Form("Status: %d", fit_result->status()));
+        }
+        paveText->SetFillColor(0);
+        frame->addObject(paveText);
+        frame->Draw();
+        WriteSimulation();
+        canvas_incl->SaveAs("FitMC/fit_inclusivePt.png");
+        delete canvas_incl;
+
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////// Salvo i parametri per inizializzare il fit dei dati
         // Crea un file ROOT
         TFile *file_param = TFile::Open("fit_results.root", "RECREATE");
@@ -281,21 +334,6 @@ void FitProjectionMC() {
     c1->cd(2);
     gr2->Draw("AP");
 
-    //c1->SaveAs("center_and_relative_error_vs_Pt.png");
-    //delete c1;
-
-
-    //////////////////////////////////////// controllo mu vs media istogramma
-    /*double err[Nbins] = {0};
-    TGraphErrors *gr3 = new TGraphErrors(Nbins, mean_histo, mu, err, inc_mu);
-    gr3->SetTitle("Peak center vs mean of histogram;mean [GeV]; #mu [GeV]");
-    gr3->SetMarkerStyle(21);
-    gr3->SetMarkerColor(kBlue);
-    gr3->SetLineColor(kBlue);
-    TCanvas *c2 = new TCanvas("c2", "c2", 800, 600);
-    gr3->Draw("AP");*/
-
-    // Chiudi il file
     file->Close();
 }
 

@@ -142,7 +142,8 @@ public:
    virtual void ReweightOnPt();
    virtual void ReweightOnDxy();
    virtual void ReweightOnPileup();
-   virtual void ApplyCorrections();
+   virtual void ApplyCorrectionsVsPtandRun();
+   virtual void ApplyCorrectionsVsPt();
 
     //N.B entry = evento
 

@@ -32,7 +32,7 @@ void PlotBackgroundFit(RooRealVar& mass, RooDataHist& data, RooAddPdf& backgroun
     data.plotOn(frame, RooFit::Name("Data"), RooFit::MarkerStyle(20), RooFit::MarkerSize(0.7));
 
     // Plot the background fit function
-    background.plotOn(frame, RooFit::Name("BackgroundFit"), RooFit::LineColor(kBlue), RooFit::LineStyle(kDashed));
+    background.plotOn(frame, RooFit::Name("BackgroundFit"), RooFit::LineColor(kMagenta), RooFit::LineStyle(kDashed));
 
     // Add labels and titles
     frame->SetTitle(Form("Background Fit for Pt Bin %d and Run Bin %d", i+1, j+1));
@@ -100,6 +100,7 @@ void PlotDataFit(RooRealVar& mass, RooDataHist& data, RooAddPdf& model, RooAddPd
     // Estrai i parametri di interesse dal modello per la stampa
     RooRealVar* mu = (RooRealVar*)model.getVariables()->find(Form("mu_cb_%d", i+1));
     RooRealVar* sigma = (RooRealVar*)model.getVariables()->find(Form("sigma_cb_%d", i+1));
+    double chi2 = frame->chiSquare();
 
     // Optional: Add annotations for fit information
     TLatex latex;
@@ -111,8 +112,9 @@ void PlotDataFit(RooRealVar& mass, RooDataHist& data, RooAddPdf& model, RooAddPd
     }else{
         latex.DrawLatex(0.15, 0.8, Form("Fit did not converge. Status %d", fitstatus));
     }
-    latex.DrawLatex(0.15, 0.75, Form("#mu = %.3f #pm %.3f GeV", mu->getVal(), mu->getError()));
-    latex.DrawLatex(0.15, 0.7, Form("#sigma = %.3f #pm %.3f GeV", sigma->getVal(), sigma->getError())); 
+    latex.DrawLatex(0.15, 0.75, Form("#mu = %.4f #pm %.4f GeV", mu->getVal(), mu->getError()));
+    latex.DrawLatex(0.15, 0.7, Form("#sigma = %.4f #pm %.4f GeV", sigma->getVal(), sigma->getError())); 
+    latex.DrawLatex(0.15, 0.66, Form("#chi^{2} = %.4f", chi2));
 
     // Save plot as image (optional)
     c->SaveAs(Form("FitData/Pt_bin%d/DataFit_Pt%d_Run%d.png", i+1, i+1, j+1));
@@ -133,7 +135,14 @@ void FitData(){
     double RightLowLim[NbinsPt][NbinsRun] = {{3.6, 3.4, 3.6, 3.6, 3.6}, {3.6, 3.4, 3.6, 3.6, 3.6}, {3.6, 3.4, 3.6, 3.6, 3.6}, 
     {3.6, 3.4, 3.6, 3.6, 3.6}, {3.6, 3.4, 3.6, 3.6, 3.6}, {3.6, 3.6, 3.6, 3.6, 3.6}}; // Limiti destri personalizzati
     double RightUpLim[NbinsPt][NbinsRun] = {{5,5,5,5,5}, {5,5,5,5,5}, {5,5,5,5,5}, {5,5,5,5,5}, 
-    {5,5,5,5,5}, {5,5,5,5,5}};  
+    {5,5,5,5,5}, {5,5,5,5,5}};
+
+    //limiti inclusivi in run number (aggiungere)
+    double LeftLowLim_incl[NbinsPt] = {1.6, 1.5, 1.6, 1.6, 1.5, 1.6};
+    double LeftUpLim_incl[NbinsPt] = {2.4, 2.4, 2.4, 2.4, 2.5, 2.4};
+    double RightLowLim_incl[NbinsPt] = {3.6, 3.6, 3.55, 3.6, 3.55, 3.5};
+    double RightUpLim_incl[NbinsPt] = {5, 5, 5, 5, 5, 5};
+    
 
     double BackgroundYlims[NbinsPt][NbinsRun] = {{1000, 1000, 1000, 1000, 1000}, {1000, 1000, 1000, 1000, 1000}, {1000, 1000, 1000, 1000, 1000},
     {1000, 1000, 1000, 1000, 1000}, {1000, 1000, 1000, 1000, 1000}, {1000, 1000, 1000, 1000, 1000}};
@@ -153,6 +162,15 @@ void FitData(){
     double Sigmacb_lowlim[NbinsPt][NbinsRun] = {{0, 0.05, 0.05, 0.05, 0.05}, {0, 0.05, 0.05, 0.05, 0.05}, {0, 0.05, 0.05, 0.05, 0.05}, {0, 0.05, 0.05, 0.05, 0.05},
     {0, 0.05, 0.05, 0.05, 0.05}, {0, 0.05, 0.05, 0.05, 0.05}};
 
+    //parametri gaussiana inclusivi in pt
+    double Mucb_ini_incl[NbinsPt] = {3.0442, 3.0337, 3.0422, 3.0489, 3.0694, 3.09};
+    double Mucb_lowlim_incl[NbinsPt] = {2.8, 2.7, 2.5, 2.5, 2.8, 2.9};
+    double Mucb_uplim_incl[NbinsPt] = {3.2, 3.2, 3.2, 3.2, 3.2, 3.2};
+    double Sigmacb_ini_incl[NbinsPt] = {0.1637, 0.1503, 0.14, 0.1351, 0.1071, 0.1115};
+    double Sigmacb_uplim_incl[NbinsPt] = {0.3, 0.3, 0.3, 0.3, 0.3, 0.3};
+    double Sigmacb_lowlim_incl[NbinsPt] = {0.05, 0.05, 0.05, 0.05, 0.05, 0.05};
+
+
     // Aggiungi gli array per i parametri della Gaussiana
     double gauss_mu_init[NbinsPt][NbinsRun] = {{3.6, 3.4, 3.7, 3.4, 3.5}, {3.6, 3.4, 3.7, 3.4, 3.4}, {3.6, 3.4, 3.7, 3.4, 3.4},
     {3.6, 3.4, 3.7, 3.4, 3.4}, {3.6, 3.4, 3.7, 3.4, 3.4}, {3.6, 3.6, 3.7, 3.4, 3.4}};  // Valori iniziali per mu della Gaussiana
@@ -163,9 +181,14 @@ void FitData(){
     double gauss_sigma_init[NbinsPt][NbinsRun] = {{0.1, 0.1, 0.1, 0.1, 0.1}, {0.1, 0.1, 0.1, 0.1, 0.1}, {0.1, 0.1, 0.1, 0.1, 0.1},
     {0.1, 0.1, 0.1, 0.1, 0.1}, {0.1, 0.1, 0.1, 0.1, 0.1}, {0.1, 0.1, 0.1, 0.1, 0.1}}; // Valori iniziali per sigma della Gaussiana
     double gauss_sigma_low[NbinsPt][NbinsRun] = {{0.05, 0.05, 0.02, 0.05, 0.05}, {0.05, 0.05, 0.02, 0.05, 0.05}, {0.05, 0.05, 0.02, 0.05, 0.05},
-    {0.05, 0.05, 0.02, 0.05, 0.05}, {0.05, 0.05, 0.02, 0.05, 0.05}}; // Limiti inferiori per sigma
+    {0.05, 0.05, 0.02, 0.05, 0.05}, {0.1, 0.05, 0.02, 0.05, 0.05}}; // Limiti inferiori per sigma
     double gauss_sigma_up[NbinsPt][NbinsRun] = {{0.2, 0.2, 0.2, 0.2, 0.2}, {0.2, 0.2, 0.2, 0.2, 0.2}, {0.2, 0.2, 0.2, 0.2, 0.2},
     {0.2, 0.2, 0.2, 0.2, 0.2}, {0.2, 0.2, 0.2, 0.2, 0.2}, {0.2, 0.2, 0.2, 0.2, 0.2}}; // Limiti superiori per sigma
+
+    //parametri gaussiana inclusivi in pT
+    double gauss_mu_init_incl[NbinsPt] = {3.6, 3.5, 3.5, 3.6, 3.6, 3.65};
+    double gauss_mu_low_incl[NbinsPt] = {3.5, 3.4, 3.4, 3.5, 3.5, 3.55};
+    double gauss_mu_up_incl[NbinsPt] = {3.7, 3.6, 3.6, 3.7, 3.7, 3.7};
 
     // Leggi i parametri della Crystal Ball dal file
     TFile *file_param = TFile::Open("fit_results.root", "READ");
@@ -198,6 +221,8 @@ void FitData(){
     double RunNBins[] = {360000, 360800, 361200, 361600, 362070, 362500};
     TH2D *h_scale = new TH2D("h_scale", "Scale between data and MC ; Pt ; Run number", NbinsPt, Ptbins, NbinsRun, RunNBins);
     TH2D *h_corr_1ele = new TH2D("h_corr_1ele", "Scale correction for single electron energy; Pt ; Run number", NbinsPt, Ptbins, NbinsRun, RunNBins);
+    TH1D *h_corr_1ele_inclusiveRun = new TH1D("h_corr_1ele_inclusiveRun", "Scale corrections for single electron energy; Pt; correction", NbinsPt, Ptbins);
+    TH1D *h_scale_inclusiveRun = new TH1D("h_scale_inclusiveRun", "Scale between data and MC; Pt; correction", NbinsPt, Ptbins);
 
     //File .root per salvare gli istogrammi con le correzioni
     TFile *file_corrections = new TFile("scale_corrections.root", "RECREATE");
@@ -290,6 +315,10 @@ void FitData(){
             B.setRange(B_val - Nsigma * B_err, B_val + Nsigma * B_err);
             C.setVal(C_val);
             C.setRange(C_val - Nsigma * C_err, C_val + Nsigma * C_err);
+            D.setVal(D_val);
+            D.setRange(D_val - Nsigma * D_err, D_val + Nsigma * D_err);
+            E.setVal(E_val);
+            E.setRange(E_val - Nsigma * E_err, E_val + Nsigma * E_err);
 
             RooRealVar frac("frac", "fraction of background", 0.5, 0.0, 1.0);
             RooAddPdf model("model", "signal + background", RooArgList(crystal, background), RooArgList(frac));
@@ -312,13 +341,123 @@ void FitData(){
             h_corr_1ele->SetBinContent(i+1, j+1, corr_1ele);
             h_corr_1ele->SetBinError(i+1, j+1, inc_corr_1ele);
 
-        }
+        } //FINE LOOP SU RUN NUMBER
+
+
+        //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+        //                                      Aggiungo un fit inclusivo in Run Number
+        //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+        TH1D *hist_inclusiveRun = (TH1D*)file->Get(Form("proj_bin_%d", i+1));
+            if (!hist_inclusiveRun) {
+                std::cerr << "Istogramma non trovato: proj_bin_" << i + 1 << std::endl;
+                continue;
+            }
+        //Ora fitto questo istogramma con lo stesso modello di prima ma senza il binning su j
+        RooRealVar mass("mass", "m(e^{+}e^{-})", 0, 6); 
+
+        // Converto l'istogramma in un RooDataHist
+        RooDataHist data_inclusiveRun("data_inclusiveRun", "Dataset from histogram", mass, hist_inclusiveRun);
+
+        // Definisci i parametri del polinomio di secondo grado
+            RooRealVar A(Form("A_%d", i+1), "4th deg coeff", 0,  -RooNumber::infinity(), RooNumber::infinity());
+            RooRealVar B(Form("B_%d", i+1), "3rd deg coeff", 0,  -RooNumber::infinity(), RooNumber::infinity());
+            RooRealVar C(Form("C_%d", i+1), "2nd deg coeff",  0,  -RooNumber::infinity(), RooNumber::infinity());
+            RooRealVar D(Form("D_%d", i+1), "1st deg coeff",  0,  -RooNumber::infinity(), RooNumber::infinity());
+            RooRealVar E(Form("E_%d", i+1), "0 deg coeff",  0,  -RooNumber::infinity(), RooNumber::infinity());
+            RooPolynomial poly("poly", "Polynomial of 4th degree", mass, RooArgList(A, B, C, D, E));
+
+            // Definisci i parametri della Gaussiana
+            RooRealVar gauss_mu(Form("gauss_mu_%d", i+1), "Gaussian mean", gauss_mu_init_incl[i], gauss_mu_low_incl[i], gauss_mu_up_incl[i]);
+            RooRealVar gauss_sigma(Form("gauss_sigma_%d", i+1), "Gaussian sigma", gauss_sigma_init[i][0], gauss_sigma_low[i][0], gauss_sigma_up[i][0]);
+            RooGaussian gauss("gauss", "Gaussian component", mass, gauss_mu, gauss_sigma);
+
+            // Definisci il modello di fondo combinando il polinomio con la Gaussiana
+            RooRealVar frac_gauss("frac_gauss", "fraction of Gaussian", 0.3, 0.0, 1.0);
+            RooAddPdf background("background", "Background Model", RooArgList(poly, gauss), RooArgList(frac_gauss));
+
+            //Definisci il range per il fit del fondo
+            mass.setRange("range1", LeftLowLim_incl[i], LeftUpLim_incl[i]);
+            mass.setRange("range2", RightLowLim_incl[i], RightUpLim_incl[i]);
+
+            //////////////////// Esegui fit sul solo fondo //////////////////////
+            RooFitResult *fit_result_incl = background.fitTo(data_inclusiveRun, RooFit::Range("range1,range2"),RooFit::MaxCalls(10000000), RooFit::Save(), RooFit::SumW2Error(true));
+
+            // Ottieni i valori dei parametri e i loro errori dal primo fit
+            double A_val = A.getVal(), A_err = A.getError();
+            double B_val = B.getVal(), B_err = B.getError();
+            double C_val = C.getVal(), C_err = C.getError();
+            double D_val = D.getVal(), D_err = D.getError();
+            double E_val = E.getVal(), E_err = E.getError();
+            double gauss_mu_val = gauss_mu.getVal(), gauss_mu_err = gauss_mu.getError();
+            double gauss_sigma_val = gauss_sigma.getVal(), gauss_sigma_err = gauss_sigma.getError();
+            //////////////////////////////////////////////////////// Plot solo fondo
+            PlotBackgroundFit(mass, data_inclusiveRun, background, i, 999); //999 indica che è inclusivo in pt (volevo riciclare la funzione)
+
+            //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+            //                                          FIT SEGNALE + FONDO
+            //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+            mass.setRange("range_full", LeftLowLim[i][0], RightUpLim[i][0]);
+
+            // Leggi i parametri della Crystal Ball dal TTree per il bin corrente
+            tree->GetEntry(i);
+
+            RooRealVar mu_cb(Form("mu_cb_%d", i+1), "mu_cb", Mucb_ini_incl[i], Mucb_lowlim_incl[i], Mucb_uplim_incl[i]);
+            RooRealVar sigma_cb(Form("sigma_cb_%d", i+1), "sigma_cb", Sigmacb_ini_incl[i], Sigmacb_lowlim_incl[i], Sigmacb_uplim_incl[i]);
+            RooRealVar alphaL_cb(Form("alphaL_cb_%d", i+1), "alphaL_cb", alphaL_ini, alphaL_ini - Nsigma*inc_alphaL, alphaL_ini + Nsigma*inc_alphaL);
+            RooRealVar nL_cb(Form("nL_cb_%d", i+1), "nL_cb", nL_ini, nL_ini - Nsigma*inc_nL, nL_ini + Nsigma*inc_nL);
+            RooRealVar alphaR_cb(Form("alphaR_cb_%d", i+1), "alphaR_cb", alphaR_ini, alphaR_ini - Nsigma*inc_alphaR, alphaR_ini + Nsigma*inc_alphaR);
+            RooRealVar nR_cb(Form("nR_cb_%d", i+1), "nR_cb", nR_ini, nR_ini - Nsigma*inc_nR, nR_ini + Nsigma*inc_nR);
+
+
+            // Definisci la Crystal Ball
+            RooCrystalBall crystal("crystal", "crystal ball", mass, mu_cb, sigma_cb, alphaL_cb, nL_cb, alphaR_cb, nR_cb);
+
+            // Aggiorna i parametri della Gaussiana con i vincoli per il secondo fit
+            gauss_mu.setVal(gauss_mu_val);
+            gauss_sigma.setVal(gauss_sigma_val);
+            //gauss_mu.setRange(gauss_mu_val - Nsigma*gauss_mu_err, gauss_mu_val + Nsigma*gauss_mu_err);
+            gauss_mu.setConstant(true);
+            gauss_sigma.setRange(gauss_sigma_val - Nsigma*gauss_sigma_err, gauss_sigma_val + Nsigma*gauss_sigma_err);
+            A.setVal(A_val);
+            A.setRange(A_val - Nsigma * A_err, A_val + Nsigma * A_err);
+            B.setVal(B_val);
+            B.setRange(B_val - Nsigma * B_err, B_val + Nsigma * B_err);
+            C.setVal(C_val);
+            C.setRange(C_val - Nsigma * C_err, C_val + Nsigma * C_err);
+            D.setVal(D_val);
+            D.setRange(D_val - Nsigma * D_err, D_val + Nsigma * D_err);
+            E.setVal(E_val);
+            E.setRange(E_val - Nsigma * E_err, E_val + Nsigma * E_err);
+
+            RooRealVar frac("frac", "fraction of background", 0.5, 0.0, 1.0);
+            RooAddPdf model("model", "signal + background", RooArgList(crystal, background), RooArgList(frac));
+
+            // Esegui il fit segnale + fondo
+            fit_result_incl = model.fitTo(data_inclusiveRun, RooFit::Range("range_full"),RooFit::MaxCalls(10000000), RooFit::Save(), RooFit::SumW2Error(true));
+            //Plot del fit completo
+            PlotDataFit(mass, data_inclusiveRun, model, background, crystal, LeftLowLim[i][0], RightUpLim[i][0], i, 999, fit_result_incl->status());
+        
+        //calcolo la correzione inclusiva in pt
+            double mu_data = mu_cb.getVal();
+            double inc_mu_data = mu_cb.getError();
+            double scale = 1 - (mu_data / mu_mc);
+            double inc_scale = scale * sqrt((inc_mu_data / mu_data)*(inc_mu_data / mu_data) + (inc_mu_mc / mu_mc)*(inc_mu_mc / mu_mc));
+            double corr_1ele = mu_mc / mu_data;
+            double inc_corr_1ele = corr_1ele * sqrt((inc_mu_data / mu_data)*(inc_mu_data / mu_data) + (inc_mu_mc / mu_mc)*(inc_mu_mc / mu_mc));
+            //Scrivo i parametri di interesse negli istogrammi 2D
+            h_scale_inclusiveRun->SetBinContent(i+1, scale);
+            h_scale_inclusiveRun->SetBinError(i+1, inc_scale);
+            h_corr_1ele_inclusiveRun->SetBinContent(i+1, corr_1ele);
+            h_corr_1ele_inclusiveRun->SetBinError(i+1, inc_corr_1ele);
 
     }
 
 file_corrections->cd();
 h_scale->Write();
 h_corr_1ele->Write();
+h_scale_inclusiveRun->Write();
+h_corr_1ele_inclusiveRun->Write();
 
 file_corrections->Close();
 delete file_corrections;

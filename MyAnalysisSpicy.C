@@ -786,7 +786,7 @@ void MyAnalysisSpicy::ReweightOnPileup(){
 
     ///////////////////////////////////
     //aggiorno il contenuto degli istogrammi nel file .root e notifico che il ripesamento è stato effettuato
-    TH1F *h_invMass_rew3 = (TH1F*)h_invMass_ECAL_ele->Clone("ECAL invMass reweighted on Pt_JPsi,  dxy and nPV");
+    TH1F *h_invMass_rew3 = (TH1F*)h_invMass_ECAL_ele->Clone("h_invmass_ECAL_3reweights");
     h_invMass_rew3->Write("", TObject::kOverwrite);
     prof->Write("", TObject::kOverwrite);
     h_scale_vs_pt->Write("", TObject::kOverwrite);
@@ -806,13 +806,13 @@ void MyAnalysisSpicy::ReweightOnPileup(){
 
 
 //// Funzione per la validazione delle correzioni di singolo elettrone
-void MyAnalysisSpicy::ApplyCorrections(){
+void MyAnalysisSpicy::ApplyCorrectionsVsPtandRun(){
 
     TFile *dataHistFile = TFile::Open("outputHistograms_DATA_partF.root", "UPDATE"); //Apro il file su cui salverò le quantità con la correzione applicata
     TFile *corrections_file = TFile::Open("scale_corrections.root", "READ"); //apro il file che contiene le correzioni di scala
 
     //Estraggo l'istogramma con le correzioni di singolo elettrone
-    TH2D *corr_1ele = (TH2D*)corrections_file->Get("h_corr_1ele");
+    TH2D *corr_1ele = (TH2D*)corrections_file->Get("h_corr_1ele");    
 
     //definisco binning vari per gli istogrammi
     int Nbins_invm = 120, nbinsPt =6, nbinsRunN = 5;
@@ -865,6 +865,8 @@ void MyAnalysisSpicy::ApplyCorrections(){
             h_invmass_fromscratch->Fill(sqrt(2 * energy_ECAL_ele[0] * energy_ECAL_ele[1]*(1 - costheta)));
             h_invmass_fromscratch_corr->Fill(sqrt(2 * ene1_corrected * ene2_corrected*(1 - costheta)));
             if(ptidx_1 != ptidx_2)h_invMass_ECAL_corr_offdiag->Fill(ptEle[0], runNumber, sqrt(2 * ene1_corrected * ene2_corrected*(1 - costheta)));
+
+
             
         }
 
@@ -900,22 +902,97 @@ void MyAnalysisSpicy::ApplyCorrections(){
    // TFile *verifycorr_file = new TFile("scale_validation.root", "RECREATE");
 
 
-    int Nbinsrun = 5;
+    dataHistFile->Close();
+    delete dataHistFile;
+}
 
-    //Calcolo le projection in bin di Run number (inclusive in Pt)
-   /*for(int i=1; i<=Nbinsrun; i++){
-        TH1D* proj_check = h2D_runN_invM_check->ProjectionX(Form("invm_check_runbin_%d", i), i, i);
-        TH1D* proj_corr = h2D_runN_invM_corr->ProjectionX(Form("invm_corr_runbin_%d", i), i, i);
-        TH1D* proj_corr_offdiag = h2D_runN_invM_corr_offdiag->ProjectionX(Form("invm_corr_offdiag_runbin_%d", i), i, i);
-        proj_check->Write();
-        proj_corr->Write();
-        proj_corr_offdiag->Write();
-        std::cout << "bin" << i << std::endl;
+
+
+
+
+
+void MyAnalysisSpicy::ApplyCorrectionsVsPt(){  //applica le correzioni di singolo elettrone in bin di Pt ma non di Run Number
+    TFile *dataHistFile = TFile ::Open("outputHistograms_DATA_partF.root", "UPDATE"); //Apro il file su cui salverò le quantità con la correzione applicata
+    TFile *corrections_file = TFile::Open("scale_corrections.root", "READ"); //apro il file che contiene le correzioni di scala
+
+    //Estraggo l'istogramma con le correzioni di singolo elettrone
+    TH2D *corr_1ele = (TH2D*)corrections_file->Get("h_corr_1ele_inclusiveRun");    
+
+    //definisco binning vari per gli istogrammi
+    int Nbins_invm = 120, nbinsPt =6, nbinsRunN = 5;
+    double invm_min = 0;
+    double invm_max = 6;
+    double invmBins[Nbins_invm + 1];
+    double invmStep = (invm_max - invm_min) / Nbins_invm;
+    for (int i = 0; i <= Nbins_invm; ++i) {
+        invmBins[i] = invm_min + i * invmStep;
     }
-    verifycorr_file->Close();
-    delete verifycorr_file;*/
 
+    double Ptbins[] = {4, 7, 9, 11, 14, 20, 40}; 
+
+    TH2D *h_invMass_ECAL_corrected = new TH2D("h_invMass_ECAL_corrected_Pt", "Invariant mass from energies with scale corrections applied; p_{T}[0]; m(e^{+}e^{-}) [GeV]",nbinsPt, Ptbins, Nbins_invm, invmBins);
+    TH2D *h_invMass_ECAL_check = new TH2D("h_invMass_ECAL_check_Pt", "Invariant mass computed from ECAL energies; p_{T}[0]; m(e^{+}e^{-}) [GeV]",nbinsPt, Ptbins, Nbins_invm, invmBins); //stessa di prima ma senza applicare correzioni (per controllare che corrisponda a quella nelle ntuple)
+    TH2D *h_invMass_ECAL_corr_offdiag = new TH2D("h_invMass_ECAL_corr_offdiag_Pt", "Invariant mass with scale corrections applied - off diagonal categories; p_{T}[0]; m(e^{+}e^{-}) [GeV]",nbinsPt, Ptbins, Nbins_invm, invmBins);
+    TH2D *h_invMass_ECAL_corr_diag = new TH2D("h_invMass_ECAL_corr_diag_Pt", "Invariant mass with scale corrections applied - diagonal categories; p_{T}[0]; m(e^{+}e^{-}) [GeV]",nbinsPt, Ptbins, Nbins_invm, invmBins);
+    
+    TH1F *h_invmass_fromscratch = new TH1F("h_invmass_fromscratch_Pt", "Invariant mass from scratch", 120, 0, 6);
+    TH1F *h_invmass_fromscratch_corr = new TH1F("h_invmass_fromscratch_corr_Pt", "Invariant mass from scratch - corrected", 120, 0, 6);
+
+    Long64_t nentries = fChain->GetEntriesFast(); 
+    double ene1_corrected, ene2_corrected; //queste variabili conterranno le energie dei 2 elettroni corrette dalla scala
+    double costheta, costheta_corr; //coseno dell'angolo compreso tra i due impulsi 
+    int ptidx_1, ptidx_2; //indici dei bin per i 2 elettroni (per trovare quale correzione applicare)
+
+    for (Long64_t jentry = 0; jentry < nentries; jentry++) {
+        Long64_t ientry = LoadTree(jentry);
+        if (ientry < 0) break; //se è negativo c'è stato un problema con il caricamento del file
+        fChain->GetEntry(jentry);
+
+        if(Cut(jentry)){
+            //Calcolo l'angolo compreso tra i due impulsi
+            TLorentzVector P_ele1, P_ele2, P_ele1_corr, P_ele2_corr;
+            P_ele1.SetPtEtaPhiE(ptEle[0],etaEle[0],phiEle[0],energy_ECAL_ele[0]);
+            P_ele2.SetPtEtaPhiE(ptEle[1],etaEle[1],phiEle[1],energy_ECAL_ele[1]);
+            costheta = P_ele1.Vect().Dot(P_ele2.Vect()) / (P_ele1.Vect().Mag() * P_ele2.Vect().Mag());
+            //controllo in che bin di Pt e Run number sono gli elettroni e correggo le energie di ECAL
+            ptidx_1 = h_invMass_ECAL_corrected->GetXaxis()->FindBin(ptEle[0]);
+            ptidx_2 = h_invMass_ECAL_corrected->GetXaxis()->FindBin(ptEle[1]);
+
+            //Calcolo la massa invariante di controllo e riempio l'istogramma
+            h_invMass_ECAL_check->Fill(ptEle[0], sqrt(2*energy_ECAL_ele[0]*energy_ECAL_ele[1]*(1 - costheta)));
+            h_invmass_fromscratch->Fill(sqrt(2 * energy_ECAL_ele[0] * energy_ECAL_ele[1]*(1 - costheta)));
+
+            //Calcolo la massa invariante corretta e riempio l'istogramma
+            ene1_corrected = corr_1ele->GetBinContent(ptidx_1) * energy_ECAL_ele[0];
+            ene2_corrected = corr_1ele->GetBinContent(ptidx_2) * energy_ECAL_ele[1];
+            //Correggo anche i quadrimpulsi per correggere l'angolo
+            P_ele1_corr.SetPtEtaPhiE(ptEle[0],etaEle[0],phiEle[0],ene1_corrected);
+            P_ele2_corr.SetPtEtaPhiE(ptEle[1],etaEle[1],phiEle[1],ene2_corrected);
+            costheta_corr = P_ele1_corr.Vect().Dot(P_ele2_corr.Vect()) / (P_ele1_corr.Vect().Mag() * P_ele2_corr.Vect().Mag());
+
+
+            h_invMass_ECAL_corrected->Fill(ptEle[0], sqrt(2 * ene1_corrected * ene2_corrected*(1 - costheta_corr)));
+            h_invmass_fromscratch_corr->Fill(sqrt(2 * ene1_corrected * ene2_corrected*(1 - costheta_corr)));
+            if(ptidx_1 != ptidx_2){
+                h_invMass_ECAL_corr_offdiag->Fill(ptEle[0], sqrt(2 * ene1_corrected * ene2_corrected*(1 - costheta_corr)));
+            }else{
+                h_invMass_ECAL_corr_diag->Fill(ptEle[0], sqrt(2 * ene1_corrected * ene2_corrected*(1 - costheta_corr)));
+            } 
+        }
+    }
+
+    //scrivo sul file gli istogrammi
+    dataHistFile->cd();
+    h_invMass_ECAL_check->Write();
+
+    h_invMass_ECAL_corrected->Write();
+    h_invMass_ECAL_corr_offdiag->Write();
+    h_invMass_ECAL_corr_diag->Write();
+
+    h_invmass_fromscratch->Write();
+    h_invmass_fromscratch_corr->Write();
 
     dataHistFile->Close();
     delete dataHistFile;
+
 }

@@ -47,4 +47,5 @@ analysis_mc.Loop();
 analysis_mc.ReweightOnPt();
 analysis_mc.ReweightOnDxy();
 analysis_mc.ReweightOnPileup();
-analysis.ApplyCorrections();
+analysis.ApplyCorrectionsVsPt();
+analysis.ApplyCorrectionsVsPtandRun();

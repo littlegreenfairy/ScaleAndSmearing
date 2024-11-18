@@ -10,6 +10,9 @@
         "FitProjectionData_attempt2_partF.C": "cpp",
         "ScaleAndSmearing.C": "cpp",
         "VerifyCorrections.C": "cpp",
-        "FitProfilePostcorr.C": "cpp"
+        "FitProfilePostcorr.C": "cpp",
+        "ValidationVsPt.C": "cpp",
+        "complex": "cpp",
+        "new": "cpp"
     }
 }
