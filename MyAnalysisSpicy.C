@@ -977,6 +977,7 @@ void MyAnalysisSpicy::ApplyCorrectionsVsPt(){  //applica le correzioni di singol
                 h_invMass_ECAL_corr_offdiag->Fill(ptEle[0], sqrt(2 * ene1_corrected * ene2_corrected*(1 - costheta_corr)));
             }else{
                 h_invMass_ECAL_corr_diag->Fill(ptEle[0], sqrt(2 * ene1_corrected * ene2_corrected*(1 - costheta_corr)));
+                if(ptidx_1 ==1 && ptidx_2)std::cout << "offdiag bin 1" << std::endl;
             } 
         }
     }

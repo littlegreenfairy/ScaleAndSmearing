@@ -32,36 +32,7 @@
     int violaCMS = TColor::GetColor("#7a21dd");
     int arancione = TColor::GetColor("#ca5200");
     ///////////////
-
-////....oooOO0OOooo........oooOO0OOooo.... PARAMETRI INIZIALI FIT (GLOBALI) ....oooOO0OOooo........oooOO0OOooo...
-    // Definisci i limiti personalizzati e fattore di rebinning
-    double LeftLowLim[NbinsPt] = {1.6,1.4,1.4,1.5,1.7, 1.7};  // Limiti sinistri personalizzati
-    double LeftUpLim[NbinsPt] = {2.5,2.4,2.4,2.4,2.3, 2.3};
-    double RightLowLim[NbinsPt] = {3.6, 3.5, 3.5, 3.5, 3.5, 3.5};
-    double RightUpLim[NbinsPt] = {4.5,4.8,5.1,5,4.5, 4.5};  // Limiti destri personalizzati*/
-
-    double BackgroundYlims[NbinsPt] = {30000, 30000,30000,30000,30000, 30000};
-
-    ///////////////// Parametri Crystal Ball
-    double Mucb_ini[NbinsPt] = {3.0293, 3.0337, 3.0422, 3.0689, 3.0382, 3.0};
-    double Mucb_lowlim[NbinsPt] = {2.9, 2.9, 2.9, 2.9, 2.9, 2.9};
-    double Mucb_uplim[NbinsPt] = {3.1, 3.2, 3.1, 3.15, 3.2, 3.2};
-    double Sigmacb_ini[NbinsPt] = {0.1437, 0.1503, 0.1317, 0.1271, 0.1315, 0.13};
-    double Sigmacb_uplim[NbinsPt] = {0.5, 0.5, 0.2, 0.5, 0.15, 0.5};
-    double Sigmacb_lowlim[NbinsPt] = {0.05, 0.05, 0.05, 0.05, 0.05, 0.05};
-
-    ///////////////////////
-    // Aggiungi gli array per i parametri della Gaussiana
-    double gauss_mu_init[NbinsPt] = {3.6, 3.65, 3.5, 3.65, 3.65, 3.65};  // Valori iniziali per mu della Gaussiana
-    double gauss_mu_low[NbinsPt] = {3.5, 3.55, 3.4, 3.5, 3.2, 3.2};   // Limiti inferiori per mu
-    double gauss_mu_up[NbinsPt] = {3.7, 3.8, 3.6, 3.8, 3.8, 3.8};    // Limiti superiori per mu
-    double gauss_sigma_init[NbinsPt] = {0.1, 0.1, 0.1, 0.1, 0.1, 0.1}; // Valori iniziali per sigma della Gaussiana
-    double gauss_sigma_low[NbinsPt] = {0.05, 0.05, 0.02, 0.05, 0.05, 0.05}; // Limiti inferiori per sigma
-    double gauss_sigma_up[NbinsPt] = {0.2, 0.5, 0.2, 0.2, 0.2, 0.2}; // Limiti superiori per sigma
-
-////....oooOO0OOooo........oooOO0OOooo....oooOO0OOooo........oooOO0OOooo...
-//// Centri dei bin e halfwidths
-void Fit_binPt(TH2D* invmass_vsPt, TGraphErrors *graph_mu_vsPt, double* bincenters, double* binhalfwidths); //restituisce l'andamento della media vs bin di Pt
+void Fit_binPt(TH2D* invmass_vsPt, TGraphErrors *graph_mu_vsPt, double* bincenters, double* binhalfwidths, const std::string& filename); //restituisce l'andamento della media vs bin di Pt
 
 //....oooOO0OOooo........oooOO0OOooo.... FUNZIONE PRINCIPALE ....oooOO0OOooo........oooOO0OOooo...
 void ValidationVsPt(){
@@ -71,6 +42,11 @@ void ValidationVsPt(){
     TH2D *h2D_Pt_invM_corr_diag = (TH2D*)filehisto->Get("h_invMass_ECAL_corr_diag_Pt");
     TH2D *h2D_Pt_invM_corr_offdiag = (TH2D*)filehisto->Get("h_invMass_ECAL_corr_offdiag_Pt");
 
+    //file per salvare le projection
+    TFile *fileprojections;
+    fileprojections = new TFile("Validation_projections_histo.root", "RECREATE");
+    fileprojections->Close(); //lo riapro dopo nella funzione
+    delete fileprojections;
     double bincenters[NbinsPt] = {5.5, 8, 10.5, 12.5, 17, 30};
     double binhalfwidths[NbinsPt] = {1.5, 1, 1.5, 1.5, 3, 10};
 
@@ -81,10 +57,10 @@ void ValidationVsPt(){
     TGraphErrors *graph_mucorr_offdiag = new TGraphErrors(NbinsPt);
     TGraphErrors *graph_mucorr_diag = new TGraphErrors(NbinsPt);
     //chiamo la funzione che fitta i profili su tutti e 4
-    Fit_binPt(h2D_Pt_invM_check, graph_mucheck, bincenters, binhalfwidths);
-    Fit_binPt(h2D_Pt_invM_corr, graph_mucorr, bincenters, binhalfwidths);
-    Fit_binPt(h2D_Pt_invM_corr_offdiag, graph_mucorr_offdiag, bincenters, binhalfwidths);
-    Fit_binPt(h2D_Pt_invM_corr_diag, graph_mucorr_diag, bincenters, binhalfwidths);
+    Fit_binPt(h2D_Pt_invM_check, graph_mucheck, bincenters, binhalfwidths, "InitialParamsFit/fit_parameters_check.txt");
+    Fit_binPt(h2D_Pt_invM_corr_diag, graph_mucorr_diag, bincenters, binhalfwidths, "InitialParamsFit/fit_parameters_corr_diag.txt");
+    Fit_binPt(h2D_Pt_invM_corr_offdiag, graph_mucorr_offdiag, bincenters, binhalfwidths, "InitialParamsFit/fit_parameters_corr_offdiag.txt");
+    Fit_binPt(h2D_Pt_invM_corr, graph_mucorr, bincenters, binhalfwidths, "InitialParamsFit/fit_parameters_corr.txt");
 
     //memorizzo le y dei graph in degli array
     const double* mucorr = graph_mucorr->GetY();
@@ -94,11 +70,12 @@ void ValidationVsPt(){
 
     //Riempio un TGraph anche per il Monte Carlo e i ratio plot
     TGraphErrors *graph_mu_mc = new TGraphErrors(NbinsPt);
-    TGraphErrors *graph_ratio = new TGraphErrors(NbinsPt);
+    TGraphErrors *graph_ratio_check = new TGraphErrors(NbinsPt);
+    TGraphErrors *graph_ratio_corr = new TGraphErrors(NbinsPt);
     TGraphErrors *graph_ratio_offdiag = new TGraphErrors(NbinsPt);
     TGraphErrors *graph_ratio_diag = new TGraphErrors(NbinsPt);
-    TFile *file_param = TFile::Open("fit_results.root", "READ");
-    TTree *tree = (TTree*)file_param->Get("fitResults");
+    TFile *file_param_mc = TFile::Open("fit_results.root", "READ");
+    TTree *tree = (TTree*)file_param_mc->Get("fitResults");
     if (!tree) {
         std::cerr << "Impossibile trovare il TTree fitResults." << std::endl;
         return;
@@ -106,20 +83,83 @@ void ValidationVsPt(){
     double mu_mc, mu_mc_Err;
     tree->SetBranchAddress("Mean", &mu_mc);
     tree->SetBranchAddress("MeanError", &mu_mc_Err);
+
+    //Canvas per le distribuzioni sovrapposte
+    TCanvas *c_proj = new TCanvas("c_proj", "distributions before and after corrections", 1800, 1200);
+    c_proj->Divide(3, 2);
+    TCanvas *c_proj_diag = new TCanvas("c_proj_diag", "distributions before and after corrections", 1800, 1200); //solo diagonali
+    c_proj_diag->Divide(3,2);
+    TCanvas *c_proj_offdiag = new TCanvas("c_proj_offdiag", "distributions before and after corrections", 1800, 1200); //solo off diagonal
+    c_proj_offdiag->Divide(3, 2);
+    fileprojections = new TFile("Validation_projections_histo.root", "READ");
+
     for(int i=0; i<NbinsPt; i++){
         tree->GetEntry(i);
         graph_mu_mc->SetPoint(i, bincenters[i], mu_mc);
         graph_mu_mc->SetPointError(i, binhalfwidths[i], mu_mc_Err);
 
         //ratio
-        graph_ratio->SetPoint(i, bincenters[i], mucorr[i]/mucheck[i]);
+        graph_ratio_check->SetPoint(i, bincenters[i], mu_mc/mucheck[i]); // MC / dati non corretti
+        graph_ratio_corr->SetPoint(i, bincenters[i], mu_mc/mucorr[i]); // MC / dati corretti
+
         graph_ratio_offdiag->SetPoint(i, bincenters[i], mucorr_offdiag[i]/mucheck[i]);
         graph_ratio_diag->SetPoint(i, bincenters[i], mucorr_diag[i]/mucheck[i]);
-        //errori
-        graph_ratio->SetPointError(i, binhalfwidths[i], sqrt((graph_mucorr->GetErrorY(i)/mucorr[i])*(graph_mucorr->GetErrorY(i)/mucorr[i]) + (graph_mucheck->GetErrorY(i)/mucheck[i])*(graph_mucheck->GetErrorY(i)/mucheck[i])) * mucorr[i]/mucheck[i]);
+        //errori 
+        graph_ratio_check->SetPointError(i, binhalfwidths[i], sqrt((mu_mc_Err/mu_mc)*(mu_mc_Err/mu_mc) + (graph_mucheck->GetErrorY(i)/mucheck[i])*(graph_mucheck->GetErrorY(i)/mucheck[i])) * mu_mc/mucheck[i]);
+        graph_ratio_corr->SetPointError(i, binhalfwidths[i], sqrt((mu_mc_Err/mu_mc)*(mu_mc_Err/mu_mc) + (graph_mucorr->GetErrorY(i)/mucorr[i])*(graph_mucorr->GetErrorY(i)/mucheck[i])) * mu_mc/mucorr[i]);
+        
         graph_ratio_offdiag->SetPointError(i, binhalfwidths[i], sqrt((graph_mucorr_offdiag->GetErrorY(i)/mucorr_offdiag[i])*(graph_mucorr_offdiag->GetErrorY(i)/mucorr_offdiag[i]) + (graph_mucheck->GetErrorY(i)/mucheck[i])*(graph_mucheck->GetErrorY(i)/mucheck[i])) * mucorr_offdiag[i]/mucheck[i]);
         graph_ratio_diag->SetPointError(i, binhalfwidths[i], sqrt((graph_mucorr_diag->GetErrorY(i)/mucorr_diag[i])*(graph_mucorr_diag->GetErrorY(i)/mucorr_diag[i]) + (graph_mucheck->GetErrorY(i)/mucheck[i])*(graph_mucheck->GetErrorY(i)/mucheck[i])) * mucorr_diag[i]/mucheck[i]);
+    
+        //Estraggo e disegno le distribuzioni da sovrapporre
+        TH1D *proj_check = (TH1D*)fileprojections->Get(Form("h_invMass_ECAL_check_Pt_Ptbin_%d", i+1));
+        TH1D *proj_corr = (TH1D*)fileprojections->Get(Form("h_invMass_ECAL_corrected_Pt_Ptbin_%d", i+1));
+        TH1D *proj_corr_diag = (TH1D*)fileprojections->Get(Form("h_invMass_ECAL_corr_diag_Pt_Ptbin_%d", i+1));
+        TH1D *proj_corr_offdiag = (TH1D*)fileprojections->Get(Form("h_invMass_ECAL_corr_offdiag_Pt_Ptbin_%d", i+1));
+
+        c_proj->cd(i+1);
+        proj_check->SetStats(kFALSE);
+        proj_check->SetFillColorAlpha(rossoCMS, 0.3);
+        proj_check->SetLineColor(rossoCMS);
+        proj_check->Draw("HISTO");
+        proj_corr->SetStats(kFALSE);
+        proj_corr->SetFillColorAlpha(gialloCMS, 0.3);
+        proj_corr->SetLineColor(gialloCMS);
+        proj_corr->Draw("HISTO SAME");
+        c_proj->Update();
+
+        c_proj_diag->cd(i+1);
+        proj_check->SetStats(kFALSE);
+        proj_check->SetFillColorAlpha(rossoCMS, 0.3);
+        proj_check->SetLineColor(rossoCMS);
+        proj_check->Draw("HISTO");
+        proj_corr_diag->SetStats(kFALSE);
+        proj_corr_diag->SetFillColorAlpha(rosaCMS, 0.3);
+        proj_corr_diag->SetLineColor(rosaCMS);
+        proj_corr_diag->Draw("HISTO SAME");
+        c_proj_diag->Update();
+
+        c_proj_offdiag->cd(i+1);
+        proj_check->SetStats(kFALSE);
+        proj_check->SetFillColorAlpha(rossoCMS, 0.3);
+        proj_check->SetLineColor(rossoCMS);
+        proj_check->Draw("HISTO");
+        proj_corr_offdiag->SetStats(kFALSE);
+        proj_corr_offdiag->SetFillColorAlpha(violaCMS, 0.3);
+        proj_corr_offdiag->SetLineColor(violaCMS);
+        proj_corr_offdiag->Draw("HISTO SAME");
+        c_proj_offdiag->Update();
+
+
     }
+    //salvo distribuzioni sovrapposte
+    c_proj->SaveAs("FitVerificationsPt/Overlapped_dist_corrected.png");
+    c_proj_diag->SaveAs("FitVerificationsPt/Overlapped_dist_corrected_diag.png");
+    c_proj_offdiag->SaveAs("FitVerificationsPt/Overlapped_dist_corrected_offdiag.png");
+    delete c_proj;
+    delete c_proj_diag;
+    delete c_proj_offdiag;
+    fileprojections->Close();
 
 
     //plotto la media in funzione del bin per tutti e 3
@@ -170,14 +210,24 @@ void ValidationVsPt(){
     legend->Draw();
 
     pad2->cd(); //ratio plot
-    graph_ratio->SetTitle("");
-    graph_ratio->GetYaxis()->SetTitle("corrected / not corrected");
-    graph_ratio->GetXaxis()->SetTitle("p_{T} [GeV]");
-    graph_ratio->SetMarkerStyle(20);
-    graph_ratio->SetLineColor(arancione);
-    graph_ratio->SetMarkerColor(arancione);
-    graph_ratio->Draw("APE");
+    graph_ratio_check->SetTitle("");
+    graph_ratio_check->GetYaxis()->SetTitle("MC / data");
+    graph_ratio_check->GetXaxis()->SetTitle("p_{T} [GeV]");
+    graph_ratio_check->SetMarkerStyle(20);
+    graph_ratio_check->SetLineColor(rossoCMS);
+    graph_ratio_check->SetMarkerColor(rossoCMS);
+    graph_ratio_check->Draw("APE");
 
+    graph_ratio_corr->SetTitle("");
+    graph_ratio_corr->SetMarkerStyle(20);
+    graph_ratio_corr->SetLineColor(gialloCMS);
+    graph_ratio_corr->SetMarkerColor(gialloCMS);
+    graph_ratio_corr->Draw("PE SAME");
+
+    TLegend *legend_ratio = new TLegend(0.6, 0.1, 0.9, 0.25);  // Position the legend in the top-right corner
+    legend_ratio->AddEntry(graph_ratio_check, "before corrections", "p");
+    legend_ratio->AddEntry(graph_ratio_corr, "after corrections", "p");
+    legend_ratio->Draw();
 
     c->Update();
     c->SaveAs("CorrectionsValidation_vsPt.png");
@@ -215,14 +265,54 @@ void ValidationVsPt(){
 }
 
 /////////////////////////////////////////////////////////////
-void Fit_binPt(TH2D* invmass_vsPt, TGraphErrors *graph_mu_vsPt, double* bincenters, double* binhalfwidths){
+void Fit_binPt(TH2D* invmass_vsPt, TGraphErrors *graph_mu_vsPt, double* bincenters, double* binhalfwidths, const std::string& filename){
     //leggo parametri iniziali dal tree
-    TFile *file_param = TFile::Open("fit_results.root", "READ");
-    TTree *tree = (TTree*)file_param->Get("fitResults");
+    TFile *file_param_mc = TFile::Open("fit_results.root", "READ");
+    TTree *tree = (TTree*)file_param_mc->Get("fitResults");
     if (!tree) {
         std::cerr << "Impossibile trovare il TTree fitResults." << std::endl;
         return;
     }
+    //apro il file su cui salvo le varie projections
+    TFile *fileprojections = TFile::Open("Validation_projections_histo.root", "UPDATE");
+    fileprojections->cd();
+    // Variables to read parameters from file
+    std::vector<double> LeftLowLim, LeftUpLim, RightLowLim, RightUpLim, BackgroundYlims;
+    std::vector<double> Mucb_ini, Mucb_lowlim, Mucb_uplim, Sigmacb_ini, Sigmacb_lowlim, Sigmacb_uplim;
+    std::vector<double> gauss_mu_init, gauss_mu_low, gauss_mu_up, gauss_sigma_init, gauss_sigma_low, gauss_sigma_up;
+
+    std::ifstream paramFile(filename);
+    if (!paramFile.is_open()) {
+        std::cerr << "Unable to open parameter file!" << std::endl;
+        return;
+    }
+    
+    // Salta la prima riga (titoli delle colonne)
+    std::string headerLine;
+    std::getline(paramFile, headerLine);
+    //Read parameters from file
+    double temp;
+    while (paramFile >> temp) {
+        LeftLowLim.push_back(temp);
+        paramFile >> temp; LeftUpLim.push_back(temp);
+        paramFile >> temp; RightLowLim.push_back(temp);
+        paramFile >> temp; RightUpLim.push_back(temp);
+        paramFile >> temp; BackgroundYlims.push_back(temp);
+        paramFile >> temp; Mucb_ini.push_back(temp);
+        paramFile >> temp; Mucb_lowlim.push_back(temp);
+        paramFile >> temp; Mucb_uplim.push_back(temp);
+        paramFile >> temp; Sigmacb_ini.push_back(temp);
+        paramFile >> temp; Sigmacb_lowlim.push_back(temp);
+        paramFile >> temp; Sigmacb_uplim.push_back(temp);
+        paramFile >> temp; gauss_mu_init.push_back(temp);
+        paramFile >> temp; gauss_mu_low.push_back(temp);
+        paramFile >> temp; gauss_mu_up.push_back(temp);
+        paramFile >> temp; gauss_sigma_init.push_back(temp);
+        paramFile >> temp; gauss_sigma_low.push_back(temp);
+        paramFile >> temp; gauss_sigma_up.push_back(temp);
+    }
+    paramFile.close();
+    
 
     // Variabili per contenere i valori letti dal TTree
     double nL_ini, inc_nL, alphaL_ini, inc_alphaL, nR_ini, inc_nR, alphaR_ini, inc_alphaR;
@@ -236,13 +326,12 @@ void Fit_binPt(TH2D* invmass_vsPt, TGraphErrors *graph_mu_vsPt, double* bincente
     tree->SetBranchAddress("alphaR", &alphaR_ini);
     tree->SetBranchAddress("alphaRError", &inc_alphaR);
 
-    TCanvas* c1 = new TCanvas("c1", "Projections of Invariant Mass in p_{T} Bins", 1200, 800);
-    c1->Divide(3,2);
     for(int i=1; i<=NbinsPt; i++){
         //Estraggo le projection binwise e faccio il fit
 
         TString projName = Form("%s_Ptbin_%d", invmass_vsPt->GetName(), i);
         TH1D* proj = invmass_vsPt->ProjectionY(projName, i, i);
+        proj->Write();
 
         ///Fit della projection
         //....oooOO0OOooo........oooOO0OOooo.... FONDO ....oooOO0OOooo........oooOO0OOooo....
@@ -403,18 +492,14 @@ void Fit_binPt(TH2D* invmass_vsPt, TGraphErrors *graph_mu_vsPt, double* bincente
         c->SaveAs(Form("FitVerificationsPt/%s_fitbin_%d.png", invmass_vsPt->GetName(), i));
         delete c;
 
-        c1->cd(i);
-        proj->Draw();
 
         //Riempio il Tgrapherrors
         graph_mu_vsPt->SetPoint(i-1, bincenters[i-1], mu_cb.getVal());
         graph_mu_vsPt->SetPointError(i-1, binhalfwidths[i-1], mu_cb.getError());
 
     }
-    c1->SaveAs(Form("FitVerificationsPt/%s_ProjectionsInPtBins.png", invmass_vsPt->GetName()));
-    delete c1;
-    file_param->Close();
-
+    file_param_mc->Close();
+    fileprojections->Close();
     }
 
 

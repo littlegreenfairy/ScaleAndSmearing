@@ -107,11 +107,11 @@ void PlotDataFit(RooRealVar& mass, RooDataHist& data, RooAddPdf& model, RooAddPd
     latex.SetNDC();
     latex.SetTextSize(0.03);
     latex.DrawLatex(0.15, 0.85, Form("Fit for Pt bin %d, Run bin %d", i+1, j+1));
-    if(fitstatus == 0){
+    /*if(fitstatus == 0){
         latex.DrawLatex(0.15, 0.8, "Fit converged");
     }else{
         latex.DrawLatex(0.15, 0.8, Form("Fit did not converge. Status %d", fitstatus));
-    }
+    }*/
     latex.DrawLatex(0.15, 0.75, Form("#mu = %.4f #pm %.4f GeV", mu->getVal(), mu->getError()));
     latex.DrawLatex(0.15, 0.7, Form("#sigma = %.4f #pm %.4f GeV", sigma->getVal(), sigma->getError())); 
     latex.DrawLatex(0.15, 0.66, Form("#chi^{2} = %.4f", chi2));

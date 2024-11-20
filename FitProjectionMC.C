@@ -241,12 +241,12 @@ void FitProjectionMC() {
         //paveText->AddText(Form("#chi^{2} = %.2f", chi2));
         paveText->AddText(Form("#mu = %.4f +/- %.4f", cb_mean.getVal(), cb_mean.getError()));
         paveText->AddText(Form("#sigma = %.4f +/- %.4f", cb_sigma.getVal(), cb_sigma.getError()));
-        if (fit_result->status() == 0) {
+        /*if (fit_result->status() == 0) {
         paveText->AddText("Fit converged");
         } else {
         paveText->AddText("Fit did not converge");
         paveText->AddText(Form("Status: %d", fit_result->status()));
-        }
+        }*/
         paveText->SetFillColor(0);
         frame->addObject(paveText);
         frame->Draw();
