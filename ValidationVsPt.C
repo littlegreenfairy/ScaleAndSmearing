@@ -326,6 +326,8 @@ void Fit_binPt(TH2D* invmass_vsPt, TGraphErrors *graph_mu_vsPt, double* bincente
     tree->SetBranchAddress("alphaR", &alphaR_ini);
     tree->SetBranchAddress("alphaRError", &inc_alphaR);
 
+    double compatibility_psi2s[NbinsPt];
+
     for(int i=1; i<=NbinsPt; i++){
         //Estraggo le projection binwise e faccio il fit
 
@@ -361,7 +363,7 @@ void Fit_binPt(TH2D* invmass_vsPt, TGraphErrors *graph_mu_vsPt, double* bincente
         mass.setRange("range2", RightLowLim[i-1], RightUpLim[i-1]);
 
         // Esegui il fit del fondo
-        RooFitResult *fit_result = background.fitTo(data, RooFit::Range("range1,range2"), RooFit::Save(), RooFit::SumW2Error(true));
+        RooFitResult *fit_result = background.fitTo(data, RooFit::Range("range1,range2"), RooFit::Save(), RooFit::SumW2Error(true), RooFit::PrintLevel(-1));
 
         // Ottieni i valori dei parametri e i loro errori dal primo fit
         double A_val = A.getVal(), A_err = A.getError();
@@ -451,7 +453,7 @@ void Fit_binPt(TH2D* invmass_vsPt, TGraphErrors *graph_mu_vsPt, double* bincente
         RooAddPdf model("model", "signal + background", RooArgList(crystal, background), RooArgList(frac));
 
         // Esegui il fit segnale + fondo
-        fit_result = model.fitTo(data, RooFit::Range("range_full"), RooFit::Save(), RooFit::SumW2Error(true));
+        fit_result = model.fitTo(data, RooFit::Range("range_full"), RooFit::Save(), RooFit::SumW2Error(true), RooFit::PrintLevel(-1));
 
         //....oooOO0OOooo........oooOO0OOooo.... PLOT DEL FIT ....oooOO0OOooo........oooOO0OOooo....
         TCanvas *c = new TCanvas(Form("c_bin_%d", i), Form("Bin %d", i), 950, 700);
@@ -497,6 +499,14 @@ void Fit_binPt(TH2D* invmass_vsPt, TGraphErrors *graph_mu_vsPt, double* bincente
         graph_mu_vsPt->SetPoint(i-1, bincenters[i-1], mu_cb.getVal());
         graph_mu_vsPt->SetPointError(i-1, binhalfwidths[i-1], mu_cb.getError());
 
+        //verifico se la differenza tra il centro della gaussiana e il centro della crystal ball è compatibile con 0.5
+        compatibility_psi2s[i-1] = (gauss_mu_val - mu_cb.getVal() - 0.5) / sqrt(gauss_mu_err*gauss_mu_err + mu_cb.getError()*mu_cb.getError());
+
+    }
+
+    //stampo compatibilità con psi2s
+    for(int i=0; i< NbinsPt; i++){
+    std::cout << "compatibilità tra Deltamu e 0.5: Bin " << i+1 << "  valore:" << compatibility_psi2s[i] << std::endl;
     }
     file_param_mc->Close();
     fileprojections->Close();

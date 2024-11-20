@@ -228,6 +228,8 @@ void FitData(){
     TFile *file_corrections = new TFile("scale_corrections.root", "RECREATE");
     //....oooOO0OOooo........oooOO0OOooo.... Loop su tutti gli istogrammi ....oooOO0OOooo........oooOO0OOooo....
 
+    double compatibility_psi2s[NbinsPt];
+
     for(int i=0; i < NbinsPt; i++){
 
         for(int j=0; j < NbinsRun; j++){
@@ -451,7 +453,16 @@ void FitData(){
             h_corr_1ele_inclusiveRun->SetBinContent(i+1, corr_1ele);
             h_corr_1ele_inclusiveRun->SetBinError(i+1, inc_corr_1ele);
 
+            //verifico se la differenza tra il centro della gaussiana e il centro della crystal ball è compatibile con 0.5
+            compatibility_psi2s[i] = (gauss_mu_val - mu_data - 0.5) / sqrt(gauss_mu_err*gauss_mu_err + inc_mu_data*inc_mu_data);
+
+
     }
+
+//stampo compatibilità con psi2s
+for(int i=0; i< NbinsPt; i++){
+    std::cout << "compatibilità tra Deltamu e 0.5: Bin " << i+1 << "  valore:" << compatibility_psi2s[i] << std::endl;
+}
 
 file_corrections->cd();
 h_scale->Write();

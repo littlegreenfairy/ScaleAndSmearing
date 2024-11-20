@@ -717,8 +717,11 @@ void MyAnalysisSpicy::ReweightOnPileup(){
     //Bin personalizzati per l'asse di Pt
     double Ptbins[] = {4, 7, 9, 11, 14, 20, 40};  
     int nbinsPt = sizeof(Ptbins)/sizeof(double) - 1; 
-    TH2D *h_scale_vs_pt = new TH2D("h_scale_vs_pt", "TH2D of invariant mass and p_{T}[0];p_{T}[0];Invariant Mass (ECAL) [GeV]", nbinsPt, Ptbins, 120, 0, 6);
+    TH2D *h_scale_vs_pt_diag = new TH2D("h_scale_vs_pt_diag", "TH2D of invariant mass and p_{T}[0] - only diag;p_{T}[0];Invariant Mass (ECAL) [GeV]", nbinsPt, Ptbins, 120, 0, 6);
+    TH2D *h_scale_vs_pt_offdiag = new TH2D("h_scale_vs_pt_offdiag", "TH2D of invariant mass and p_{T}[0] - only offdiag;p_{T}[0];Invariant Mass (ECAL) [GeV]", nbinsPt, Ptbins, 120, 0, 6);
+    TH2D *h_scale_vs_pt = new TH2D("h_scale_vs_pt", "TH2D of invariant mass and p_{T}[0] - all events;p_{T}[0];Invariant Mass (ECAL) [GeV]", nbinsPt, Ptbins, 120, 0, 6);
     TH2D *h_rawSC_vs_pt = new TH2D("h_rawSC_vs_pt", "TH2D of raw invMass and p_{T}[0]; p_{T}[0]; Raw SC invMass [GeV]", nbinsPt, Ptbins, 120, 0, 6);
+    
 
     // Copio l'istogramma del MC che voglio ripesare
     TH1F* h_nPV_mc_copy = (TH1F*)h_nPV_mc->Clone("h_nPV_mc_copy");
@@ -756,10 +759,13 @@ void MyAnalysisSpicy::ReweightOnPileup(){
     bin_index_pt0 = h_scale_vs_pt->GetXaxis()->FindBin(ptEle[0]);
     bin_index_pt1 = h_scale_vs_pt->GetXaxis()->FindBin(ptEle[1]);
     if(bin_index_pt0 == bin_index_pt1 && bin_index_pt0 != 0 && bin_index_pt0 != (nbinsPt+1)){
-        h_scale_vs_pt->Fill(ptEle[0],invMass_ECAL_ele, weight);
+        h_scale_vs_pt_diag->Fill(ptEle[0],invMass_ECAL_ele, weight); //categorie diagonali
         //riempio anche l'istogramma con la massa raw SC
         h_rawSC_vs_pt->Fill(ptEle[0], invMass_rawSC, weight);
+    }else{
+        h_scale_vs_pt_offdiag->Fill(ptEle[0],invMass_ECAL_ele, weight);  //categorie non diagonali
     }
+    h_scale_vs_pt->Fill(ptEle[0],invMass_ECAL_ele, weight); //tutti gli eventi
 
 
             } 
@@ -768,27 +774,33 @@ void MyAnalysisSpicy::ReweightOnPileup(){
 
     h_invMass_ECAL_ele->Scale(1.0/h_invMass_ECAL_ele->Integral());
     h_nPV->Scale(1.0/ h_nPV->Integral());
-    TProfile *prof = h_scale_vs_pt->ProfileX("mean inv Mass vs p_{T} after 3 reweights"); //voglio usarlo per vedere il profilo della massa invariante
+    TProfile *prof = h_scale_vs_pt_diag->ProfileX("mean inv Mass vs p_{T} after 3 reweights"); //voglio usarlo per vedere il profilo della massa invariante
 
     ////////////////////////////////////
     mcHistFile->cd();
 
    for(int i=0; i < nbinsPt; i++){
-    TH1D* proj = h_scale_vs_pt->ProjectionY(Form("proj_bin_%d", i+1), i+1, i+1);
+    TH1D* proj_diag = h_scale_vs_pt_diag->ProjectionY(Form("proj_bin_%d", i+1), i+1, i+1);
+    TH1D* proj_offdiag = h_scale_vs_pt_offdiag->ProjectionY(Form("proj_offdiag_bin_%d", i+1), i+1, i+1);
+    TH1D* proj_all = h_scale_vs_pt->ProjectionY(Form("proj_all_bin_%d", i+1), i+1, i+1);
     TH1D* proj_rawSC = h_rawSC_vs_pt->ProjectionY(Form("rawSC_bin_%d", i+1), i+1, i+1);
-    proj->SetTitle(Form("%2.1lf GeV < p_{T} < %2.1lf GeV", h_scale_vs_pt->GetXaxis()->GetBinLowEdge(i+1), (h_scale_vs_pt->GetXaxis()->GetBinLowEdge(i+1) + h_scale_vs_pt->GetXaxis()->GetBinWidth(i+1))));
+    proj_diag->SetTitle(Form("%2.1lf GeV < p_{T} < %2.1lf GeV", h_scale_vs_pt->GetXaxis()->GetBinLowEdge(i+1), (h_scale_vs_pt->GetXaxis()->GetBinLowEdge(i+1) + h_scale_vs_pt->GetXaxis()->GetBinWidth(i+1))));
+    proj_offdiag->SetTitle(Form("%2.1lf GeV < p_{T} < %2.1lf GeV", h_scale_vs_pt->GetXaxis()->GetBinLowEdge(i+1), (h_scale_vs_pt->GetXaxis()->GetBinLowEdge(i+1) + h_scale_vs_pt->GetXaxis()->GetBinWidth(i+1))));
+    proj_all->SetTitle(Form("%2.1lf GeV < p_{T} < %2.1lf GeV", h_scale_vs_pt->GetXaxis()->GetBinLowEdge(i+1), (h_scale_vs_pt->GetXaxis()->GetBinLowEdge(i+1) + h_scale_vs_pt->GetXaxis()->GetBinWidth(i+1))));
     //faccio la projection anche della massa raw SC
     proj_rawSC->SetTitle(Form("Raw Mass - %2.1lf GeV < p_{T} < %2.1lf GeV", h_rawSC_vs_pt->GetXaxis()->GetBinLowEdge(i+1), (h_rawSC_vs_pt->GetXaxis()->GetBinLowEdge(i+1) + h_rawSC_vs_pt->GetXaxis()->GetBinWidth(i+1))));
     mcHistFile->Write("", TObject::kOverwrite);
     
    }
-   TH1D* proj_full = h_scale_vs_pt->ProjectionY("invmass_fullrange");
+   TH1D* proj_full = h_scale_vs_pt_diag->ProjectionY("invmass_fullrange");
 
     ///////////////////////////////////
     //aggiorno il contenuto degli istogrammi nel file .root e notifico che il ripesamento è stato effettuato
     TH1F *h_invMass_rew3 = (TH1F*)h_invMass_ECAL_ele->Clone("h_invmass_ECAL_3reweights");
     h_invMass_rew3->Write("", TObject::kOverwrite);
     prof->Write("", TObject::kOverwrite);
+    h_scale_vs_pt_diag->Write("", TObject::kOverwrite);
+    h_scale_vs_pt_offdiag->Write("", TObject::kOverwrite);
     h_scale_vs_pt->Write("", TObject::kOverwrite);
     h_nPV->Write("", TObject::kOverwrite);
     Reweighted = 3;
@@ -977,8 +989,9 @@ void MyAnalysisSpicy::ApplyCorrectionsVsPt(){  //applica le correzioni di singol
                 h_invMass_ECAL_corr_offdiag->Fill(ptEle[0], sqrt(2 * ene1_corrected * ene2_corrected*(1 - costheta_corr)));
             }else{
                 h_invMass_ECAL_corr_diag->Fill(ptEle[0], sqrt(2 * ene1_corrected * ene2_corrected*(1 - costheta_corr)));
-                if(ptidx_1 ==1 && ptidx_2)std::cout << "offdiag bin 1" << std::endl;
             } 
+
+            //
         }
     }
 
