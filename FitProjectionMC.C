@@ -52,36 +52,42 @@ void FitProjectionMC() {
         meanSup[i] =  means[i] + 2 * sigmas[i];
     }
     //personalizzo per bin 1 //scommentare per limiti massa regressed
-    sigmas[0] = 0.1840;
-    means[0] = 3;
+    sigmas[0] = 0.16;
+    means[0] = 3.035;
+    meanInf[0] = 3.01;
     //bin2
-    means[1] = 3.05;
-    sigmas[1] = 0.1702;
-    meanInf[1] = 3.01;
+    means[1] = 3.02;
+    sigmas[1] = 0.1602;
+    meanInf[1] = 2.9;
     //bin3 
-    means[2] = 3.1;
+    means[2] = 3.04;
     meanSup[2] = 3.2;
     sigmas[2] = 0.13;
-    meanInf[2] = 3.04;
+    meanInf[2] = 3;
     //bin 4
-    //bin 5
-    sigmas[4] = 0.07;
-    means[4] = 3.13;
-    nRs[4] = 15;
-    nLs[4] = 4;
+    //bin 5 (aggiustare per ButoKJpsi)
+    sigmas[4] = 0.1152;
+    means[4] = 3.0743;
+    //nRs[4] = 15;
+    //nLs[4] = 4;
+    //bin 6 (nell'altro MC no constraints su bin 6)
+    means[5] = 3.0916;
+    sigmas[5] = 0.12;
+    meanInf[5] = 2.9;
+    meanSup[5] = 3.2;
     double mu[Nbins], inc_mu[Nbins], val_sigma[Nbins], inc_sigma[Nbins];
     double val_nL[Nbins], inc_nL[Nbins], val_alphL[Nbins], inc_alphL[Nbins], val_nR[Nbins], inc_nR[Nbins], val_alphR[Nbins], inc_alphR[Nbins]; //array per salvare i parametri
 
-    //scommenta qui per limiti su massa regressed
-    double massMin[Nbins] = {2.2, 2.25, 2.3, 2.1, 2.65, 2.65};  // Limiti inferiori personalizzati
-    double massMax[Nbins] = {3.9, 3.9, 3.8, 3.8, 3.5, 3.5};  // Limiti superiori personalizzati
+    
+    double massMin[Nbins] = {2.2, 2.2, 2.3, 2.1, 2.65, 2.65};  // Limiti inferiori personalizzati
+    double massMax[Nbins] = {3.9, 3.9, 3.8,3.8, 3.5, 3.5};  // Limiti superiori personalizzati
     double Bin_centers[Nbins] = {5.5, 8, 10.5, 12.5, 17, 30}; //Centri dei bin in P_t
     double Bin_halfwidth[Nbins] = {1.5, 1, 1.5, 1.5, 3, 10}; //Larghezze dei bin in P_t
 
     
 
 
-    int rebin_factor[Nbins] = {1, 1, 2, 1, 1, 1};
+    int rebin_factor[Nbins] = {1, 1, 1, 1, 1, 1}; //{1, 1, 1, 1, 2, 2};
 
     // Loop su tutti gli istogrammi
     for (int i = 0; i < Nbins; i++) {
@@ -125,6 +131,7 @@ void FitProjectionMC() {
         // Plotta l'istogramma e il fit
         RooPlot *frame = mass.frame();
         frame->SetTitle("");
+        frame->GetXaxis()->SetRangeUser(0, 5);
         //frame->SetTitle(hist->GetTitle());
         data.plotOn(frame);
         cb.plotOn(frame, RooFit::LineColor(bluCMS), RooFit::LineWidth(5));
@@ -136,12 +143,12 @@ void FitProjectionMC() {
         paveText->AddText(Form("#chi^{2} = %.2f", chi2));
         paveText->AddText(Form("#mu = %.4f +/- %.4f", cb_mean.getVal(), cb_mean.getError()));
         paveText->AddText(Form("#sigma = %.4f +/- %.4f", cb_sigma.getVal(), cb_sigma.getError()));
-        if (fit_result->status() == 0) {
+        /*if (fit_result->status() == 0) {
         paveText->AddText("Fit converged");
         } else {
         paveText->AddText("Fit did not converge");
         paveText->AddText(Form("Status: %d", fit_result->status()));
-        }
+        }*/
         paveText->SetFillColor(0);
         frame->addObject(paveText);
 
@@ -174,7 +181,7 @@ void FitProjectionMC() {
         line->Draw("same");*/
 
         // Salva la canvas 
-        canvas->SaveAs(Form("FitMC/fit_proj_bin_%d.png", i+1));
+        canvas->SaveAs(Form("PlotConID2022/FitMC_id2022/fit_proj_bin_%d.png", i+1));
         // deallocazioni
         delete canvas;
         delete frame;
@@ -251,7 +258,7 @@ void FitProjectionMC() {
         frame->addObject(paveText);
         frame->Draw();
         WriteSimulation();
-        canvas_incl->SaveAs("FitMC/fit_inclusivePt.png");
+        canvas_incl->SaveAs("PlotConID2022/FitMC_id2022/fit_inclusivePt.png");
         delete canvas_incl;
 
 

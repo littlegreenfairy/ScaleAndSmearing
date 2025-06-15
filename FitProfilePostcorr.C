@@ -132,7 +132,7 @@ void FitProfilePostcorr(){
     legend->Draw();
 
     c->Update();
-    c->SaveAs("MeanvsRunNumber_fromfit.png");
+    c->SaveAs("PlotConID2022/MeanvsRunNumber_fromfit.png");
     delete c;
 
     ////////////// Confronti Istogrammi inclusivi in pT e run number
@@ -167,7 +167,7 @@ void FitProfilePostcorr(){
     minv_fromscratch_corr->SetLineColor(kBlack);
     minv_fromscratch_corr->Draw("HISTO SAME");
 
-    c2->SaveAs("Inclusive_invmass_postcorr.png");
+    c2->SaveAs("PlotConID2022/Inclusive_invmass_postcorr.png");
     delete c2;
 
     filehisto->Close();
@@ -288,7 +288,7 @@ void Fit_binRunN(TH2D* invmass_vsrun, TGraphErrors *graph_mu_vsrun, double* binc
         frame_pull_bg->Draw();
 
         // Salva la canvas del solo fondo
-        canvas_bg->SaveAs(Form("FitVerifications/Background/FitBackgroundOnly_proj_bin_%d.png", i));
+        canvas_bg->SaveAs(Form("PlotConID2022/FitVerifications/Background/FitBackgroundOnly_proj_bin_%d.png", i));
         delete canvas_bg;
 
         //....oooOO0OOooo........oooOO0OOooo.... FONDO + SEGNALE ....oooOO0OOooo........oooOO0OOooo....
@@ -363,7 +363,7 @@ void Fit_binRunN(TH2D* invmass_vsrun, TGraphErrors *graph_mu_vsrun, double* binc
         legend->AddEntry(frame->getObject(2), "Signal Fit", "L");  // Fit del segnale
         legend->AddEntry(frame->getObject(3), "Combined Fit", "L");  // Fit combinato
         legend->Draw();  // Disegna la legenda
-        c->SaveAs(Form("FitVerifications/%s_fitbin_%d.png", invmass_vsrun->GetName(), i));
+        c->SaveAs(Form("PlotConID2022/FitVerifications/%s_fitbin_%d.png", invmass_vsrun->GetName(), i));
         delete c;
 
         c1->cd(i);
@@ -374,7 +374,7 @@ void Fit_binRunN(TH2D* invmass_vsrun, TGraphErrors *graph_mu_vsrun, double* binc
         graph_mu_vsrun->SetPointError(i-1, binhalfwidths[i-1], mu_cb.getError());
 
     }
-    c1->SaveAs(Form("FitVerifications/%s_ProjectionsInRunNumberBins.png", invmass_vsrun->GetName()));
+    c1->SaveAs(Form("PlotConID2022/FitVerifications/%s_ProjectionsInRunNumberBins.png", invmass_vsrun->GetName()));
     delete c1;
 }
 

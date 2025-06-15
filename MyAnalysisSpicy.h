@@ -25,6 +25,7 @@ public:
     TH1F *h_dxyEle;
     TH1F *h_Pt_JPsi;
     TH1F *h_nPV;
+    TH1F *h_nPU;
 
 
     const Int_t ntupla; // =0 per i dati e =1 per il MC, così il codice sa su cosa sta loopando
@@ -32,6 +33,7 @@ public:
                                        //leaf types
     //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
     Char_t          nPV;
+    Char_t           nPU;
     Int_t           runNumber;
     Int_t           eleID[3];
     Short_t         chargeEle[3];
@@ -47,9 +49,10 @@ public:
     Float_t         etaSCEle[3];
     Float_t         phiSCEle[3];
     Float_t         R9Ele[3];
-    Float_t          triggeringEle[3];
+    Float_t         triggeringEle[3];
     Float_t         LowE_pfmvaIdEle[3]; //nuova ID
     Float_t         pfmvaIdEle[3]; //nuova ID n.2
+    Float_t         pfmvaIdEle22[3]; //nuova ID retraining 2022
     Float_t         pfRelIsoEle[3]; //variabile di isolamento
 
 
@@ -70,11 +73,13 @@ public:
     Float_t         invMass_rawSC;
     Float_t         invMass_rawSC_esSC;
 
-    //variabili generate
-    /* vector<float>   *Gen_Pt;
+    //variabili gen matching
+    vector<float>   *Gen_Pt;
     vector<float>   *Gen_Eta;
     vector<float>   *Gen_Phi;
-    vector<float>   *Gen_E; */
+    vector<float>   *Gen_motherPdgId;         //scommentare per mc prompt
+    vector<float>   *Gen_E; 
+
 
     //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
      
@@ -86,6 +91,7 @@ public:
 
     //
     TBranch        *b_nPV;
+    TBranch       *b_nPU;
     TBranch        *b_eleID;
     TBranch        *b_chargeEle;
     TBranch        *b_ptEle;      
@@ -103,6 +109,7 @@ public:
     TBranch        *b_triggeringEle;
     TBranch        *b_LowE_pfmvaIdEle;
     TBranch        *b_pfmvaIdEle;
+    TBranch        *b_pfmvaIdEle22;
     TBranch        *b_pfRelIsoEle;
 
     TBranch        *b_rawEnergySCEle; //!
@@ -120,17 +127,17 @@ public:
    TBranch        *b_invMass_rawSC; //!
    TBranch        *b_invMass_rawSC_esSC;
 
-
-   /* TBranch        *b_Gen_Pt;      //!
+   TBranch        *b_Gen_Pt;      //!
    TBranch        *b_Gen_Eta;     //!
    TBranch        *b_Gen_Phi;     //!
-   TBranch        *b_Gen_E; */
-
+   TBranch        *b_Gen_E; 
+   TBranch        *b_Gen_motherPdgId; //scommentare per mc prompt
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
     MyAnalysisSpicy(TTree *tree=0, Int_t n =0);
    virtual ~MyAnalysisSpicy();
    virtual Int_t    Cut(Long64_t entry);  //per filtrare
+   virtual Int_t    GenMatching(Long64_t entry); // per fare il gen matching
    virtual Int_t    GetEntry(Long64_t entry);  //per accedere ai dati di una specifica entry del tree
    virtual Long64_t LoadTree(Long64_t entry);  //carica una nuova entry dal TTree e ritorna l'indice di file locale in cui l'entry è memorizzata
    virtual void     Init(TTree *tree);  //associa i branch del tree alle variabili membro della classe
