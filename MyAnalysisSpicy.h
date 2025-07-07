@@ -138,6 +138,7 @@ public:
    virtual ~MyAnalysisSpicy();
    virtual Int_t    Cut(Long64_t entry);  //per filtrare
    virtual Int_t    GenMatching(Long64_t entry); // per fare il gen matching
+   virtual Int_t GetElectronGenMatch(Long64_t entry, int electronIndex);
    virtual Int_t    GetEntry(Long64_t entry);  //per accedere ai dati di una specifica entry del tree
    virtual Long64_t LoadTree(Long64_t entry);  //carica una nuova entry dal TTree e ritorna l'indice di file locale in cui l'entry è memorizzata
    virtual void     Init(TTree *tree);  //associa i branch del tree alle variabili membro della classe

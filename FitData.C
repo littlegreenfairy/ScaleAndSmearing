@@ -29,6 +29,7 @@
 void PlotBackgroundFit(RooRealVar& mass, RooDataHist& data, RooAddPdf& background, int i, int j) {
     // Create a canvas to draw the background fit
     TCanvas* cBackgroundFit = new TCanvas(Form("cBackgroundFit_%d_%d", i+1, j+1), "Background Fit", 800, 600);
+    gPad->SetLeftMargin(0.13);
 
     // Create a frame for the mass variable to hold the plot
     RooPlot* frame = mass.frame();
@@ -63,9 +64,36 @@ void PlotBackgroundFit(RooRealVar& mass, RooDataHist& data, RooAddPdf& backgroun
     TLatex latex;
     latex.SetNDC();
     latex.SetTextSize(0.03);
-    latex.DrawLatex(0.15, 0.85, Form("Fit for Pt bin %d, Run bin %d", i+1, j+1));
-    latex.DrawLatex(0.15, 0.85, Form("Fit for Pt bin %d", i+1));
+    if(j == 999) {
+        latex.DrawLatex(0.15, 0.85, Form("Fit for Pt bin %d", i+1));
+    } else {
+        latex.DrawLatex(0.15, 0.85, Form("Fit for Pt bin %d, Run bin %d", i+1, j+1));
+    }
     latex.DrawLatex(0.15, 0.8, Form("#mu = %.4f +/- %.4f, #sigma = %.4f +/- %.4f", mu->getVal(), mu->getError(), sigma->getVal(), sigma->getError()));
+
+    // Add CMS Preliminary label
+    TLatex cmsLabel;
+    cmsLabel.SetNDC();
+    cmsLabel.SetTextFont(62);
+    cmsLabel.SetTextSize(0.05);
+    cmsLabel.SetTextAlign(11);
+    cmsLabel.DrawLatex(0.15, 0.92, "CMS");
+
+    // Add Preliminary in italics
+    TLatex prelimLabel;
+    prelimLabel.SetNDC();
+    prelimLabel.SetTextFont(52);
+    prelimLabel.SetTextSize(0.05);
+    prelimLabel.SetTextAlign(11);
+    prelimLabel.DrawLatex(0.24, 0.92, "Preliminary");
+
+    // Draw luminosity/energy information
+    TLatex lumiLabel;
+    lumiLabel.SetNDC();
+    lumiLabel.SetTextFont(42);
+    lumiLabel.SetTextSize(0.045);
+    lumiLabel.SetTextAlign(31);
+    lumiLabel.DrawLatex(0.88, 0.92, "38.01 fb^{-1} (2022, 13.7 TeV)");
 
     // Save the canvas as a file (optional)
     cBackgroundFit->SaveAs(Form("PlotConID2022/FitData_id2022/Pt_bin%d/BackgroundFit_Pt%d_Run%d.png", i+1, i+1, j+1));
@@ -101,6 +129,7 @@ void PlotDataFit(RooRealVar& mass, RooDataHist& data, RooAddPdf& model, RooAddPd
 
     // Add legend to clarify components
     TLegend *legend = new TLegend(0.65, 0.75, 0.85, 0.85);
+    legend->SetBorderSize(0);
     legend->AddEntry(frame->findObject("Data"), "Data", "p");
     legend->AddEntry(frame->findObject("Background"), "Background Fit", "l");
     legend->AddEntry(frame->findObject("CrystalBall"), "Signal (Crystal Ball)", "l");
@@ -122,9 +151,33 @@ void PlotDataFit(RooRealVar& mass, RooDataHist& data, RooAddPdf& model, RooAddPd
     }else{
         latex.DrawLatex(0.15, 0.8, Form("Fit did not converge. Status %d", fitstatus));
     }*/
-    latex.DrawLatex(0.15, 0.75, Form("#mu = %.4f #pm %.4f GeV", mu->getVal(), mu->getError()));
-    latex.DrawLatex(0.15, 0.7, Form("#sigma = %.4f #pm %.4f GeV", sigma->getVal(), sigma->getError())); 
-    latex.DrawLatex(0.15, 0.66, Form("#chi^{2} = %.2f", chi2));
+    latex.DrawLatex(0.17, 0.8, Form("#mu = %.4f #pm %.4f GeV", mu->getVal(), mu->getError()));
+    latex.DrawLatex(0.17, 0.75, Form("#sigma = %.4f #pm %.4f GeV", sigma->getVal(), sigma->getError())); 
+    //latex.DrawLatex(0.15, 0.66, Form("#chi^{2} = %.2f", chi2));
+
+    // Add CMS Preliminary label
+    TLatex cmsLabel;
+    cmsLabel.SetNDC();
+    cmsLabel.SetTextFont(62);
+    cmsLabel.SetTextSize(0.05);
+    cmsLabel.SetTextAlign(11);
+    cmsLabel.DrawLatex(0.14, 0.92, "CMS");
+
+    // Add Preliminary in italics
+    TLatex prelimLabel;
+    prelimLabel.SetNDC();
+    prelimLabel.SetTextFont(52);
+    prelimLabel.SetTextSize(0.05);
+    prelimLabel.SetTextAlign(11);
+    prelimLabel.DrawLatex(0.22, 0.92, "Preliminary");
+
+    // Draw luminosity/energy information
+    TLatex lumiLabel;
+    lumiLabel.SetNDC();
+    lumiLabel.SetTextFont(42);
+    lumiLabel.SetTextSize(0.045);
+    lumiLabel.SetTextAlign(31);
+    lumiLabel.DrawLatex(0.9, 0.92, "38.01 fb^{-1} (2022, 13.7 TeV)");
 
     // Save plot as image (optional)
     c->SaveAs(Form("PlotConID2022/FitData_id2022/Pt_bin%d/DataFit_Pt%d_Run%d.png", i+1, i+1, j+1));
@@ -348,6 +401,7 @@ void FitData(){
     double Ptbins[] = {4, 7, 9, 11, 14, 20, 40}; 
     double runBins[] = {356309, 356900, 357538, 357732, 360000, 360400, 361000, 361600, 362200, 362760}; //9 bins
     TH2D *h_scale = new TH2D("h_scale", "Scale between data and MC ; Pt ; Run number", NbinsPt, Ptbins, NbinsRun, runBins);
+    TH2D *h_smearing = new TH2D("h_smearing", "Smearing corrections for single electron energy; Pt ; Run number", NbinsPt, Ptbins, NbinsRun, runBins);
     TH2D *h_corr_1ele = new TH2D("h_corr_1ele", "Scale correction for single electron energy; Pt ; Run number", NbinsPt, Ptbins, NbinsRun, runBins);
     TH1D *h_corr_1ele_inclusiveRun = new TH1D("h_corr_1ele_inclusiveRun", "Scale corrections for single electron energy; Pt; correction", NbinsPt, Ptbins);
     TH1D *h_scale_inclusiveRun = new TH1D("h_scale_inclusiveRun", "Scale between data and MC; Pt; correction", NbinsPt, Ptbins);
@@ -470,11 +524,16 @@ void FitData(){
             double inc_scale = (mu_data / mu_mc) * sqrt((inc_mu_data / mu_data)*(inc_mu_data / mu_data) + (inc_mu_mc / mu_mc)*(inc_mu_mc / mu_mc));
             double corr_1ele = mu_mc / mu_data;
             double inc_corr_1ele = corr_1ele * sqrt((inc_mu_data / mu_data)*(inc_mu_data / mu_data) + (inc_mu_mc / mu_mc)*(inc_mu_mc / mu_mc));
+            // Calcolo la correzione di smearing
+            double smearing = sigma_cb.getVal() / sigma_ini;
+            double inc_smearing = smearing * sqrt((inc_sigma / sigma_ini)*(inc_sigma / sigma_ini) + (sigma_cb.getError() / sigma_cb.getVal())*(sigma_cb.getError() / sigma_cb.getVal()));
             //Scrivo i parametri di interesse negli istogrammi 2D
             h_scale->SetBinContent(i+1, j+1, scale);
             h_scale->SetBinError(i+1, j+1, inc_scale);
             h_corr_1ele->SetBinContent(i+1, j+1, corr_1ele);
             h_corr_1ele->SetBinError(i+1, j+1, inc_corr_1ele);
+            h_smearing->SetBinContent(i+1, j+1, smearing);
+            h_smearing->SetBinError(i+1, j+1, inc_smearing);
 
         } //FINE LOOP SU RUN NUMBER
 
@@ -678,6 +737,7 @@ for(int i=0; i< NbinsPt; i++){
 
 file_corrections->cd();
 h_scale->Write();
+h_smearing->Write();
 h_corr_1ele->Write();
 h_scale_inclusiveRun->Write();
 h_smearing_inclusiveRun->Write();

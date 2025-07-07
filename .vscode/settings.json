@@ -63,6 +63,10 @@
         "FitDataPostcorr.C": "cpp",
         "FitDataPostcorrAll.C": "cpp",
         "FitDataPostcorrDiag.C": "cpp",
-        "FitDataAll.C": "cpp"
+        "FitDataAll.C": "cpp",
+        "PlotResolutionProjections.C": "cpp",
+        "plotMassProjByPtBins.C": "cpp",
+        "ResolutionAnalysis.C": "cpp",
+        "PlotScaleandSmearingVsPtRunN.C": "cpp"
     }
 }

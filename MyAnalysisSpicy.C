@@ -9,6 +9,7 @@
 #include <TH3D.h>
 #include <TProfile.h>
 #include <TColor.h>
+#include <TLine.h>
 
 
 ///////////////////////////////////// Funzioni globali /////////////////////////////////
@@ -229,12 +230,57 @@ Int_t MyAnalysisSpicy::GenMatching(Long64_t entry) {
     if (Gen_Pt->size() == 0) {
         return 0;
     }
-
+    int nmatched =0;
     // Loop over all Gen particles
     for (unsigned int i = 0; i < Gen_Pt->size(); i++) {
         // Calculate deltaR between reco electron and this Gen particle
-        double deltaEta = etaEle[0] - Gen_Eta->at(i);
-        double deltaPhi = phiEle[0] - Gen_Phi->at(i);
+        double deltaEta1 = etaEle[0] - Gen_Eta->at(i);
+        double deltaPhi1 = phiEle[0] - Gen_Phi->at(i);
+
+        double deltaEta2 = etaEle[1] - Gen_Eta->at(i);
+        double deltaPhi2 = phiEle[1] - Gen_Phi->at(i);
+
+        // Adjust deltaPhi to be within -π to π
+        while (deltaPhi1 > M_PI) deltaPhi1 -= 2*M_PI;
+        while (deltaPhi1 < -M_PI) deltaPhi1 += 2*M_PI;
+        while (deltaPhi2 > M_PI) deltaPhi2 -= 2*M_PI;
+        while (deltaPhi2 < -M_PI) deltaPhi2 += 2*M_PI;
+
+        double deltaR1 = sqrt(deltaEta1*deltaEta1 + deltaPhi1*deltaPhi1);
+        double deltaR2 = sqrt(deltaEta2*deltaEta2 + deltaPhi2*deltaPhi2);
+
+        // Check if this Gen particle is a close match and is from a J/psi decay
+        if (deltaR1 < 0.1 && Gen_motherPdgId->at(i) == 443) {
+            nmatched++;
+        }
+        if (deltaR2 < 0.1 && Gen_motherPdgId->at(i) == 443) {
+            nmatched++;
+        }
+       }
+
+    if(nmatched == 2){
+        return 1; // entrambi gli elettroni sono associati a un J/psi
+    } else {
+        return 0; // nessun elettrone associato a un J/psi
+    }
+}
+
+
+Int_t MyAnalysisSpicy::GetElectronGenMatch(Long64_t entry, int electronIndex) {
+    // Make sure Gen vectors aren't empty and electron index is valid
+    if (Gen_Pt->size() == 0 || (electronIndex != 0 && electronIndex != 1)) {
+        return -1;
+    }
+    
+    // Get eta and phi of the specified electron
+    double electronEta = etaEle[electronIndex];
+    double electronPhi = phiEle[electronIndex];
+    
+    // Loop over all Gen particles
+    for (unsigned int i = 0; i < Gen_Pt->size(); i++) {
+        // Calculate deltaR between specified electron and this Gen particle
+        double deltaEta = electronEta - Gen_Eta->at(i);
+        double deltaPhi = electronPhi - Gen_Phi->at(i);
         
         // Adjust deltaPhi to be within -π to π
         while (deltaPhi > M_PI) deltaPhi -= 2*M_PI;
@@ -243,15 +289,15 @@ Int_t MyAnalysisSpicy::GenMatching(Long64_t entry) {
         double deltaR = sqrt(deltaEta*deltaEta + deltaPhi*deltaPhi);
         
         // Check if this Gen particle is a close match and is from a J/psi decay
-        //if (deltaR < 0.1 && Gen_motherPdgId->at(i) == 443) {
-        if (deltaR < 0.1 && (Gen_motherPdgId->at(i) == 443)) {
-            //std::cout << "Found match with Gen particle. Mother PDG ID: " << Gen_motherPdgId->at(i) << std::endl;
-            return 1;
+        if (deltaR < 0.1 && Gen_motherPdgId->at(i) == 443) {
+            return i; // Return index of the matched Gen particle
         }
     }
+    
     // No match found
-    return 0;
+    return -1;
 }
+
 
 // Filtra gli eventi in base a qualche criterio
 Int_t MyAnalysisSpicy::Cut(Long64_t entry) {
@@ -271,7 +317,7 @@ Int_t MyAnalysisSpicy::Cut(Long64_t entry) {
 
         if(selection == 0){
             iscut = ptEle[0] > 4 && ptEle[1] > 4 && triggeringEle[0] ==1.0 && triggeringEle[1] ==1.0 && pfmvaIdEle22[0] > 1.5  && pfmvaIdEle22[1] > 1.5  && chargeEle[0]* chargeEle[1] < 0 && sqrt((etaEle[0] - etaEle[1])*(etaEle[0] - etaEle[1]) + (phiEle[0] - phiEle[1])*(phiEle[0] - phiEle[1])) > 0.1
-            && fabs(etaEle[0]) < 1.22 && fabs(etaEle[1]) < 1.22 && GenMatching(entry) == 1;
+            && fabs(etaEle[0]) < 1.22 && fabs(etaEle[1]) < 1.22 && GetElectronGenMatch(entry, 0) != -1 && GetElectronGenMatch(entry, 1) != -1;
         }else if(selection == 1){
             iscut = ptEle[0] > 4 && ptEle[1] > 4 && triggeringEle[0] ==1.0 && triggeringEle[1] ==1.0 && pfmvaIdEle22[0] > 1.5  && pfmvaIdEle22[1] > 1.5  && chargeEle[0]* chargeEle[1] < 0 && sqrt((etaEle[0] - etaEle[1])*(etaEle[0] - etaEle[1]) + (phiEle[0] - phiEle[1])*(phiEle[0] - phiEle[1])) > 0.1
             && fabs(etaEle[0]) < 1.22 && fabs(etaEle[1]) < 1.22;
@@ -365,6 +411,7 @@ void MyAnalysisSpicy::Loop() {
 
     TH2D *h_scale_vs_pt = new TH2D("h_scale_vs_pt", "TH2D of invariant mass and p_{T}[0];p_{T}[0];Invariant Mass (ECAL) [GeV]", nbinsPt, Ptbins, 120, 0, 6);
     TH2D *h_rawSC_vs_pt = new TH2D("h_rawSC_vs_pt", "TH2D of raw invMass and p_{T}[0]; p_{T}[0]; Raw SC invMass [GeV]", nbinsPt, Ptbins, 120, 0, 6);
+    TH2D *h_Ecaltrk_vs_pt = new TH2D("h_Ecaltrk_vs_pt", "TH2D of Ecal Track invMass and p_{T}[0]; p_{T}[0]; Ecal Track invMass [GeV]", nbinsPt, Ptbins, 120, 0, 6);
 
     TH2D *h_invmass_runNumber_eta0_06 = new TH2D("h_invmass_runNumber_eta0_06", "TH2D of invariant mass and run Number, 0 < eta < 0.6; runNumber ;Invariant Mass (ECAL) [GeV]", 30, 356309, 362760, 120, 2.7, 3.3);
     TH2D *h_invmass_runNumber_eta06_12 = new TH2D("h_invmass_runNumber_eta06_12", "TH2D of invariant mass and run Number, 0.6 < eta < 1.22; runNumber ;Invariant Mass (ECAL) [GeV]", 30, 356309, 362760, 120, 2.7, 3.3);
@@ -373,7 +420,13 @@ void MyAnalysisSpicy::Loop() {
 
     TH3D *h_scalevs_pt_runN = new TH3D("h_scalevs_pt_runN", "Istogramma 3D invMass vs pT and run Number; p_{T}[0]; Run Number; m(e^{+}e^{-}) [GeV]",nbinsPt, Ptbins, nBinsRun, runBins, nbinsZ, zBins);
 
+    TH2D *h_rawResolution_vs_pt = new TH2D("h_rawResolution_vs_pt", "Raw Supercluster Resolution vs p_{T}[0]; p_{T}[0]; Raw SC Resolution [GeV]", nbinsPt, Ptbins, 400, 0.5, 3);
+    TH2D *h_correctedSCResolution_vs_pt = new TH2D("h_correctedSCResolution_vs_pt", "Corrected Supercluster Resolution vs p_{T}[0]; p_{T}[0]; Corrected SC Resolution [GeV]", nbinsPt, Ptbins, 400, 0.5, 3);
+    TH2D *h_ecaltrkregResolution_vs_pt = new TH2D("h_ecaltrkregResolution_vs_pt", "ECAL Track Resolution vs p_{T}[0]; p_{T}[0]; ECAL Track Resolution [GeV]", nbinsPt, Ptbins, 400, 0.5, 3);
 
+    TH2D *h_truerawResolution_vs_pt = new TH2D("h_truerawResolution_vs_pt", "Raw Supercluster Resolution vs p_{T}[0]; p_{T}[0]; Raw SC Resolution [GeV]", nbinsPt, Ptbins, 300, -0.8, 0.8);
+    TH2D *h_truecorrectedSCResolution_vs_pt = new TH2D("h_truecorrectedSCResolution_vs_pt", "Corrected Supercluster Resolution vs p_{T}[0]; p_{T}[0]; Corrected SC Resolution [GeV]", nbinsPt, Ptbins, 300, -0.8, 0.8);
+    TH2D *h_trueecaltrkregResolution_vs_pt = new TH2D("h_trueecaltrkregResolution_vs_pt", "ECAL Track Resolution vs p_{T}[0]; p_{T}[0]; ECAL Track Resolution [GeV]", nbinsPt, Ptbins, 300, -0.8, 0.8);
     //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
     //                                                          LOOP SULLE ENTRIES (con riempimento istogrammi)
     //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
@@ -417,6 +470,9 @@ void MyAnalysisSpicy::Loop() {
         if(bin_index_pt0 == bin_index_pt1){
         h_scale_vs_pt->Fill(ptEle[0],invMass_ECAL_ele); //qui siamo inclusivi nel run number
         h_rawSC_vs_pt->Fill(ptEle[0], invMass_rawSC);
+        h_Ecaltrk_vs_pt->Fill(ptEle[0], invMass); //riempio l'istogramma 2d solo se i due elettroni sono nello stesso bin di pt
+        
+
 
         //riempio l'histo 3D, tanto i 2 elettroni dello stesso evento sono sempre nello stesso bin di run number
         h_scalevs_pt_runN->Fill(ptEle[0], runNumber, invMass_ECAL_ele);
@@ -447,6 +503,24 @@ void MyAnalysisSpicy::Loop() {
 
         //riempio gli istogrammi delle variabili della JPsi 
         h_Pt_JPsi_all->Fill(P_JPsi.Pt());
+
+        //////Riempio gli istogrammi delle variabili di risoluzione
+        if(ntupla==1){
+        h_rawResolution_vs_pt->Fill(Gen_Pt->at(GetElectronGenMatch(jentry, 0)), Gen_E->at(GetElectronGenMatch(jentry, 0))/rawEnergySCEle[0]);
+        h_correctedSCResolution_vs_pt->Fill(Gen_Pt->at(GetElectronGenMatch(jentry, 0)), Gen_E->at(GetElectronGenMatch(jentry, 0))/energy_ECAL_ele[0]);
+        h_ecaltrkregResolution_vs_pt->Fill(Gen_Pt->at(GetElectronGenMatch(jentry, 0)), Gen_E->at(GetElectronGenMatch(jentry, 0))/energyEle[0]);
+        h_rawResolution_vs_pt->Fill(Gen_Pt->at(GetElectronGenMatch(jentry, 1)), Gen_E->at(GetElectronGenMatch(jentry, 1))/rawEnergySCEle[1]);
+        h_correctedSCResolution_vs_pt->Fill(Gen_Pt->at(GetElectronGenMatch(jentry, 1)), Gen_E->at(GetElectronGenMatch(jentry, 1))/energy_ECAL_ele[1]);
+        h_ecaltrkregResolution_vs_pt->Fill(Gen_Pt->at(GetElectronGenMatch(jentry, 1)), Gen_E->at(GetElectronGenMatch(jentry, 1))/energyEle[1]);
+
+        //fill true resolution histograms
+        h_truerawResolution_vs_pt->Fill(ptEle[0], (Gen_E->at(GetElectronGenMatch(jentry, 0)) - rawEnergySCEle[0])/Gen_E->at(GetElectronGenMatch(jentry, 0)));
+        h_truecorrectedSCResolution_vs_pt->Fill(ptEle[0], (Gen_E->at(GetElectronGenMatch(jentry, 0)) - energy_ECAL_ele[0])/Gen_E->at(GetElectronGenMatch(jentry, 0)));
+        h_trueecaltrkregResolution_vs_pt->Fill(ptEle[0], (Gen_E->at(GetElectronGenMatch(jentry, 0)) - energyEle[0])/Gen_E->at(GetElectronGenMatch(jentry, 0)));
+        h_truerawResolution_vs_pt->Fill(ptEle[1], (Gen_E->at(GetElectronGenMatch(jentry, 1)) - rawEnergySCEle[1])/Gen_E->at(GetElectronGenMatch(jentry, 1)));
+        h_truecorrectedSCResolution_vs_pt->Fill(ptEle[1], (Gen_E->at(GetElectronGenMatch(jentry, 1)) - energy_ECAL_ele[1])/Gen_E->at(GetElectronGenMatch(jentry, 1)));
+        h_trueecaltrkregResolution_vs_pt->Fill(ptEle[1], (Gen_E->at(GetElectronGenMatch(jentry, 1)) - energyEle[1])/Gen_E->at(GetElectronGenMatch(jentry, 1)));
+        }
        
         }
 
@@ -552,25 +626,80 @@ void MyAnalysisSpicy::Loop() {
     c2->SaveAs("MeanInvmass_vs_runNumber.png");
     delete c2;
 
-    // Projection dei primi 3 bin di run number
-    // Project the first 3 bins of run number
-    /*TH1D *h_proj = h_invmass_runNumber_eta0_06->ProjectionY("h_proj_first3bins", 1, 3);
-    
-    // Create a canvas for the projection
-    TCanvas *c_proj = new TCanvas("c_proj", "Projection of First 3 Run Number Bins", 800, 600);
-    SetPadMargins(c_proj, 1);
-    
-    h_proj->SetTitle("Invariant Mass for First 3 Run Number Bins (0 < #eta < 0.6)");
-    h_proj->GetXaxis()->SetTitle("Invariant Mass [GeV]");
-    h_proj->GetYaxis()->SetTitle("Entries");
-    h_proj->SetLineColor(kBlue);
-    h_proj->SetLineWidth(2);
-    h_proj->SetStats(kFALSE);
-    h_proj->Draw("HIST");
-    
-    c_proj->SaveAs("InvMass_FirstRunBins_eta06.png");
-    delete c_proj;*/
+    TCanvas *c_ptEle = new TCanvas("c_ptEle", "Electron pT", 800, 600);
+    c_ptEle->cd();
+
+    // Draw the histogram with appropriate styling
+    h_ptEle->SetLineColor(kBlue);
+    h_ptEle->SetLineWidth(2);
+    h_ptEle->SetMarkerStyle(20);
+    h_ptEle->SetMarkerColor(kBlue);
+    h_ptEle->SetFillColor(kBlue-10);
+    h_ptEle->SetFillStyle(3004);
+    h_ptEle->SetStats(kFALSE); // Disable stats box
+
+    // Set axis titles and draw
+    h_ptEle->GetXaxis()->SetTitle("Electron p_{T} [GeV]");
+    h_ptEle->GetYaxis()->SetTitle("Events / bin");
+    h_ptEle->Draw("HIST");
+
+    // Add statistics box
+    gPad->SetRightMargin(0.05);
+
+    // Save the canvas to file
+    c_ptEle->SaveAs("electron_pt_distribution.png");
+    delete c_ptEle;
     }
+
+
+
+    // Create a new canvas for the pfmvaIdEle22 histogram
+    TCanvas *c_mvaId = new TCanvas("c_mvaId", "Electron MVA ID", 800, 600);
+    c_mvaId->cd();
+    
+    // Set left margin to avoid cutting off y-axis label
+    c_mvaId->SetLeftMargin(0.15);
+    
+    // Make a copy of the original histogram to keep original data safe
+    TH1F *h_mva_full = (TH1F*)h_pfmvaIdEle22->Clone("h_mva_full");
+    h_mva_full->SetTitle("Electron MVA ID Distribution");
+    h_mva_full->GetXaxis()->SetTitle("PFmvaIDEle22");
+    h_mva_full->GetYaxis()->SetTitle("Events / bin");
+    
+    // Remove stats box
+    h_mva_full->SetStats(kFALSE);
+    
+    // Set style for the full histogram (will be visible below cut)
+    h_mva_full->SetLineColor(kBlue);
+    h_mva_full->SetFillColor(kBlue-10);
+    h_mva_full->SetFillStyle(1001);
+    
+    // Create a copy for the selected region (above 1.5)
+    TH1F *h_mva_selected = (TH1F*)h_pfmvaIdEle22->Clone("h_mva_selected");
+    // Zero out bins below the threshold
+    for (int i = 1; i <= h_mva_selected->GetNbinsX(); i++) {
+        if (h_mva_selected->GetBinCenter(i) <= 1.5) {
+            h_mva_selected->SetBinContent(i, 0);
+        }
+    }
+    
+    // Set style for the selected region
+    h_mva_selected->SetLineColor(kRed);
+    h_mva_selected->SetFillColor(kRed-9);
+    h_mva_selected->SetFillStyle(1001);
+    
+    // Draw both histograms
+    h_mva_full->Draw("HIST");
+    h_mva_selected->Draw("HIST SAME");
+    // Add legend in the upper left side
+    TLegend *legend = new TLegend(0.15, 0.75, 0.39, 0.89);
+    legend->AddEntry(h_mva_full, "All events", "f");
+    legend->AddEntry(h_mva_selected, "Selected (ID > 1.5)", "f");
+    legend->SetBorderSize(0);
+    legend->Draw();
+    
+    // Save the canvas
+    c_mvaId->SaveAs("electron_mva_id_distribution.png");
     
     //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
     //                                                          SCRITTURA SUI FILE
@@ -612,20 +741,33 @@ void MyAnalysisSpicy::Loop() {
     h_Pt_JPsi->Write();
     prof->Write();
 
-    //Istogrammi per l'ID lowE
+    //Istogrammi per l'ID 
     h_pfmvaIdEle22->Write();
     h_pfmvaIdEle22_sign->Write();
     h_pfmvaIdEle22_back->Write();
+
+    //Istogrammi di risoluzione
+    if(ntupla == 1){
+    h_rawResolution_vs_pt->Write();
+    h_correctedSCResolution_vs_pt->Write();
+    h_ecaltrkregResolution_vs_pt->Write();
+    h_truerawResolution_vs_pt->Write();
+    h_truecorrectedSCResolution_vs_pt->Write();
+    h_trueecaltrkregResolution_vs_pt->Write();
+    }
+    
 
     //Projections della massa invariante (raw e regressed) nei vari bin di Pt
     for(int i=0; i < nbinsPt; i++){
     TH1D* proj = h_scale_vs_pt->ProjectionY(Form("proj_bin_%d", i+1), i+1, i+1);
     TH1D* proj_rawSC = h_rawSC_vs_pt->ProjectionY(Form("RawSC_bin_%d", i+1), i+1, i+1);
+    TH1D* proj_Ecaltrk = h_Ecaltrk_vs_pt->ProjectionY(Form("EcalTrack_bin_%d", i+1), i+1, i+1);
     proj->SetTitle(Form("%2.1lf GeV < p_{T} < %2.1lf GeV", h_scale_vs_pt->GetXaxis()->GetBinLowEdge(i+1), (h_scale_vs_pt->GetXaxis()->GetBinLowEdge(i+1) + h_scale_vs_pt->GetXaxis()->GetBinWidth(i+1))));
     //faccio la projection anche della massa raw SC
     proj_rawSC->SetTitle(Form("Raw Mass - %2.1lf GeV < p_{T} < %2.1lf GeV", h_rawSC_vs_pt->GetXaxis()->GetBinLowEdge(i+1), (h_rawSC_vs_pt->GetXaxis()->GetBinLowEdge(i+1) + h_rawSC_vs_pt->GetXaxis()->GetBinWidth(i+1))));
     proj->Write();
     proj_rawSC->Write();
+    proj_Ecaltrk->Write();
     }
     proj_full->Write();
     ////////////////////////////////////////////////////// ora binno sia in pt che sul Run number (Questa cosa solo nei dati!)
@@ -896,8 +1038,8 @@ void MyAnalysisSpicy::ReweightOnPileup(){
     for (Long64_t jentry = 0; jentry < nentries; jentry++) {
         Long64_t ientry = LoadTree(jentry);
         TLorentzVector P_ele1, P_ele2;
-        P_ele1.SetPtEtaPhiE(ptEle[0], etaEle[0], phiEle[0], energy_ECAL_ele[0]);
-        P_ele2.SetPtEtaPhiE(ptEle[1], etaEle[1], phiEle[1], energy_ECAL_ele[1]);
+        P_ele1.SetPtEtaPhiE(ptEle[0],etaEle[0],phiEle[0],energy_ECAL_ele[0]);
+        P_ele2.SetPtEtaPhiE(ptEle[1],etaEle[1],phiEle[1],energy_ECAL_ele[1]);
         double costheta;
         costheta = P_ele1.Vect().Dot(P_ele2.Vect()) / (P_ele1.Vect().Mag() * P_ele2.Vect().Mag());
         if (ientry < 0) break; //se è negativo c'è stato un problema con il caricamento del file

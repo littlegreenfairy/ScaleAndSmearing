@@ -16,14 +16,21 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....Funzione globale per scritta MC....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 void WriteSimulation(){
-// Aggiungi una scritta in testo italic al bordo esterno della cornice
-    TLatex latex;
-    latex.SetTextSize(0.05); // Dimensione del testo
-    latex.SetTextFont(42);   // Tipo di font
-    latex.SetTextAlign(11);  // Allineamento: 11 = sinistra, alto
-    latex.SetTextAngle(0);   // Angolo del testo
-    latex.DrawLatexNDC(0.12, 0.93, "#it{Simulation}"); // Posizione e testo
-
+    // Draw "CMS" in bold
+    TLatex cmsLabel;
+    cmsLabel.SetNDC();
+    cmsLabel.SetTextFont(62);  // Helvetica Bold
+    cmsLabel.SetTextSize(0.05);
+    cmsLabel.SetTextAlign(11);
+    cmsLabel.DrawLatex(0.12, 0.93, "CMS");
+    
+    // Draw "Simulation" in italic
+    TLatex simLabel;
+    simLabel.SetNDC();
+    simLabel.SetTextFont(52);  // Italic font
+    simLabel.SetTextSize(0.05);
+    simLabel.SetTextAlign(11);
+    simLabel.DrawLatex(0.21, 0.93, "Simulation");
 }
 
 void FitProjectionMC() {
@@ -139,17 +146,13 @@ void FitProjectionMC() {
 
         double chi2 = frame->chiSquare();
         // Stampare il chi-quadro sul plot
-        TPaveText *paveText = new TPaveText(0.7, 0.75, 0.9, 0.9, "NDC");
+        TPaveText *paveText = new TPaveText(0.7, 0.75, 0.88, 0.88, "NDC");
         paveText->AddText(Form("#chi^{2} = %.2f", chi2));
         paveText->AddText(Form("#mu = %.4f +/- %.4f", cb_mean.getVal(), cb_mean.getError()));
         paveText->AddText(Form("#sigma = %.4f +/- %.4f", cb_sigma.getVal(), cb_sigma.getError()));
-        /*if (fit_result->status() == 0) {
-        paveText->AddText("Fit converged");
-        } else {
-        paveText->AddText("Fit did not converge");
-        paveText->AddText(Form("Status: %d", fit_result->status()));
-        }*/
         paveText->SetFillColor(0);
+        paveText->SetBorderSize(0);  // Remove border
+        paveText->SetShadowColor(0); // Remove shadow
         frame->addObject(paveText);
 
         /*// Crea un frame per i residui
@@ -248,13 +251,9 @@ void FitProjectionMC() {
         //paveText->AddText(Form("#chi^{2} = %.2f", chi2));
         paveText->AddText(Form("#mu = %.4f +/- %.4f", cb_mean.getVal(), cb_mean.getError()));
         paveText->AddText(Form("#sigma = %.4f +/- %.4f", cb_sigma.getVal(), cb_sigma.getError()));
-        /*if (fit_result->status() == 0) {
-        paveText->AddText("Fit converged");
-        } else {
-        paveText->AddText("Fit did not converge");
-        paveText->AddText(Form("Status: %d", fit_result->status()));
-        }*/
         paveText->SetFillColor(0);
+        paveText->SetBorderSize(0);  // Remove border
+        paveText->SetShadowColor(0); // Remove shadow
         frame->addObject(paveText);
         frame->Draw();
         WriteSimulation();

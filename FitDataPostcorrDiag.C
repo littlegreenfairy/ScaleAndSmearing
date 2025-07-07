@@ -137,7 +137,7 @@ void PlotDataFit(RooRealVar& mass, RooDataHist& data, RooAddPdf& model, RooAddPd
     }*/
     latex.DrawLatex(0.15, 0.75, Form("#mu = %.4f #pm %.4f GeV", mu->getVal(), mu->getError()));
     latex.DrawLatex(0.15, 0.7, Form("#sigma = %.4f #pm %.4f GeV", sigma->getVal(), sigma->getError())); 
-    latex.DrawLatex(0.15, 0.66, Form("#chi^{2} = %.2f", chi2));
+    //latex.DrawLatex(0.15, 0.66, Form("#chi^{2} = %.2f", chi2));
 
     // Save plot as image (optional)
     if(j == 1000) {
@@ -200,8 +200,8 @@ void FitDataPostcorrDiag(){
 
     //limiti inclusivi in run number (aggiungere)
     double LeftLowLim_incl[NbinsPt] = {1.3, 1.3, 1.6, 1.6, 1.8, 2.1};
-    double LeftUpLim_incl[NbinsPt] = {2.45, 2.45, 2.45, 2.4, 2.55, 2.7};
-    double RightLowLim_incl[NbinsPt] = {3.65, 3.5, 3.55, 3.55, 3.55, 3.55};
+    double LeftUpLim_incl[NbinsPt] = {2.45, 2.45, 2.45, 2.4, 2.6, 2.7};
+    double RightLowLim_incl[NbinsPt] = {3.65, 3.5, 3.55, 3.55, 3.5, 3.55};
     double RightUpLim_incl[NbinsPt] = {5.3, 5.2, 4.8, 5, 5.2, 5.2};
     
 
@@ -271,10 +271,10 @@ void FitDataPostcorrDiag(){
     };
 
     //parametri inclusivi in pt
-    double Mucb_ini_incl[NbinsPt] = {3.0470, 3.0421, 3.0343, 3.0714, 3.0839, 3.1217};
+    double Mucb_ini_incl[NbinsPt] = {3.0470, 3.0421, 3.0343, 3.0714, 3.0867, 3.1217};
     double Mucb_lowlim_incl[NbinsPt] = {2.9, 2.9, 2.5, 2.5, 2.8, 3};
     double Mucb_uplim_incl[NbinsPt] = {3.2, 3.2, 3.2, 3.2, 3.2, 3.2};
-    double Sigmacb_ini_incl[NbinsPt] = {0.1671, 0.149, 0.1440, 0.1203, 0.1185, 0.09};
+    double Sigmacb_ini_incl[NbinsPt] = {0.1671, 0.149, 0.1440, 0.1203, 0.1267, 0.09};
     double Sigmacb_uplim_incl[NbinsPt] = {0.3, 0.3, 0.3, 0.3, 0.3, 0.2};
     double Sigmacb_lowlim_incl[NbinsPt] = {0.05, 0.05, 0.05, 0.05, 0.05, 0.05};
 
@@ -335,9 +335,9 @@ void FitDataPostcorrDiag(){
     }; // Limiti superiori per sigma
 
     //parametri gaussiana inclusivi in pT
-    double gauss_mu_init_incl[NbinsPt] = {3.55, 3.55, 3.5, 3.62, 3.6365, 3.6195};
-    double gauss_mu_low_incl[NbinsPt] = {3.5, 3.4, 3.4, 3.5, 3.55, 3.5};
-    double gauss_mu_up_incl[NbinsPt] = {3.7, 3.7, 3.7, 3.7, 3.7, 3.7};
+    double gauss_mu_init_incl[NbinsPt] = {3.55, 3.55, 3.5, 3.62, 3.65, 3.6195};
+    double gauss_mu_low_incl[NbinsPt] = {3.5, 3.4, 3.4, 3.5, 3.62, 3.5};
+    double gauss_mu_up_incl[NbinsPt] = {3.7, 3.7, 3.7, 3.7, 3.8, 3.7};
 
     double bincenters[NbinsPt] = {5.5, 8, 10, 12.5, 17, 30};
     double binhalfwidths[NbinsPt] = {1.5, 1, 1, 1.5, 3, 10};
@@ -512,6 +512,14 @@ void FitDataPostcorrDiag(){
             RooRealVar alphaR_cb(Form("alphaR_cb_%d", i+1), "alphaR_cb", alphaR_ini, alphaR_ini - Nsigma*inc_alphaR, alphaR_ini + Nsigma*inc_alphaR);
             RooRealVar nR_cb(Form("nR_cb_%d", i+1), "nR_cb", nR_ini, nR_ini - Nsigma*inc_nR, nR_ini + Nsigma*inc_nR);
 
+            if (i == 4) {
+                // Use wider ranges for this specific pt bin (2*Nsigma instead of Nsigma)
+                alphaL_cb.setRange(alphaL_ini - 2*Nsigma*inc_alphaL, alphaL_ini + 2*Nsigma*inc_alphaL);
+                nL_cb.setRange(nL_ini - 2*Nsigma*inc_nL, nL_ini + 2*Nsigma*inc_nL);
+                alphaR_cb.setRange(alphaR_ini - 3*Nsigma*inc_alphaR, alphaR_ini + 3*Nsigma*inc_alphaR);
+                nR_cb.setRange(nR_ini - 3*Nsigma*inc_nR, nR_ini + 3*Nsigma*inc_nR);
+            }
+
 
             // Definisci la Crystal Ball
             RooCrystalBall crystal("crystal", "crystal ball", mass, mu_cb, sigma_cb, alphaL_cb, nL_cb, alphaR_cb, nR_cb);
@@ -683,6 +691,8 @@ RooRealVar alphaL_cb(Form("alphaL_cb_%d", i+1), "alphaL_cb", alphaL_ini, alphaL_
 RooRealVar nL_cb(Form("nL_cb_%d", i+1), "nL_cb", nL_ini, nL_ini - Nsigma*inc_nL, nL_ini + Nsigma*inc_nL);
 RooRealVar alphaR_cb(Form("alphaR_cb_%d", i+1), "alphaR_cb", alphaR_ini, alphaR_ini - Nsigma*inc_alphaR, alphaR_ini + Nsigma*inc_alphaR);
 RooRealVar nR_cb(Form("nR_cb_%d", i+1), "nR_cb", nR_ini, nR_ini - Nsigma*inc_nR, nR_ini + Nsigma*inc_nR);
+
+
 
 // Definisci la Crystal Ball
 RooCrystalBall crystal("crystal", "crystal ball", mass, mu_cb, sigma_cb, alphaL_cb, nL_cb, alphaR_cb, nR_cb);
