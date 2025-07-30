@@ -24,8 +24,11 @@ public:
     TH1F *h_invMass_ECAL_ele;
     TH1F *h_dxyEle;
     TH1F *h_Pt_JPsi;
+    TH1F *h_Pt_ele1;
+    TH1F *h_Pt_ele2;
     TH1F *h_nPV;
     TH1F *h_nPU;
+
 
 
     const Int_t ntupla; // =0 per i dati e =1 per il MC, così il codice sa su cosa sta loopando
@@ -148,11 +151,13 @@ public:
    virtual void     Show(Long64_t entry = -1); //visualizza i dati di una entry, quella corrente se non specificato
 
    virtual void ReweightOnPt();
-   virtual void ReweightOnDxy();
+   virtual void ReweightOnPtele1();
+   virtual void ReweightOnPtele2();
    virtual void ReweightOnPileup();
    virtual void ApplyCorrectionsVsPtandRun();
-   virtual void ApplyCorrectionsVsPt();
-
+   virtual void MonteCarloReweighting();
+   virtual void ApplySmearingCorrections();
+   
     //N.B entry = evento
 
 

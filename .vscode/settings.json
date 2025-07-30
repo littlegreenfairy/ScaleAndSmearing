@@ -67,6 +67,10 @@
         "PlotResolutionProjections.C": "cpp",
         "plotMassProjByPtBins.C": "cpp",
         "ResolutionAnalysis.C": "cpp",
-        "PlotScaleandSmearingVsPtRunN.C": "cpp"
+        "PlotScaleandSmearingVsPtRunN.C": "cpp",
+        "MyClass.C": "cpp",
+        "PlotProjections.C": "cpp",
+        "PlotRatioScandsmVsCorrected.C": "cpp",
+        "FitDataPostSmearingcorr.C": "cpp"
     }
 }

@@ -8,6 +8,7 @@
 #include <TLatex.h>
 #include <TColor.h>
 #include <TPaletteAxis.h>
+#include <iostream>
 
 void PlotScaleandSmearingVsPtRunN() {
     // Set better color palette for 2D plots
@@ -44,6 +45,20 @@ void PlotScaleandSmearingVsPtRunN() {
     h_scale->GetYaxis()->SetTitle("Run Number");
     h_scale->GetZaxis()->SetTitle("1 - m^{(J/#psi)}_{data}/m^{(J/#psi)}_{MC}");
     h_scale->Draw("COLZ");
+    // Draw text with bin values
+    for (int ix = 1; ix <= h_scale->GetNbinsX(); ++ix) {
+        for (int iy = 1; iy <= h_scale->GetNbinsY(); ++iy) {
+            double x = h_scale->GetXaxis()->GetBinCenter(ix);
+            double y = h_scale->GetYaxis()->GetBinCenter(iy);
+            double val = h_scale->GetBinContent(ix, iy);
+            if (val != 0) {
+                TLatex latex;
+                latex.SetTextAlign(22);
+                latex.SetTextSize(0.025);
+                latex.DrawLatex(x, y, Form("%.3f", val));
+            }
+        }
+    }
     
     // Add CMS Preliminary label
     TLatex cmsLabel;
@@ -84,6 +99,20 @@ void PlotScaleandSmearingVsPtRunN() {
     h_smearing->GetYaxis()->SetTitle("Run Number");
     h_smearing->GetZaxis()->SetTitle("#sigma_{data}/#sigma_{MC}");
     h_smearing->Draw("COLZ");
+    // Draw text with bin values
+    for (int ix = 1; ix <= h_smearing->GetNbinsX(); ++ix) {
+        for (int iy = 1; iy <= h_smearing->GetNbinsY(); ++iy) {
+            double x = h_smearing->GetXaxis()->GetBinCenter(ix);
+            double y = h_smearing->GetYaxis()->GetBinCenter(iy);
+            double val = h_smearing->GetBinContent(ix, iy);
+            if (val != 0) {
+                TLatex latex;
+                latex.SetTextAlign(22);
+                latex.SetTextSize(0.025);
+                latex.DrawLatex(x, y, Form("%.3f", val));
+            }
+        }
+    }
     
     // Add CMS Preliminary label
     cmsLabel.DrawLatex(0.19, 0.91, "CMS");
@@ -105,6 +134,20 @@ void PlotScaleandSmearingVsPtRunN() {
     h_corr_1ele->GetYaxis()->SetTitle("Run Number");
     h_corr_1ele->GetZaxis()->SetTitle("m^{(J/#psi)}_{MC} / m^{(J/#psi)}_{data}");
     h_corr_1ele->Draw("COLZ");
+    // Draw text with bin values
+    for (int ix = 1; ix <= h_corr_1ele->GetNbinsX(); ++ix) {
+        for (int iy = 1; iy <= h_corr_1ele->GetNbinsY(); ++iy) {
+            double x = h_corr_1ele->GetXaxis()->GetBinCenter(ix);
+            double y = h_corr_1ele->GetYaxis()->GetBinCenter(iy);
+            double val = h_corr_1ele->GetBinContent(ix, iy);
+            if (val != 0) {
+                TLatex latex;
+                latex.SetTextAlign(22);
+                latex.SetTextSize(0.025);
+                latex.DrawLatex(x, y, Form("%.3f", val));
+            }
+        }
+    }
     
     // Add CMS Preliminary label
     cmsLabel.DrawLatex(0.19, 0.91, "CMS");

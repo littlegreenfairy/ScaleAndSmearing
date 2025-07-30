@@ -43,6 +43,13 @@ void FitProjectionMC() {
     // Apri il file ROOT contenente gli istogrammi
     TFile *file = TFile::Open("outputHistograms_MC.root");
 
+    // Prendi l'istogramma 2D h_scale_vs_pt
+    TH2D* h2d = (TH2D*)file->Get("h_scale_vs_pt_reweighted");
+    if (!h2d) {
+        std::cerr << "Istogramma 2D h_scale_vs_pt non trovato!" << std::endl;
+        return;
+    }
+
     // Array per i parametri dei fit
     double means[Nbins], sigmas[Nbins], alphaLs[Nbins], nLs[Nbins], alphaRs[Nbins], nRs[Nbins], meanInf[Nbins], meanSup[Nbins], mean_histo[Nbins];
     double sigma_over_mu[Nbins], inc_sigma_over_mu[Nbins];
@@ -59,9 +66,9 @@ void FitProjectionMC() {
         meanSup[i] =  means[i] + 2 * sigmas[i];
     }
     //personalizzo per bin 1 //scommentare per limiti massa regressed
-    sigmas[0] = 0.16;
-    means[0] = 3.035;
-    meanInf[0] = 3.01;
+    sigmas[0] = 0.1;
+    means[0] = 3.001;
+    meanInf[0] = 2.95;
     //bin2
     means[1] = 3.02;
     sigmas[1] = 0.1602;
@@ -76,7 +83,7 @@ void FitProjectionMC() {
     sigmas[4] = 0.1152;
     means[4] = 3.0743;
     //nRs[4] = 15;
-    //nLs[4] = 4;
+    nLs[4] = 100;
     //bin 6 (nell'altro MC no constraints su bin 6)
     means[5] = 3.0916;
     sigmas[5] = 0.12;
@@ -94,14 +101,14 @@ void FitProjectionMC() {
     
 
 
-    int rebin_factor[Nbins] = {1, 1, 1, 1, 1, 1}; //{1, 1, 1, 1, 2, 2};
+    int rebin_factor[Nbins] = {1, 1, 1, 1, 1, 2}; //{1, 1, 1, 1, 2, 1};
 
-    // Loop su tutti gli istogrammi
+    // Loop su tutti i bin di pt
     for (int i = 0; i < Nbins; i++) {
-        // Ottieni l'istogramma
-        TH1D *hist = (TH1D*)file->Get(Form("proj_bin_%d", i + 1)); //qui per farlo con la massa regressed
-        if (!hist) {
-            std::cerr << "Istogramma non trovato: proj_bin_" << i + 1 << std::endl;
+        // Proietta la Y (massa) per il bin di pt i usando il bin i+1
+        TH1D* hist = h2d->ProjectionY(Form("proj_bin_%d", i+1), i+1, i+1);
+        if (!hist || hist->GetEntries() == 0) {
+            std::cerr << "Proiezione Y vuota per il bin pt " << i+1 << std::endl;
             continue;
         }
         hist->Rebin(rebin_factor[i]);
@@ -119,10 +126,10 @@ void FitProjectionMC() {
         // Definisci i parametri della Crystal Ball asimmetrica
         RooRealVar cb_mean(Form("cb_mean_%d", i+1), "Mean of CB", means[i], meanInf[i], meanSup[i]);
         RooRealVar cb_sigma(Form("cb_sigma_%d", i+1), "Sigma of CB", sigmas[i], 0.1 * sigmas[i], 2 * sigmas[i]);
-        RooRealVar cb_alphaL(Form("cb_alphaL_%d", i+1), "AlphaL of CB", alphaLs[i], 0.1, 15.0);
-        RooRealVar cb_nL(Form("cb_nL_%d", i+1), "nL of CB", nLs[i], 0.1, 200.0);
-        RooRealVar cb_alphaR(Form("cb_alphaR_%d", i+1), "AlphaR of CB", alphaRs[i], 0.1, 15.0);
-        RooRealVar cb_nR(Form("cb_nR_%d", i+1), "nR of CB", nRs[i], 0.1, 100.0);
+        RooRealVar cb_alphaL(Form("cb_alphaL_%d", i+1), "AlphaL of CB", alphaLs[i], 0, 15.0);
+        RooRealVar cb_nL(Form("cb_nL_%d", i+1), "nL of CB", nLs[i], 0, 500.0);
+        RooRealVar cb_alphaR(Form("cb_alphaR_%d", i+1), "AlphaR of CB", alphaRs[i], 0, 15.0);
+        RooRealVar cb_nR(Form("cb_nR_%d", i+1), "nR of CB", nRs[i], 0, 500.0);
 
         // Crea la Crystal Ball asimmetrica 
         RooCrystalBall cb(Form("cb_%d", i+1), "Asymmetric Crystal Ball", mass, cb_mean, cb_sigma, cb_alphaL, cb_nL, cb_alphaR, cb_nR);
@@ -133,13 +140,11 @@ void FitProjectionMC() {
         RooFitResult *fit_result = cb.fitTo(data, RooFit::Minimizer("Minuit2", "Migrad"), RooFit::MaxCalls(10000000), RooFit::Save(), RooFit::SumW2Error(true), RooFit::PrintLevel(-1));
         ////////////////////////////////////////////////////////
         TCanvas *canvas = new TCanvas(Form("canvas_%d", i+1), Form("Fit for proj_bin_%d", i+1), 900, 700);
-        //canvas->Divide(1,2);
 
         // Plotta l'istogramma e il fit
         RooPlot *frame = mass.frame();
         frame->SetTitle("");
         frame->GetXaxis()->SetRangeUser(0, 5);
-        //frame->SetTitle(hist->GetTitle());
         data.plotOn(frame);
         cb.plotOn(frame, RooFit::LineColor(bluCMS), RooFit::LineWidth(5));
         frame->GetXaxis()->SetTitle("m(e^{+}e^{-}) [GeV]");
@@ -150,38 +155,17 @@ void FitProjectionMC() {
         paveText->AddText(Form("#chi^{2} = %.2f", chi2));
         paveText->AddText(Form("#mu = %.4f +/- %.4f", cb_mean.getVal(), cb_mean.getError()));
         paveText->AddText(Form("#sigma = %.4f +/- %.4f", cb_sigma.getVal(), cb_sigma.getError()));
+        //paveText->AddText(Form("#alpha_{L} = %.3f +/- %.3f", cb_alphaL.getVal(), cb_alphaL.getError()));
+        //paveText->AddText(Form("#alpha_{R} = %.3f +/- %.3f", cb_alphaR.getVal(), cb_alphaR.getError()));
+        //paveText->AddText(Form("n_{L} = %.3f +/- %.3f", cb_nL.getVal(), cb_nL.getError()));
+        //paveText->AddText(Form("n_{R} = %.3f +/- %.3f", cb_nR.getVal(), cb_nR.getError()));
         paveText->SetFillColor(0);
         paveText->SetBorderSize(0);  // Remove border
         paveText->SetShadowColor(0); // Remove shadow
         frame->addObject(paveText);
 
-        /*// Crea un frame per i residui
-        
-        RooPlot* pullFrame = mass.frame();
-        pullFrame->SetTitle("Residui Normalizzati");
-        // Calcola i residui normalizzati
-        RooHist* pullHist = frame->pullHist();
-        pullFrame->addPlotable(pullHist, "P");*/
-
-
-        // Disegna il frame
-        //canvas->cd(1);
         frame->Draw();
         WriteSimulation();
-
-        /*//Disegno i residui
-        canvas->cd(2);
-        pullFrame->Draw();
-        //linea per lo 0
-    
-        double xMin = pullFrame->GetXaxis()->GetXmin();
-        double xMax = pullFrame->GetXaxis()->GetXmax();
-        TLine *line = new TLine(xMin, 0, xMax, 0);
-        line->SetLineStyle(2);  // Linea tratteggiata
-        line->SetLineColor(kRed);  // Colore della linea, opzionale
-
-        // Disegnare la linea sullo stesso canvas
-        line->Draw("same");*/
 
         // Salva la canvas 
         canvas->SaveAs(Form("PlotConID2022/FitMC_id2022/fit_proj_bin_%d.png", i+1));
@@ -209,12 +193,12 @@ void FitProjectionMC() {
         //errore relativo
         sigma_over_mu[i] = cb_sigma.getVal()/cb_mean.getVal();
         inc_sigma_over_mu[i] = cb_sigma.getError()/cb_mean.getVal();
-
-
     }
+
+    std::cout << "Fit completato per tutti i bin." << std::endl;
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //                                          FIT INCLUSIVO IN PT                                           
-
+   /*
     TH1F *hist_inclusive = (TH1F*)file->Get("h_invmass_ECAL_3reweights");
     // Definisci la variabile di massa invariante
         RooRealVar mass("mass", "m(e^{+}e^{-})", 2.2, 3.9); 
@@ -260,7 +244,7 @@ void FitProjectionMC() {
         canvas_incl->SaveAs("PlotConID2022/FitMC_id2022/fit_inclusivePt.png");
         delete canvas_incl;
 
-
+    */
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////// Salvo i parametri per inizializzare il fit dei dati
         // Crea un file ROOT

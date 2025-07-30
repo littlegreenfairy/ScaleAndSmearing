@@ -373,14 +373,6 @@ void FitDataPostcorr(){
         gSystem->Exec(Form("mkdir -p PlotConID2022/FitCorrectedData_id2022/Pt_bin%d", i+1));
     }*/
 
-    //Read sigma_mc
-    TFile *file_param = TFile::Open("fit_results.root", "READ");
-    TTree *tree = (TTree*)file_param->Get("fitResults");
-    if (!tree) {
-        std::cerr << "Impossibile trovare il TTree fitResults." << std::endl;
-        return;
-    }
-
 
     for(int i=0; i < NbinsPt; i++){
 

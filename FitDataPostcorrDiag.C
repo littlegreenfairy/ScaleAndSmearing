@@ -219,10 +219,10 @@ void FitDataPostcorrDiag(){
     double Mucb_ini[NbinsPt][NbinsRun] = {
         {3.0442, 3.0337, 3.0422, 3.0489, 3.0, 3.0400, 3.0450, 3.0500, 3.0550},
         {3.0199, 3.0337, 3.0422, 2.9975, 3.0782, 3.0550, 3.0600, 3.0650, 3.0700},
-        {3.0442, 3.0337, 3.0350, 3.0489, 3.0782, 3.0600, 3.0650, 3.0700, 3.0750},
-        {3.0442, 3.0337, 3.0422, 3.0489, 3.0782, 3.0650, 3.0700, 3.0750, 3.0800},
+        {3.0442, 3.0337, 3.0350, 3.0489, 3.0782, 3.0600, 3.0650, 3.0700, 3.0450},
+        {3.0442, 3.0337, 3.0422, 3.0800, 3.0782, 3.0650, 3.0700, 3.0750, 3.0800},
         {3.0442, 3.0337, 3.0422, 3.0489, 3.1098, 3.0700, 3.0750, 3.0800, 3.0850},
-        {3.0442, 3.0337, 3.0422, 3.0489, 3.0782, 3.0750, 3.0800, 3.0850, 3.0900}
+        {3.0934, 3.0337, 3.0422, 3.0489, 3.0782, 3.0950, 3.0800, 3.0850, 3.0900}
     };
     
     double Mucb_lowlim[NbinsPt][NbinsRun] = {
@@ -246,10 +246,10 @@ void FitDataPostcorrDiag(){
     double Sigmacb_ini[NbinsPt][NbinsRun] = {
         {0.1637, 0.1503, 0.1351, 0.1271, 0.15, 0.14, 0.13, 0.14, 0.15},
         {0.1333, 0.1413, 0.1351, 0.1271, 0.1115, 0.1342, 0.12, 0.13, 0.1452},
-        {0.1637, 0.1503, 0.1337, 0.1271, 0.1115, 0.12, 0.11, 0.12, 0.13},
+        {0.1637, 0.1503, 0.1337, 0.1271, 0.1115, 0.12, 0.11, 0.12, 0.14},
+        {0.1637, 0.1503, 0.1351, 0.1200, 0.1115, 0.11, 0.10, 0.11, 0.12},
         {0.1637, 0.1503, 0.1351, 0.1271, 0.1115, 0.11, 0.10, 0.11, 0.12},
-        {0.1637, 0.1503, 0.1351, 0.1271, 0.1115, 0.11, 0.10, 0.11, 0.12},
-        {0.1637, 0.1503, 0.1351, 0.1271, 0.1115, 0.10, 0.09, 0.10, 0.11}
+        {0.09, 0.1503, 0.1351, 0.1271, 0.1115, 0.09, 0.09, 0.10, 0.11}
     };
     
     double Sigmacb_uplim[NbinsPt][NbinsRun] = {
@@ -267,7 +267,7 @@ void FitDataPostcorrDiag(){
         {0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05},
         {0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05},
         {0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05},
-        {0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05}
+        {0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.02, 0.05, 0.05}
     };
 
     //parametri inclusivi in pt
@@ -281,20 +281,20 @@ void FitDataPostcorrDiag(){
 
     // Aggiungi gli array per i parametri della Gaussiana
     double gauss_mu_init[NbinsPt][NbinsRun] = {
-        {3.6, 3.4, 3.7, 3.4, 3.5, 3.55, 3.6, 3.55, 3.5},
-        {3.6, 3.4, 3.7, 3.4, 3.4, 3.5, 3.55, 3.5, 3.45},
-        {3.6, 3.4, 3.7, 3.4, 3.4, 3.5, 3.55, 3.5, 3.45},
-        {3.6, 3.4, 3.7, 3.4, 3.4, 3.5, 3.55, 3.5, 3.45},
-        {3.6, 3.65, 3.7, 3.4, 3.6, 3.5, 3.55, 3.5, 3.45},
+        {3.6, 3.6, 3.7, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6},
+        {3.6, 3.6, 3.7, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6},
+        {3.6, 3.6, 3.7, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6},
+        {3.6, 3.6, 3.7, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6},
+        {3.6, 3.65, 3.7, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6},
         {3.65, 3.65, 3.65, 3.65, 3.65, 3.65, 3.6, 3.65, 3.65}
     };  // Valori iniziali per mu della Gaussiana
     
     double gauss_mu_low[NbinsPt][NbinsRun] = {
-        {3.5, 3.2, 3.6, 3.2, 3.4, 3.4, 3.5, 3.4, 3.4},
-        {3.5, 3.2, 3.6, 3.2, 3.2, 3.4, 3.45, 3.4, 3.3},
-        {3.5, 3.2, 3.6, 3.2, 3.2, 3.4, 3.45, 3.4, 3.3},
-        {3.5, 3.2, 3.6, 3.2, 3.2, 3.4, 3.45, 3.4, 3.3},
-        {3.5, 3.45, 3.45, 3.45, 3.45, 3.45, 3.45, 3.45, 3.45},
+        {3.5, 3.5, 3.6, 3.5, 3.5, 3.5, 3.5, 3.5, 3.5},
+        {3.5, 3.5, 3.6, 3.5, 3.5, 3.5, 3.5, 3.5, 3.5},
+        {3.5, 3.5, 3.6, 3.5, 3.5, 3.5, 3.5, 3.5, 3.5},
+        {3.5, 3.5, 3.6, 3.5, 3.5, 3.5, 3.5, 3.5, 3.5},
+        {3.5, 3.5, 3.5, 3.5, 3.5, 3.5, 3.5, 3.5, 3.5},
         {3.55, 3.55, 3.55, 3.55, 3.55, 3.55, 3.5, 3.55, 3.55}
     };   // Limiti inferiori per mu
     
@@ -391,7 +391,8 @@ void FitDataPostcorrDiag(){
         return;
     }
 
-    TH1D *h_smearing_postcorr = new TH1D("h_smearing_postcorr", "Smearing after correction", NbinsPt, Ptbins);
+    TH1D *h_smearing_postcorr = new TH1D("h_smearing_postcorr", "Smearing after correction; p_{T} [GeV]", NbinsPt, Ptbins);
+    TH1D *h_DeltaC = new TH1D("h_DeltaC", "Delta C after scale correction; p_{T} [GeV]", NbinsPt, Ptbins);
 
     // Create directory for output plots
     gSystem->Exec("mkdir -p PlotConID2022/FitCorrectedDataDiag_id2022");
@@ -405,7 +406,6 @@ void FitDataPostcorrDiag(){
         // Set the pt bin range (i+1 because bin counting starts at 1)
         int binLow = i+1;
         int binHigh = i+1;
-        
         // Create proper histogram names with pt bin information
         TString checkName = Form("h2D_runN_invM_check_ptbin%d", i+1);
         TString checkDiagName = Form("h2D_runN_invM_check_diag_ptbin%d", i+1);
@@ -554,11 +554,11 @@ void FitDataPostcorrDiag(){
             double inc_mu_data = mu_cb.getError();
             double scale_postcorr = 1 - (mu_data / mu_mc);
             double inc_scale_postcorr = (mu_data / mu_mc) * sqrt((inc_mu_data / mu_data)*(inc_mu_data / mu_data) + (inc_mu_mc / mu_mc)*(inc_mu_mc / mu_mc));
+
+    
             //Scrivo i parametri di interesse negli istogrammi 2D
             h_scale_postcorr->SetBinContent(j+1, scale_postcorr);
             h_scale_postcorr->SetBinError(j+1, inc_scale_postcorr);
-
-
 
         } //FINE LOOP SU RUN NUMBER
 
@@ -736,17 +736,39 @@ double scale_postcorr_incl = 1 - (mu_data_incl / mu_mc);
 double inc_scale_postcorr_incl = (mu_data_incl / mu_mc) * 
                                 sqrt((inc_mu_data_incl / mu_data_incl)*(inc_mu_data_incl / mu_data_incl) + 
                                     (inc_mu_mc / mu_mc)*(inc_mu_mc / mu_mc));
+//calcolo lo smearing
+            double smearing_postcorr = sigma_cb.getVal() / sigma_ini;
+            double inc_smearing_postcorr = smearing_postcorr * sqrt(
+                (sigma_cb.getError() / sigma_cb.getVal()) * (sigma_cb.getError() / sigma_cb.getVal()) +
+                (inc_sigma / sigma_ini) * (inc_sigma / sigma_ini)
+            );
 
-//calculate smearing 
-double smearing_postcorr = sigma_cb.getVal() / sigma_ini;
-double inc_smearing_postcorr = smearing_postcorr * sqrt((sigma_cb.getError() / sigma_cb.getVal())*(sigma_cb.getError() / sigma_cb.getVal()) + 
-                                    (inc_sigma / sigma_ini)*(inc_sigma / sigma_ini));
 h_smearing_postcorr->SetBinContent(i+1, smearing_postcorr);
-h_smearing_postcorr->SetBinError(i+1, inc_smearing_postcorr);
+            h_smearing_postcorr->SetBinError(i+1, inc_smearing_postcorr);
+ 
+            if(smearing_postcorr > 1){
+            h_DeltaC->SetBinContent(i+1, sqrt(sigma_cb.getVal() * sigma_cb.getVal() - sigma_ini * sigma_ini));
+            }
+            else{
+            h_DeltaC->SetBinContent(i+1, 0);
+            }
+
 
 // You could save this inclusive result to a different histogram if needed
 
     }    //....oooOO0OOooo........oooOO0OOooo.... FINE LOOP SU PT BIN ....oooOO0OOooo........oooOO0OOooo....
+
+
+    // Save h_smearing_postcorr to a new ROOT file
+    TFile *outFile = TFile::Open("smearing_corrections.root", "RECREATE");
+    if (!outFile || outFile->IsZombie()) {
+        std::cerr << "Error: Could not create smearing_corrections.root" << std::endl;
+        return;
+    }
+    h_smearing_postcorr->Write();
+    h_DeltaC->Write();
+    outFile->Close();
+    delete outFile;
 
     // After your existing code, add this section to extract h_smearing_inclusiveRun
 
@@ -765,74 +787,7 @@ h_smearing_postcorr->SetBinError(i+1, inc_smearing_postcorr);
         return;
     }
 
-    // Create a canvas to display the smearing histogram
-    TCanvas *cSmearing = new TCanvas("cSmearing", "", 900, 600);
-    gStyle->SetOptStat(0); // Turn off statistics box
-
-    // Set up the appearance for original smearing histogram
-    h_smearing_inclusiveRun->SetTitle("");
-    h_smearing_inclusiveRun->GetXaxis()->SetTitle("p_{T} [GeV]");
-    h_smearing_inclusiveRun->GetYaxis()->SetTitle("#sigma_{data}/#sigma_{MC}");
-    h_smearing_inclusiveRun->SetMarkerStyle(20);
-    h_smearing_inclusiveRun->SetMarkerColor(violaCMS);
-    h_smearing_inclusiveRun->SetLineColor(violaCMS);
-
-    // Explicitly set the x-axis range to extend to 42 GeV
-    h_smearing_inclusiveRun->GetXaxis()->SetRangeUser(0, 42);
-    h_smearing_inclusiveRun->GetYaxis()->SetRangeUser(0.8, 2.6);
-
-    // Set up the appearance for post-correction smearing histogram
-    h_smearing_postcorr->SetMarkerStyle(21);
-    h_smearing_postcorr->SetLineColor(arancioneCMS); // Changed to gialloCMS as requested earlier
-    h_smearing_postcorr->SetMarkerColor(arancioneCMS);
-
-    // Draw the histograms
-    h_smearing_inclusiveRun->Draw("PE");
-    h_smearing_postcorr->Draw("PE SAME");
-
-    // Add a horizontal line at y=1 for reference - use the extended x-range
-    TLine *smearingLine = new TLine(4, 1, 42, 1);
-    smearingLine->SetLineColor(bluCMS);
-    smearingLine->SetLineWidth(2);
-    smearingLine->SetLineStyle(kDashed);
-    smearingLine->Draw();
-
-    // Create and draw the legend
-    TLegend *legend = new TLegend(0.65, 0.75, 0.89, 0.89);
-    legend->AddEntry(h_smearing_inclusiveRun, "Before Correction", "lp");
-    legend->AddEntry(h_smearing_postcorr, "After Correction", "lp");
-    legend->AddEntry(smearingLine, "Perfect agreement", "l");
-    legend->SetBorderSize(0);
-    legend->SetFillStyle(0);
-    legend->Draw();
-
-    // Add CMS label in bold
-    TLatex cmsLabel;
-    cmsLabel.SetNDC();
-    cmsLabel.SetTextFont(62);  // Bold font
-    cmsLabel.SetTextSize(0.05);
-    cmsLabel.SetTextAlign(11);
-    cmsLabel.DrawLatex(0.10, 0.92, "CMS");
-
-    // Add Preliminary in italics (not bold)
-    TLatex prelimLabel;
-    prelimLabel.SetNDC();
-    prelimLabel.SetTextFont(52);  // Italic font
-    prelimLabel.SetTextSize(0.05);
-    prelimLabel.SetTextAlign(11);
-    prelimLabel.DrawLatex(0.18, 0.92, "Preliminary");
-
-    // Draw lumi/energy information
-    TLatex lumiLabel;
-    lumiLabel.SetNDC();
-    lumiLabel.SetTextFont(42);  // Regular font
-    lumiLabel.SetTextSize(0.045);
-    lumiLabel.SetTextAlign(31);
-    lumiLabel.DrawLatex(0.90, 0.92, "38.01 fb^{-1} (2022, 13.7 TeV)");
-
-    // Save the canvas
-    cSmearing->SaveAs("PlotConID2022/FitCorrectedDataDiag_id2022/Smearing_Comparison_vs_Pt.png");
-    delete cSmearing;
+    
 
     // Close the file
     smearingFile->Close();

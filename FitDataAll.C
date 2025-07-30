@@ -258,20 +258,20 @@ void FitDataAll(){
 
     // Aggiungi gli array per i parametri della Gaussiana
     double gauss_mu_init[NbinsPt][NbinsRun] = {
-        {3.6, 3.4, 3.7, 3.4, 3.5, 3.55, 3.6, 3.55, 3.5},
-        {3.6, 3.4, 3.7, 3.4, 3.4, 3.5, 3.55, 3.5, 3.45},
-        {3.6, 3.4, 3.7, 3.4, 3.4, 3.5, 3.55, 3.5, 3.45},
-        {3.6, 3.4, 3.7, 3.4, 3.4, 3.5, 3.55, 3.5, 3.45},
-        {3.6, 3.65, 3.7, 3.4, 3.6, 3.5, 3.55, 3.5, 3.45},
+        {3.6, 3.6, 3.7, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6},
+        {3.6, 3.6, 3.7, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6},
+        {3.6, 3.6, 3.7, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6},
+        {3.6, 3.6, 3.7, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6},
+        {3.6, 3.65, 3.7, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6},
         {3.65, 3.65, 3.65, 3.65, 3.65, 3.65, 3.6, 3.65, 3.65}
     };  // Valori iniziali per mu della Gaussiana
     
     double gauss_mu_low[NbinsPt][NbinsRun] = {
-        {3.5, 3.2, 3.6, 3.2, 3.4, 3.4, 3.5, 3.4, 3.4},
-        {3.5, 3.2, 3.6, 3.2, 3.2, 3.4, 3.45, 3.4, 3.3},
-        {3.5, 3.2, 3.6, 3.2, 3.2, 3.4, 3.45, 3.4, 3.3},
-        {3.5, 3.2, 3.6, 3.2, 3.2, 3.4, 3.45, 3.4, 3.3},
-        {3.5, 3.6, 3.6, 3.2, 3.5, 3.4, 3.45, 3.4, 3.3},
+        {3.5, 3.5, 3.6, 3.5, 3.5, 3.5, 3.5, 3.5, 3.5},
+        {3.5, 3.5, 3.6, 3.5, 3.5, 3.5, 3.5, 3.5, 3.5},
+        {3.5, 3.5, 3.6, 3.5, 3.5, 3.5, 3.5, 3.5, 3.5},
+        {3.5, 3.5, 3.6, 3.5, 3.5, 3.5, 3.5, 3.5, 3.5},
+        {3.5, 3.6, 3.6, 3.5, 3.5, 3.5, 3.5, 3.5, 3.5},
         {3.55, 3.55, 3.55, 3.55, 3.55, 3.55, 3.5, 3.55, 3.55}
     };   // Limiti inferiori per mu
     
@@ -349,6 +349,7 @@ void FitDataAll(){
     double Ptbins[] = {4, 7, 9, 11, 14, 20, 40}; 
     double runBins[] = {356309, 356900, 357538, 357732, 360000, 360400, 361000, 361600, 362200, 362760}; //9 bins
     TH2D *h_scale = new TH2D("h_scale", "Scale between data and MC ; Pt ; Run number", NbinsPt, Ptbins, NbinsRun, runBins);
+    TH2D *h_smearing = new TH2D("h_smearing", "Smearing between data and MC ; Pt ; Run number", NbinsPt, Ptbins, NbinsRun, runBins);
     TH2D *h_corr_1ele = new TH2D("h_corr_1ele", "Scale correction for single electron energy; Pt ; Run number", NbinsPt, Ptbins, NbinsRun, runBins);
     TH1D *h_corr_1ele_inclusiveRun = new TH1D("h_corr_1ele_inclusiveRun", "Scale corrections for single electron energy; Pt; correction", NbinsPt, Ptbins);
     TH1D *h_scale_inclusiveRun = new TH1D("h_scale_inclusiveRun", "Scale between data and MC; Pt; correction", NbinsPt, Ptbins);
@@ -476,11 +477,15 @@ void FitDataAll(){
             double inc_mu_data = mu_cb.getError();
             double scale = 1 - (mu_data / mu_mc);
             double inc_scale = (mu_data / mu_mc) * sqrt((inc_mu_data / mu_data)*(inc_mu_data / mu_data) + (inc_mu_mc / mu_mc)*(inc_mu_mc / mu_mc));
+            double smearing = sigma_cb.getVal() / sigma_ini;
+            double inc_smearing = smearing * sqrt((sigma_cb.getError() / sigma_cb.getVal())*(sigma_cb.getError() / sigma_cb.getVal()) + (inc_sigma / sigma_ini)*(inc_sigma / sigma_ini));
             double corr_1ele = mu_mc / mu_data;
             double inc_corr_1ele = corr_1ele * sqrt((inc_mu_data / mu_data)*(inc_mu_data / mu_data) + (inc_mu_mc / mu_mc)*(inc_mu_mc / mu_mc));
             //Scrivo i parametri di interesse negli istogrammi 2D
             h_scale->SetBinContent(i+1, j+1, scale);
             h_scale->SetBinError(i+1, j+1, inc_scale);
+            h_smearing->SetBinContent(i+1, j+1, smearing);
+            h_smearing->SetBinError(i+1, j+1, inc_smearing);
             h_corr_1ele->SetBinContent(i+1, j+1, corr_1ele);
             h_corr_1ele->SetBinError(i+1, j+1, inc_corr_1ele);
 
@@ -606,6 +611,7 @@ void FitDataAll(){
 
 file_corrections->cd();
 h_scale->Write();
+h_smearing->Write();
 graph_meandata->Write();
 
 file_corrections->Close();
