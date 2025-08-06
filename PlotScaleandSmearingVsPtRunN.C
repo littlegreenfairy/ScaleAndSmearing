@@ -46,7 +46,7 @@ void PlotScaleandSmearingVsPtRunN() {
     h_scale->GetZaxis()->SetTitle("1 - m^{(J/#psi)}_{data}/m^{(J/#psi)}_{MC}");
     h_scale->Draw("COLZ");
     // Draw text with bin values
-    for (int ix = 1; ix <= h_scale->GetNbinsX(); ++ix) {
+    /*for (int ix = 1; ix <= h_scale->GetNbinsX(); ++ix) {
         for (int iy = 1; iy <= h_scale->GetNbinsY(); ++iy) {
             double x = h_scale->GetXaxis()->GetBinCenter(ix);
             double y = h_scale->GetYaxis()->GetBinCenter(iy);
@@ -58,7 +58,7 @@ void PlotScaleandSmearingVsPtRunN() {
                 latex.DrawLatex(x, y, Form("%.3f", val));
             }
         }
-    }
+    }*/
     
     // Add CMS Preliminary label
     TLatex cmsLabel;
@@ -82,7 +82,7 @@ void PlotScaleandSmearingVsPtRunN() {
     lumiLabel.SetTextFont(42);
     lumiLabel.SetTextSize(0.04);
     lumiLabel.SetTextAlign(31);
-    lumiLabel.DrawLatex(0.85, 0.91, "38.01 fb^{-1} (2022, 13.7 TeV)");
+    lumiLabel.DrawLatex(0.85, 0.91, "34.7 fb^{-1} (2022, 13.7 TeV)");
 
     // Save scale plot
     c_scale->SaveAs("ScaleVsPtRunN.png");
@@ -100,7 +100,7 @@ void PlotScaleandSmearingVsPtRunN() {
     h_smearing->GetZaxis()->SetTitle("#sigma_{data}/#sigma_{MC}");
     h_smearing->Draw("COLZ");
     // Draw text with bin values
-    for (int ix = 1; ix <= h_smearing->GetNbinsX(); ++ix) {
+    /*for (int ix = 1; ix <= h_smearing->GetNbinsX(); ++ix) {
         for (int iy = 1; iy <= h_smearing->GetNbinsY(); ++iy) {
             double x = h_smearing->GetXaxis()->GetBinCenter(ix);
             double y = h_smearing->GetYaxis()->GetBinCenter(iy);
@@ -112,12 +112,12 @@ void PlotScaleandSmearingVsPtRunN() {
                 latex.DrawLatex(x, y, Form("%.3f", val));
             }
         }
-    }
+    }*/
     
     // Add CMS Preliminary label
     cmsLabel.DrawLatex(0.19, 0.91, "CMS");
     prelimLabel.DrawLatex(0.26, 0.91, "Preliminary");
-    lumiLabel.DrawLatex(0.85, 0.91, "38.01 fb^{-1} (2022, 13.7 TeV)");
+    lumiLabel.DrawLatex(0.85, 0.91, "34.7 fb^{-1} (2022, 13.7 TeV)");
 
     // Save smearing plot
     c_smearing->SaveAs("SmearingVsPtRunN.png");
@@ -133,9 +133,9 @@ void PlotScaleandSmearingVsPtRunN() {
     h_corr_1ele->GetXaxis()->SetTitle("p_{T} [GeV]");
     h_corr_1ele->GetYaxis()->SetTitle("Run Number");
     h_corr_1ele->GetZaxis()->SetTitle("m^{(J/#psi)}_{MC} / m^{(J/#psi)}_{data}");
-    h_corr_1ele->Draw("COLZ");
+    h_corr_1ele->Draw("COLZ TEXT");
     // Draw text with bin values
-    for (int ix = 1; ix <= h_corr_1ele->GetNbinsX(); ++ix) {
+    /*for (int ix = 1; ix <= h_corr_1ele->GetNbinsX(); ++ix) {
         for (int iy = 1; iy <= h_corr_1ele->GetNbinsY(); ++iy) {
             double x = h_corr_1ele->GetXaxis()->GetBinCenter(ix);
             double y = h_corr_1ele->GetYaxis()->GetBinCenter(iy);
@@ -147,12 +147,12 @@ void PlotScaleandSmearingVsPtRunN() {
                 latex.DrawLatex(x, y, Form("%.3f", val));
             }
         }
-    }
+    }*/
     
     // Add CMS Preliminary label
     cmsLabel.DrawLatex(0.19, 0.91, "CMS");
     prelimLabel.DrawLatex(0.26, 0.91, "Preliminary");
-    lumiLabel.DrawLatex(0.85, 0.91, "38.01 fb^{-1} (2022, 13.7 TeV)");
+    lumiLabel.DrawLatex(0.85, 0.91, "34.7 fb^{-1} (2022, 13.7 TeV)");
 
     // Save correction plot
     c_corr->SaveAs("CorrVsPtRunN.png");

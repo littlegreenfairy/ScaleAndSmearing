@@ -52,7 +52,7 @@ TH1F* Weights(TH1F *histo1, TH1F *histo2) {  // ripesa l'istogramma 1 (MC) sull'
     histo1->SetFillStyle(1001); 
     histo1->SetStats(kFALSE);
     histo1->SetLineWidth(2);
-    histo1->SetMaximum(0.2);
+    histo1->SetMaximum(0.27);
 
     histo2->SetLineColor(kBlack);
     histo2->SetFillColorAlpha(rossoCMS, 0.7); // Colore di riempimento
@@ -79,7 +79,7 @@ TH1F* Weights(TH1F *histo1, TH1F *histo2) {  // ripesa l'istogramma 1 (MC) sull'
     c_rew->cd(2);
     SetPadMargins(c_rew, 2);
     histo1_bis->SetLineColor(kBlack);
-    histo2->SetMaximum(0.2);
+    histo2->SetMaximum(0.27);
     histo2->Draw("HISTO F");
     histo1_bis->Draw("HISTO F SAME");
 
@@ -103,7 +103,7 @@ MyAnalysisSpicy::MyAnalysisSpicy(TTree *tree, Int_t n) : fChain(0), ntupla(n) {
     }
     Init(tree);
     
-    h_invMass_ECAL_ele = new TH1F("h_invMass_ECAL_ele", "Invariant Mass (ECAL ele);Mass [GeV];A.U.", 120, 0, 6);
+    h_invMass_ECAL_ele = new TH1F("h_invMass_ECAL_ele", "Invariant Mass (ECAL ele);Mass [GeV];A.U.", 180, 0, 6);
     h_dxyEle = new TH1F("h_dxyEle", "Displacement on transverse plane [mm];dxy [mm];A.U.", 30, 0, 1.5);
     h_Pt_JPsi = new TH1F("h_Pt_JPsi", "Transverse momentum of J/#Psi; P_{T} [GeV]; A.U.", 30, 0, 60); //verrà riempito solo nella regione di segnale
     h_Pt_ele1 = new TH1F("h_Pt_ele1", "Transverse momentum of leading electron; P_{T} [GeV]; A.U.", 60, 0, 60);
@@ -378,7 +378,7 @@ void MyAnalysisSpicy::Loop() {
 
 
     //Bin personalizzati per l'asse di Pt
-    double Ptbins[] = {4, 7, 9, 11, 14, 20, 40}; 
+    double Ptbins[] = {4, 7.5, 9, 11, 14, 20, 40}; 
     int nbinsPt = sizeof(Ptbins)/sizeof(double) - 1; 
     //Bin personalizzati per l'asse run Number
     /*double runBins[] = {
@@ -424,6 +424,8 @@ void MyAnalysisSpicy::Loop() {
     TH2D *h_invmass_runNumber = new TH2D("h_invmass_runNumber", "TH2D of invariant mass and run Number", nBinsRun, runBins, 120, 2.7, 3.3);
 
     TH3D *h_scalevs_pt_runN = new TH3D("h_scalevs_pt_runN", "Istogramma 3D invMass vs pT and run Number; p_{T}[0]; Run Number; m(e^{+}e^{-}) [GeV]",nbinsPt, Ptbins, nBinsRun, runBins, nbinsZ, zBins);
+    TH3D *h_fullEle_invMass_pt_runN = new TH3D("h_fullEle_invMass_pt_runN", "Istogramma 3D full electron invMass vs pT and run Number; p_{T}[0]; Run Number; Full Electron invMass [GeV]",nbinsPt, Ptbins, nBinsRun, runBins, nbinsZ, zBins);
+    TH3D *h_fullEle_invMass_pt_runN_all = new TH3D("h_fullEle_invMass_pt_runN_all", "Istogramma 3D full electron invMass vs pT and run Number; p_{T}[0]; Run Number; Full Electron invMass [GeV]",nbinsPt, Ptbins, nBinsRun, runBins, nbinsZ, zBins);
 
     TH2D *h_rawResolution_vs_pt = new TH2D("h_rawResolution_vs_pt", "Raw Supercluster Resolution vs p_{T}[0]; p_{T}[0]; Raw SC Resolution [GeV]", nbinsPt, Ptbins, 400, 0.5, 3);
     TH2D *h_correctedSCResolution_vs_pt = new TH2D("h_correctedSCResolution_vs_pt", "Corrected Supercluster Resolution vs p_{T}[0]; p_{T}[0]; Corrected SC Resolution [GeV]", nbinsPt, Ptbins, 400, 0.5, 3);
@@ -446,8 +448,8 @@ void MyAnalysisSpicy::Loop() {
 
         //ricostruisco il quadrimpulso dei due elettroni e della JPsi
         TLorentzVector P_ele1, P_ele2, P_JPsi;
-        P_ele1.SetPtEtaPhiE(ptEle[0],etaEle[0],phiEle[0],energy_ECAL_ele[0]);
-        P_ele2.SetPtEtaPhiE(ptEle[1],etaEle[1],phiEle[1],energy_ECAL_ele[1]);
+        P_ele1.SetPtEtaPhiE(ptEle[0],etaEle[0],phiEle[0],energyEle[0]);
+        P_ele2.SetPtEtaPhiE(ptEle[1],etaEle[1],phiEle[1],energyEle[1]);
         P_JPsi = P_ele1 + P_ele2;
         double Beta_jpsi, BetaGamma_jpsi, costheta;
         costheta = P_ele1.Vect().Dot(P_ele2.Vect()) / (P_ele1.Vect().Mag() * P_ele2.Vect().Mag());
@@ -472,6 +474,7 @@ void MyAnalysisSpicy::Loop() {
         int bin_index_pt0, bin_index_pt1;
         bin_index_pt0 = h_scale_vs_pt->GetXaxis()->FindBin(ptEle[0]);
         bin_index_pt1 = h_scale_vs_pt->GetXaxis()->FindBin(ptEle[1]);
+        
         if(bin_index_pt0 == bin_index_pt1){
         h_scale_vs_pt->Fill(ptEle[0],invMass_ECAL_ele); //qui siamo inclusivi nel run number
         h_rawSC_vs_pt->Fill(ptEle[0], invMass_rawSC);
@@ -481,6 +484,8 @@ void MyAnalysisSpicy::Loop() {
 
         //riempio l'histo 3D, tanto i 2 elettroni dello stesso evento sono sempre nello stesso bin di run number
         h_scalevs_pt_runN->Fill(ptEle[0], runNumber, invMass_ECAL_ele);
+        h_fullEle_invMass_pt_runN->Fill(ptEle[0], runNumber, invMass);
+        
 
         //riempio gli istogrammi massa invariante vs runNumber
         if(ntupla == 0 && invMass_ECAL_ele > 2.7 && invMass_ECAL_ele < 3.3){
@@ -491,6 +496,8 @@ void MyAnalysisSpicy::Loop() {
             }
         }
         }
+
+        h_fullEle_invMass_pt_runN_all->Fill(ptEle[0], runNumber, invMass); //riempio l'istogramma 3D con tutti gli eventi, senza tagli
 
         //spread nel displacement dei due elettroni
         h_delta_dxy->Fill(fabs(dxyEle[0] -  dxyEle[1]));
@@ -690,6 +697,7 @@ void MyAnalysisSpicy::Loop() {
     
 
     //Projections della massa invariante (raw e regressed) nei vari bin di Pt
+    h_rawSC_vs_pt->Write();
     for(int i=0; i < nbinsPt; i++){
     TH1D* proj = h_scale_vs_pt->ProjectionY(Form("proj_bin_%d", i+1), i+1, i+1);
     TH1D* proj_rawSC = h_rawSC_vs_pt->ProjectionY(Form("RawSC_bin_%d", i+1), i+1, i+1);
@@ -712,6 +720,9 @@ void MyAnalysisSpicy::Loop() {
         }
     }
     }
+
+    h_fullEle_invMass_pt_runN->Write();
+    h_fullEle_invMass_pt_runN_all->Write();
     outputFile->Close();
     delete outputFile;
     //////////////////////////////////////////////////////
@@ -742,520 +753,6 @@ void MyAnalysisSpicy::Loop() {
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 
-void MyAnalysisSpicy::ReweightOnPt(){ 
-    TFile *dataHistFile = TFile::Open("outputHistograms_DATA_partF.root", "UPDATE"); 
-    TH1F *h_ptjpsi_data = (TH1F*)dataHistFile->Get("h_Pt_JPsi");
-
-    TFile *mcHistFile = TFile::Open("outputHistograms_MC.root","UPDATE");
-    TH1F *h_ptjpsi_mc = (TH1F*)mcHistFile->Get("h_Pt_JPsi");
-
-    double Ptbins[] = {4, 7, 9, 11, 14, 20, 40};  
-    int nbinsPt = sizeof(Ptbins)/sizeof(double) - 1; 
-    int nbinsZ = 120;
-    double zMin = 0;
-    double zMax = 6;
-    double zBins[nbinsZ + 1];
-    double zStep = (zMax - zMin) / nbinsZ;
-    for (int i = 0; i <= nbinsZ; ++i) {
-        zBins[i] = zMin + i * zStep;
-    }
-
-    TH2D *h_scale_vs_pt = new TH2D("h_scale_vs_pt", "TH2D of invariant mass and P_{T} - 1 reweight;P_{T}[0];Invariant Mass (ECAL)", nbinsPt, Ptbins, nbinsZ, zBins);
-    //// Istogrammi massa invariante ecal vs track
-
-    // Copio l'istogramma del MC che voglio ripesare
-    TH1F* h_pt_mc_copy = (TH1F*)h_ptjpsi_mc->Clone("h_pt_mc_copy");
-
-    h_pt_mc_copy->Scale(1.0/ h_pt_mc_copy->Integral());
-    h_ptjpsi_data->Scale(1.0/h_ptjpsi_data->Integral());
-
-    TH1F *histoWeights;
-    histoWeights = Weights(h_pt_mc_copy, h_ptjpsi_data);
-    h_ptjpsi_mc->Multiply(histoWeights); //posso usarlo per controllare che il Reweighting si chiuda
-
-    //ora devo loopare sulle entries per applicare i pesi sia alla massa invariante che a dxy
-
-    Long64_t nentries = fChain->GetEntriesFast(); 
-
-    //svuoto gli istogrammi che dovrò ripesare
-    h_invMass_ECAL_ele->Reset();
-    h_dxyEle->Reset();
-    h_nPV->Reset();
-    h_Pt_ele1->Reset();
-    h_Pt_ele2->Reset();
-    if(ntupla == 1)h_nPU->Reset();
-
-     for (Long64_t jentry = 0; jentry < nentries; jentry++) {
-        Long64_t ientry = LoadTree(jentry);
-        if (ientry < 0) break; //se è negativo c'è stato un problema con il caricamento del file
-        fChain->GetEntry(jentry);
-        double costheta;
-        if(Cut(jentry)){
-        TLorentzVector P_ele1, P_ele2, P_JPsi;
-        P_ele1.SetPtEtaPhiE(ptEle[0],etaEle[0],phiEle[0],energy_ECAL_ele[0]);
-        P_ele2.SetPtEtaPhiE(ptEle[1],etaEle[1],phiEle[1],energy_ECAL_ele[1]);
-        P_JPsi = P_ele1 + P_ele2;
-        costheta = P_ele1.Vect().Dot(P_ele2.Vect()) / (P_ele1.Vect().Mag() * P_ele2.Vect().Mag());
-        //Riempio l'istogramma con la massa ripesata e anche dxy post reweighting
-        int binidx = h_Pt_JPsi->FindBin(P_JPsi.Pt());
-        int nBins_w = histoWeights->GetNbinsX(); 
-        if(binidx != 0 && binidx != nBins_w + 1) { // no underflow o overflow
-        double weight = histoWeights->GetBinContent(binidx);
-
-        int bin_index_pt0, bin_index_pt1;
-        // Riempimento degli istogrammi con il valore pesato
-        //h_invMass_ECAL_ele->Fill(invMass_ECAL_ele, weight);
-        h_invMass_ECAL_ele->Fill(sqrt(2*energy_ECAL_ele[0]*energy_ECAL_ele[1]*(1 - costheta)), weight);
-        h_dxyEle->Fill(dxyEle[0] * 10, weight);
-        h_nPV->Fill(static_cast<Int_t>(nPV), weight);
-        h_Pt_ele1->Fill(ptEle[0], weight);
-        h_Pt_ele2->Fill(ptEle[1], weight);
-        if(ntupla == 1)h_nPU->Fill(static_cast<Int_t>(nPU), weight);
-        //riempio l'istogramma 2d solo se i due elettroni sono nello stesso bin di pt
-        bin_index_pt0 = h_scale_vs_pt->GetXaxis()->FindBin(ptEle[0]);
-        bin_index_pt1 = h_scale_vs_pt->GetXaxis()->FindBin(ptEle[1]);
-        if(bin_index_pt0 == bin_index_pt1)h_scale_vs_pt->Fill(ptEle[0],invMass_ECAL_ele, weight);
-
-
-            } 
-        }  
-    }
-    
-    h_dxyEle->Scale(1.0/ h_dxyEle->Integral());
-    h_invMass_ECAL_ele->Scale(1.0/h_invMass_ECAL_ele->Integral());
-    h_nPV->Scale(1.0/ h_nPV->Integral());
-    h_Pt_ele1->Scale(1.0/h_Pt_ele1->Integral());
-    h_Pt_ele2->Scale(1.0/h_Pt_ele2->Integral());
-    if(ntupla == 1)h_nPU->Scale(1.0/ h_nPU->Integral());
-
-    TProfile *prof = h_scale_vs_pt->ProfileX("mean inv Mass vs P_t after 1 reweight"); //voglio usarlo per vedere il profilo della massa invariante
-    //aggiorno il contenuto degli istogrammi nel file .root e notifico che il ripesamento è stato effettuato
-    mcHistFile->cd();
-    TH1F *h_invMass_rew1 = (TH1F*)h_invMass_ECAL_ele->Clone("ECAL invMass reweighted on Pt_JPsi");
-    h_invMass_rew1->Write();
-    prof->Write("", TObject::kOverwrite);
-    h_dxyEle->Write("", TObject::kOverwrite);
-    h_nPV->Write("", TObject::kOverwrite);
-    h_Pt_ele1->Write("", TObject::kOverwrite);
-    h_Pt_ele2->Write("", TObject::kOverwrite);
-    h_scale_vs_pt->Write("", TObject::kOverwrite);
-    if(ntupla == 1)h_nPU->Write("", TObject::kOverwrite);
-
-    Reweighted = 1;  //Notifica ripesamento
-    //chiudo i file che ho aperto
-    mcHistFile->Close();
-    dataHistFile->Close();
-    delete mcHistFile;
-    delete dataHistFile;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
-
-void MyAnalysisSpicy::ReweightOnPtele1(){
-    
-    TFile *dataHistFile = TFile::Open("outputHistograms_DATA_partF.root", "UPDATE");
-    TH1F *h_Pt_ele1_data = (TH1F*)dataHistFile->Get("h_Pt_ele1");
-
-    TFile *mcHistFile = TFile::Open("outputHistograms_MC.root", "UPDATE");
-    TH1F *h_Pt_ele1_mc = (TH1F*)mcHistFile->Get("h_Pt_ele1");
-
-    //Bin personalizzati per l'asse di Pt
-    double Ptbins[] = {4, 7, 9, 11, 14, 20, 40};  
-    int nbinsPt = sizeof(Ptbins)/sizeof(double) - 1; 
-    int nbinsZ = 120;
-    double zMin = 0;
-    double zMax = 6;
-    double zBins[nbinsZ + 1];
-    double zStep = (zMax - zMin) / nbinsZ;
-    for (int i = 0; i <= nbinsZ; ++i) {
-        zBins[i] = zMin + i * zStep;
-    }
-    TH2D *h_scale_vs_pt = new TH2D("h_scale_vs_pt", "TH2D of invariant mass and p_{T} - 2 reweights ;p_{T}[0];Invariant Mass (ECAL) [GeV]", nbinsPt, Ptbins, nbinsZ, zBins);
-    TH2D *h_rawSC_vs_pt = new TH2D("h_rawSC_vs_pt", "TH2D of raw invMass and p_{T}[0]; p_{T}[0]; Raw SC invMass [GeV]", nbinsPt, Ptbins, nbinsZ, zBins);
-
-    // Copio l'istogramma del MC che voglio ripesare
-    TH1F* h_Pt_ele1_mc_copy = (TH1F*)h_Pt_ele1_mc->Clone("h_Pt_ele1_mc_copy");
-
-    h_Pt_ele1_mc_copy->Scale(1.0/ h_Pt_ele1_mc_copy->Integral());
-    h_Pt_ele1_data->Scale(1.0/h_Pt_ele1_data->Integral());
-
-    TH1F *histoWeights;
-    histoWeights = Weights(h_Pt_ele1_mc_copy, h_Pt_ele1_data);
-    h_Pt_ele1_mc->Multiply(histoWeights); //posso usarlo per controllare che il Reweighting si chiuda
-
-    //ora devo loopare sulle entries per applicare i pesi sia alla massa invariante che a dxy
-
-    Long64_t nentries = fChain->GetEntriesFast(); 
-
-    //svuoto gli istogrammi che dovrò ripesare
-    h_invMass_ECAL_ele->Reset();
-    h_nPV->Reset();
-    h_Pt_ele1->Reset();
-    h_Pt_ele2->Reset();
-    if(ntupla == 1) h_nPU->Reset();
-
-     for (Long64_t jentry = 0; jentry < nentries; jentry++) {
-        Long64_t ientry = LoadTree(jentry);
-        if (ientry < 0) break; //se è negativo c'è stato un problema con il caricamento del file
-        fChain->GetEntry(jentry);
-        
-        TLorentzVector P_ele1, P_ele2;
-        P_ele1.SetPtEtaPhiE(ptEle[0],etaEle[0],phiEle[0],energy_ECAL_ele[0]);
-        P_ele2.SetPtEtaPhiE(ptEle[1],etaEle[1],phiEle[1],energy_ECAL_ele[1]);
-        double costheta;
-        if(Cut(jentry)){
-            costheta = P_ele1.Vect().Dot(P_ele2.Vect()) / (P_ele1.Vect().Mag() * P_ele2.Vect().Mag());
-        //Riempio l'istogramma con la massa ripesata
-    int binidx = h_Pt_ele1->FindBin(ptEle[0]);
-    int nBins_w = histoWeights->GetNbinsX(); 
-    if(binidx != 0 && binidx != nBins_w + 1) { // no underflow o overflow
-    double weight = histoWeights->GetBinContent(binidx);
-    // Riempimento degli istogrammi con il valore pesato
-    //h_invMass_ECAL_ele->Fill(invMass_ECAL_ele, weight);
-    h_invMass_ECAL_ele->Fill(sqrt(2*energy_ECAL_ele[0]*energy_ECAL_ele[1]*(1 - costheta)), weight);
-    h_nPV->Fill(static_cast<Int_t>(nPV), weight);
-    h_Pt_ele1->Fill(ptEle[0], weight);
-    h_Pt_ele2->Fill(ptEle[1], weight);
-    if(ntupla == 1)h_nPU->Fill(static_cast<Int_t>(nPU), weight);
-    //riempio l'istogramma 2d solo se i due elettroni sono nello stesso bin di pt
-    int bin_index_pt0, bin_index_pt1;
-    bin_index_pt0 = h_scale_vs_pt->GetXaxis()->FindBin(ptEle[0]);
-    bin_index_pt1 = h_scale_vs_pt->GetXaxis()->FindBin(ptEle[1]);
-    if(bin_index_pt0 == bin_index_pt1 && bin_index_pt0 != 0 && bin_index_pt0 != (nbinsPt+1)){
-        h_scale_vs_pt->Fill(ptEle[0],invMass_ECAL_ele, weight);
-        //riempio anche l'istogramma con la massa raw SC
-        h_rawSC_vs_pt->Fill(ptEle[0], invMass_rawSC, weight);
-    }
-
-
-            } 
-        }  
-    }
-
-    h_invMass_ECAL_ele->Scale(1.0/h_invMass_ECAL_ele->Integral());
-    h_nPV->Scale(1.0/ h_nPV->Integral());
-    h_Pt_ele1->Scale(1.0/ h_Pt_ele1->Integral());
-    h_Pt_ele2->Scale(1.0/ h_Pt_ele2->Integral());
-    if(ntupla == 1)h_nPU->Scale(1.0/ h_nPU->Integral());
-    TProfile *prof = h_scale_vs_pt->ProfileX("mean inv Mass vs p_{T} after 2 reweights"); //voglio usarlo per vedere il profilo della massa invariante
-    ///////////////////////////////////
-    //aggiorno il contenuto degli istogrammi nel file .root e notifico che il ripesamento è stato effettuato
-    TH1F *h_invMass_rew2 = (TH1F*)h_invMass_ECAL_ele->Clone("ECAL invMass reweighted on Pt_JPsi and Ptele1");
-    h_invMass_rew2->Write("", TObject::kOverwrite);
-    prof->Write("", TObject::kOverwrite);
-    h_scale_vs_pt->Write("", TObject::kOverwrite);
-    h_nPV->Write("", TObject::kOverwrite);
-    h_Pt_ele1->Write("", TObject::kOverwrite);
-    h_Pt_ele2->Write("", TObject::kOverwrite);
-    if(ntupla == 1)h_nPU->Write("", TObject::kOverwrite);
-    Reweighted = 2;
-
-
-    //chiudo i file che ho aperto
-    mcHistFile->Close();
-    dataHistFile->Close();
-    delete mcHistFile;
-    delete dataHistFile;
-
-}
-
-void MyAnalysisSpicy::ReweightOnPtele2(){
-    
-    TFile *dataHistFile = TFile::Open("outputHistograms_DATA_partF.root", "UPDATE");
-    TH1F *h_Pt_ele2_data = (TH1F*)dataHistFile->Get("h_Pt_ele2");
-
-    TFile *mcHistFile = TFile::Open("outputHistograms_MC.root", "UPDATE");
-    TH1F *h_Pt_ele2_mc = (TH1F*)mcHistFile->Get("h_Pt_ele2");
-
-    //Bin personalizzati per l'asse di Pt
-    double Ptbins[] = {4, 7, 9, 11, 14, 20, 40};  
-    int nbinsPt = sizeof(Ptbins)/sizeof(double) - 1;
-    int nbinsZ = 120;
-    double zMin = 0;
-    double zMax = 6;
-    double zBins[nbinsZ + 1];
-    double zStep = (zMax - zMin) / nbinsZ;
-    for (int i = 0; i <= nbinsZ; ++i) {
-        zBins[i] = zMin + i * zStep;
-    }
-    TH2D *h_scale_vs_pt = new TH2D("h_scale_vs_pt", "TH2D of invariant mass and p_{T}[0] - 3 reweights;p_{T}[0];Invariant Mass (ECAL) [GeV]", nbinsPt, Ptbins, nbinsZ, zBins);
-    TH2D *h_rawSC_vs_pt = new TH2D("h_rawSC_vs_pt", "TH2D of raw invMass and p_{T}[0]; p_{T}[0]; Raw SC invMass [GeV]", nbinsPt, Ptbins, nbinsZ, zBins);
-
-    // Copio l'istogramma del MC che voglio ripesare
-    TH1F* h_Pt_ele2_mc_copy = (TH1F*)h_Pt_ele2_mc->Clone("h_Pt_ele2_mc_copy");
-
-    h_Pt_ele2_mc_copy->Scale(1.0/ h_Pt_ele2_mc_copy->Integral());
-    h_Pt_ele2_data->Scale(1.0/h_Pt_ele2_data->Integral());
-
-    TH1F *histoWeights;
-    histoWeights = Weights(h_Pt_ele2_mc_copy, h_Pt_ele2_data);
-    h_Pt_ele2_mc->Multiply(histoWeights); //posso usarlo per controllare che il Reweighting si chiuda
-
-    //ora devo loopare sulle entries per applicare i pesi sia alla massa invariante che a dxy
-
-    Long64_t nentries = fChain->GetEntriesFast(); 
-
-    //svuoto gli istogrammi che dovrò ripesare
-    h_invMass_ECAL_ele->Reset();
-    h_nPV->Reset();
-    h_Pt_ele1->Reset();
-    h_Pt_ele2->Reset();
-    if(ntupla == 1) h_nPU->Reset();
-
-     for (Long64_t jentry = 0; jentry < nentries; jentry++) {
-        Long64_t ientry = LoadTree(jentry);
-        if (ientry < 0) break; //se è negativo c'è stato un problema con il caricamento del file
-        fChain->GetEntry(jentry);
-        
-        TLorentzVector P_ele1, P_ele2;
-        P_ele1.SetPtEtaPhiE(ptEle[0],etaEle[0],phiEle[0],energy_ECAL_ele[0]);
-        P_ele2.SetPtEtaPhiE(ptEle[1],etaEle[1],phiEle[1],energy_ECAL_ele[1]);
-        double costheta;
-        if(Cut(jentry)){
-            costheta = P_ele1.Vect().Dot(P_ele2.Vect()) / (P_ele1.Vect().Mag() * P_ele2.Vect().Mag());
-        //Riempio l'istogramma con la massa ripesata
-    int binidx = h_Pt_ele2->FindBin(ptEle[1]);
-    int nBins_w = histoWeights->GetNbinsX(); 
-    if(binidx != 0 && binidx != nBins_w + 1) { // no underflow o overflow
-    double weight = histoWeights->GetBinContent(binidx);
-    // Riempimento degli istogrammi con il valore pesato
-    //h_invMass_ECAL_ele->Fill(invMass_ECAL_ele, weight);
-    h_invMass_ECAL_ele->Fill(sqrt(2*energy_ECAL_ele[0]*energy_ECAL_ele[1]*(1 - costheta)), weight);
-    h_nPV->Fill(static_cast<Int_t>(nPV), weight);
-    h_Pt_ele1->Fill(ptEle[0], weight);
-    h_Pt_ele2->Fill(ptEle[1], weight);
-    if(ntupla == 1)h_nPU->Fill(static_cast<Int_t>(nPU), weight);
-    //riempio l'istogramma 2d solo se i due elettroni sono nello stesso bin di pt
-    int bin_index_pt0, bin_index_pt1;
-    bin_index_pt0 = h_scale_vs_pt->GetXaxis()->FindBin(ptEle[0]);
-    bin_index_pt1 = h_scale_vs_pt->GetXaxis()->FindBin(ptEle[1]);
-    if(bin_index_pt0 == bin_index_pt1 && bin_index_pt0 != 0 && bin_index_pt0 != (nbinsPt+1)){
-        h_scale_vs_pt->Fill(ptEle[0],invMass_ECAL_ele, weight);
-        //riempio anche l'istogramma con la massa raw SC
-        h_rawSC_vs_pt->Fill(ptEle[0], invMass_rawSC, weight);
-    }
-
-
-            } 
-        }  
-    }
-
-    h_invMass_ECAL_ele->Scale(1.0/h_invMass_ECAL_ele->Integral());
-    h_nPV->Scale(1.0/ h_nPV->Integral());
-    h_Pt_ele1->Scale(1.0/ h_Pt_ele1->Integral());
-    h_Pt_ele2->Scale(1.0/ h_Pt_ele2->Integral());
-    if(ntupla == 1)h_nPU->Scale(1.0/ h_nPU->Integral());
-    TProfile *prof = h_scale_vs_pt->ProfileX("mean inv Mass vs p_{T} after 2 reweights"); //voglio usarlo per vedere il profilo della massa invariante
-    ///////////////////////////////////
-    //aggiorno il contenuto degli istogrammi nel file .root e notifico che il ripesamento è stato effettuato
-    TH1F *h_invMass_rew3 = (TH1F*)h_invMass_ECAL_ele->Clone("ECAL invMass reweighted on Pt_JPsi and Pt_ele1 and Pt_ele2");
-    h_invMass_rew3->Write("", TObject::kOverwrite);
-    prof->Write("", TObject::kOverwrite);
-    h_scale_vs_pt->Write("", TObject::kOverwrite);
-    h_nPV->Write("", TObject::kOverwrite);
-    h_Pt_ele1->Write("", TObject::kOverwrite);
-    h_Pt_ele2->Write("", TObject::kOverwrite);
-    if(ntupla == 1)h_nPU->Write("", TObject::kOverwrite);
-    Reweighted = 2;
-
-
-    //chiudo i file che ho aperto
-    mcHistFile->Close();
-    dataHistFile->Close();
-    delete mcHistFile;
-    delete dataHistFile;
-
-}
-
-
-
-
-////////////////////////////////////////////////// Ripesamento sul pileup (numero di vertici)
-void MyAnalysisSpicy::ReweightOnPileup(){
-    
-    TFile *dataHistFile = TFile::Open("outputHistograms_DATA_partF.root", "UPDATE");
-    TH1F *h_nPV_data = (TH1F*)dataHistFile->Get("h_nPV");
-
-    TFile *mcHistFile = TFile::Open("outputHistograms_MC.root", "UPDATE");
-    TH1F *h_nPV_mc = (TH1F*)mcHistFile->Get("h_nPV");
-
-    /*//Importo gli istogrammi di nPU
-    TFile *pileuphistos = TFile::Open("PileupHistograms/pileupHistogram-Cert_Collisions2022_355100_362760_GoldenJson-13p6TeV-69200ub-99bins.root", "READ");
-    TH1D *h_nPU_data = (TH1D*)pileuphistos->Get("pileup");
-    TH1F *h_nPU_data_copy = (TH1F*)h_nPU_data->Clone("h_nPU_data_copy");
-    h_nPU_data_copy->SetName("h_nPU");
-    h_nPU_data_copy->Scale(1.0/h_nPU_data_copy->Integral());
-    TH1D *h_nPU_mc = (TH1D*)mcHistFile->Get("h_nPU");*/
-
-    //Bin personalizzati per l'asse di Pt
-    double Ptbins[] = {4, 7, 9, 11, 14, 20, 40};  
-    int nbinsPt = sizeof(Ptbins)/sizeof(double) - 1; 
-    int nbinsZ = 120;
-    double zMin = 0;
-    double zMax = 6;
-    double zBins[nbinsZ + 1];
-    double zStep = (zMax - zMin) / nbinsZ;
-    for (int i = 0; i <= nbinsZ; ++i) {
-        zBins[i] = zMin + i * zStep;
-    }
-    TH2D *h_scale_vs_pt_diag = new TH2D("h_scale_vs_pt_diag", "TH2D of invariant mass and p_{T}[0] - only diag;p_{T}[0];Invariant Mass (ECAL) [GeV]", nbinsPt, Ptbins, nbinsZ, zBins);
-    TH2D *h_scale_vs_pt_offdiag = new TH2D("h_scale_vs_pt_offdiag", "TH2D of invariant mass and p_{T}[0] - only offdiag;p_{T}[0];Invariant Mass (ECAL) [GeV]", nbinsPt, Ptbins, nbinsZ, zBins);
-    TH2D *h_scale_vs_pt = new TH2D("h_scale_vs_pt", "TH2D of invariant mass and p_{T}[0] - all events;p_{T}[0];Invariant Mass (ECAL) [GeV]", nbinsPt, Ptbins, nbinsZ, zBins);
-    TH2D *h_rawSC_vs_pt = new TH2D("h_rawSC_vs_pt", "TH2D of raw invMass and p_{T}[0]; p_{T}[0]; Raw SC invMass [GeV]", nbinsPt, Ptbins, nbinsZ, zBins);
-
-
-    // Copio l'istogramma del MC che voglio ripesare
-    TH1F* h_nPV_mc_copy = (TH1F*)h_nPV_mc->Clone("h_nPV_mc_copy");
-
-    h_nPV_mc_copy->Scale(1.0/ h_nPV_mc_copy->Integral());
-    h_nPV_data->Scale(1.0/h_nPV_data->Integral());
-
-    TH1F *histoWeights;
-    histoWeights = Weights(h_nPV_mc_copy, h_nPV_data);
-    h_nPV_mc->Multiply(histoWeights); //posso usarlo per controllare che il Reweighting si chiuda
-
-    //ora devo loopare sulle entries per applicare i pesi sia alla massa invariante che a dxy
-
-    Long64_t nentries = fChain->GetEntriesFast(); 
-
-    //svuoto gli istogrammi che dovrò ripesare
-    h_invMass_ECAL_ele->Reset();
-    h_nPV->Reset();
-
-    for (Long64_t jentry = 0; jentry < nentries; jentry++) {
-        Long64_t ientry = LoadTree(jentry);
-        if (ientry < 0) break; //se è negativo c'è stato un problema con il caricamento del file
-        fChain->GetEntry(jentry);
-        
-        TLorentzVector P_ele1, P_ele2;
-        P_ele1.SetPtEtaPhiE(ptEle[0],etaEle[0],phiEle[0],energy_ECAL_ele[0]);
-        P_ele2.SetPtEtaPhiE(ptEle[1],etaEle[1],phiEle[1],energy_ECAL_ele[1]);
-        double costheta;
-        costheta = P_ele1.Vect().Dot(P_ele2.Vect()) / (P_ele1.Vect().Mag() * P_ele2.Vect().Mag());
-        if (Cut(jentry)) {
-            //Riempio l'istogramma con la massa ripesata e anche dxy post reweighting
-            int binidx = h_nPV_data->FindBin(static_cast<Int_t>(nPV));
-            int nBins_w = histoWeights->GetNbinsX(); 
-            if (binidx != 0 && binidx != nBins_w + 1) { // no underflow o overflow
-                double weight = histoWeights->GetBinContent(binidx);
-                // Riempimento degli istogrammi con il valore pesato
-                //h_invMass_ECAL_ele->Fill(invMass_ECAL_ele, weight);
-                h_invMass_ECAL_ele->Fill(sqrt(2*energy_ECAL_ele[0]*energy_ECAL_ele[1]*(1 - costheta)), weight);
-                h_nPV->Fill(static_cast<Int_t>(nPV), weight);
-
-                //riempio l'istogramma 2d solo se i due elettroni sono nello stesso bin di pt
-                int bin_index_pt0, bin_index_pt1;
-                bin_index_pt0 = h_scale_vs_pt->GetXaxis()->FindBin(ptEle[0]);
-                bin_index_pt1 = h_scale_vs_pt->GetXaxis()->FindBin(ptEle[1]);
-                if (bin_index_pt0 == bin_index_pt1) {
-                    h_scale_vs_pt_diag->Fill(ptEle[0], invMass_ECAL_ele, weight); //categorie diagonali
-                    //riempio anche l'istogramma con la massa raw SC
-                    h_rawSC_vs_pt->Fill(ptEle[0], invMass_rawSC, weight);
-                } else {
-                    h_scale_vs_pt_offdiag->Fill(ptEle[0], invMass_ECAL_ele, weight);  //categorie non diagonali
-                    if (bin_index_pt0 == 1)
-                        std::cout << "indice pt secondo ele" << bin_index_pt1 << "pt secondo ele: " << ptEle[1] << std::endl;
-                }
-                h_scale_vs_pt->Fill(ptEle[0], invMass_ECAL_ele, weight); //tutti gli eventi
-            }
-        }
-    }
-
-    h_invMass_ECAL_ele->Scale(1.0/h_invMass_ECAL_ele->Integral());
-    h_nPV->Scale(1.0/ h_nPV->Integral());
-    TProfile *prof = h_scale_vs_pt_diag->ProfileX("mean inv Mass vs p_{T} after 3 reweights"); //voglio usarlo per vedere il profilo della massa invariante
-    //controllo la chiusura su nPV
-    // Create canvas for visualization of nPV histograms
-    TCanvas *c_pileup = new TCanvas("c_pileup", "Pileup Comparison and Reweighting", 1200, 600);
-    c_pileup->Divide(2, 1);
-    
-    // First pad: MC before reweighting vs Data
-    c_pileup->cd(1);
-    SetPadMargins(c_pileup, 1);
-    
-    h_nPV_mc->SetLineColor(kBlue);
-    h_nPV_mc->SetLineWidth(2);
-    h_nPV_mc->SetStats(0);
-    h_nPV_mc->SetTitle("Pileup Distribution Before Reweighting");
-    h_nPV_mc->GetXaxis()->SetTitle("Number of Reconstructed Vertices");
-    h_nPV_mc->GetYaxis()->SetTitle("A.U.");
-    h_nPV_mc->Draw("HIST");
-    
-    h_nPV_data->SetLineColor(kRed);
-    h_nPV_data->SetLineWidth(2);
-    h_nPV_data->Draw("HIST SAME");
-    
-    TLegend *leg1 = new TLegend(0.65, 0.75, 0.85, 0.85);
-    leg1->AddEntry(h_nPV_mc, "MC (pre-reweight)", "l");
-    leg1->AddEntry(h_nPV_data, "Data", "l");
-    leg1->Draw();
-    
-    // Second pad: MC after reweighting vs Data
-    c_pileup->cd(2);
-    SetPadMargins(c_pileup, 2);
-    
-    h_nPV->SetLineColor(kBlue);
-    h_nPV->SetLineWidth(2);
-    h_nPV->SetStats(0);
-    h_nPV->SetTitle("Pileup Distribution After Reweighting");
-    h_nPV->GetXaxis()->SetTitle("Number of Reconstructed Vertices");
-    h_nPV->GetYaxis()->SetTitle("A.U.");
-    h_nPV->Draw("HIST");
-    
-    h_nPV_data->SetLineColor(kRed);
-    h_nPV_data->SetLineWidth(2);
-    h_nPV_data->Draw("HIST SAME");
-    
-    TLegend *leg2 = new TLegend(0.65, 0.75, 0.85, 0.85);
-    leg2->AddEntry(h_nPV, "MC (post-reweight)", "l");
-    leg2->AddEntry(h_nPV_data, "Data", "l");
-    leg2->Draw();
-    
-    // Save the canvas
-    c_pileup->SaveAs("pileup_reweighting_comparison.png");
-    delete c_pileup;
-    ////////////////////////////////////
-    mcHistFile->cd();
-
-   for(int i=0; i < nbinsPt; i++){
-    TH1D* proj_diag = h_scale_vs_pt_diag->ProjectionY(Form("proj_bin_%d", i+1), i+1, i+1);
-    TH1D* proj_offdiag = h_scale_vs_pt_offdiag->ProjectionY(Form("proj_offdiag_bin_%d", i+1), i+1, i+1);
-    TH1D* proj_all = h_scale_vs_pt->ProjectionY(Form("proj_all_bin_%d", i+1), i+1, i+1);
-    TH1D* proj_rawSC = h_rawSC_vs_pt->ProjectionY(Form("rawSC_bin_%d", i+1), i+1, i+1);
-    proj_diag->SetTitle(Form("%2.1lf GeV < p_{T} < %2.1lf GeV", h_scale_vs_pt_diag->GetXaxis()->GetBinLowEdge(i+1), (h_scale_vs_pt_diag->GetXaxis()->GetBinLowEdge(i+1) + h_scale_vs_pt_diag->GetXaxis()->GetBinWidth(i+1))));
-    proj_offdiag->SetTitle(Form("%2.1lf GeV < p_{T} < %2.1lf GeV", h_scale_vs_pt_diag->GetXaxis()->GetBinLowEdge(i+1), (h_scale_vs_pt_diag->GetXaxis()->GetBinLowEdge(i+1) + h_scale_vs_pt_diag->GetXaxis()->GetBinWidth(i+1))));
-    proj_all->SetTitle(Form("%2.1lf GeV < p_{T} < %2.1lf GeV", h_scale_vs_pt_diag->GetXaxis()->GetBinLowEdge(i+1), (h_scale_vs_pt_diag->GetXaxis()->GetBinLowEdge(i+1) + h_scale_vs_pt_diag->GetXaxis()->GetBinWidth(i+1))));
-    //faccio la projection anche della massa raw SC
-    proj_rawSC->SetTitle(Form("Raw Mass - %2.1lf GeV < p_{T} < %2.1lf GeV", h_rawSC_vs_pt->GetXaxis()->GetBinLowEdge(i+1), (h_rawSC_vs_pt->GetXaxis()->GetBinLowEdge(i+1) + h_rawSC_vs_pt->GetXaxis()->GetBinWidth(i+1))));
-    proj_diag->Write();
-    proj_offdiag->Write();
-    proj_all->Write();
-    proj_rawSC->Write();
-    
-   }
-   TH1D* proj_full = h_scale_vs_pt_diag->ProjectionY("invmass_fullrange");
-
-    ///////////////////////////////////
-    //aggiorno il contenuto degli istogrammi nel file .root e notifico che il ripesamento è stato effettuato
-    TH1F *h_invMass_rew3 = (TH1F*)h_invMass_ECAL_ele->Clone("h_invmass_ECAL_3reweights");
-    h_invMass_rew3->Write("", TObject::kOverwrite);
-    prof->Write("", TObject::kOverwrite);
-    h_scale_vs_pt_diag->Write("", TObject::kOverwrite);
-    h_scale_vs_pt_offdiag->Write("", TObject::kOverwrite);
-    h_scale_vs_pt->Write("", TObject::kOverwrite);
-    h_nPV->Write("", TObject::kOverwrite);
-    Reweighted = 3;
-
-
-    //chiudo i file che ho aperto
-    mcHistFile->Close();
-    dataHistFile->Close();
-    delete mcHistFile;
-    delete dataHistFile;
-
-}
-
-
 
 
 void MyAnalysisSpicy::MonteCarloReweighting(){
@@ -1263,34 +760,41 @@ void MyAnalysisSpicy::MonteCarloReweighting(){
     TFile *dataHistFile = TFile::Open("outputHistograms_DATA_partF.root", "UPDATE");
     TFile *mcHistFile = TFile::Open("outputHistograms_MC.root", "UPDATE");
 
-    // Get histograms for ptjpsi, ptele1, ptele2
+    // Get histograms for ptjpsi, ptele1, ptele2, nPV
     TH1F *h_ptjpsi_data = (TH1F*)dataHistFile->Get("h_Pt_JPsi");
     TH1F *h_ptjpsi_mc = (TH1F*)mcHistFile->Get("h_Pt_JPsi");
     TH1F *h_ptele1_data = (TH1F*)dataHistFile->Get("h_Pt_ele1");
     TH1F *h_ptele1_mc = (TH1F*)mcHistFile->Get("h_Pt_ele1");
     TH1F *h_ptele2_data = (TH1F*)dataHistFile->Get("h_Pt_ele2");
     TH1F *h_ptele2_mc = (TH1F*)mcHistFile->Get("h_Pt_ele2");
+    TH1F *h_nPV_data = (TH1F*)dataHistFile->Get("h_nPV");
+    TH1F *h_nPV_mc = (TH1F*)mcHistFile->Get("h_nPV");
 
     // Clone and normalize MC histograms
     TH1F* h_ptjpsi_mc_copy = (TH1F*)h_ptjpsi_mc->Clone("h_ptjpsi_mc_copy");
     TH1F* h_ptele1_mc_copy = (TH1F*)h_ptele1_mc->Clone("h_ptele1_mc_copy");
     TH1F* h_ptele2_mc_copy = (TH1F*)h_ptele2_mc->Clone("h_ptele2_mc_copy");
+    TH1F* h_nPV_mc_copy = (TH1F*)h_nPV_mc->Clone("h_nPV_mc_copy");
     h_ptjpsi_mc_copy->Scale(1.0 / h_ptjpsi_mc_copy->Integral());
     h_ptjpsi_data->Scale(1.0 / h_ptjpsi_data->Integral());
     h_ptele1_mc_copy->Scale(1.0 / h_ptele1_mc_copy->Integral());
     h_ptele1_data->Scale(1.0 / h_ptele1_data->Integral());
     h_ptele2_mc_copy->Scale(1.0 / h_ptele2_mc_copy->Integral());
     h_ptele2_data->Scale(1.0 / h_ptele2_data->Integral());
+    h_nPV_mc_copy->Scale(1.0 / h_nPV_mc_copy->Integral());
+    h_nPV_data->Scale(1.0 / h_nPV_data->Integral());
 
     // Create weight histograms
+
+    TH1F *Weights4 = Weights(h_nPV_mc_copy, h_nPV_data);
     TH1F *Weights1 = Weights(h_ptjpsi_mc_copy, h_ptjpsi_data);
     TH1F *Weights2 = Weights(h_ptele1_mc_copy, h_ptele1_data);
     TH1F *Weights3 = Weights(h_ptele2_mc_copy, h_ptele2_data);
 
     // Define binning for h_scale_vs_pt
-    double Ptbins[] = {4, 7, 9, 11, 14, 20, 40};
+    double Ptbins[] = {4, 7.5, 9, 11, 14, 20, 40};
     int nbinsPt = sizeof(Ptbins)/sizeof(double) - 1;
-    int nbinsZ = 120;
+    int nbinsZ = 180;
     double zMin = 0;
     double zMax = 6;
     double zBins[nbinsZ + 1];
@@ -1298,8 +802,12 @@ void MyAnalysisSpicy::MonteCarloReweighting(){
     for (int i = 0; i <= nbinsZ; ++i) {
         zBins[i] = zMin + i * zStep;
     }
-    TH2D *h_scale_vs_pt = new TH2D("h_scale_vs_pt_reweighted", "TH2D of invariant mass and p_{T} - 3D reweight;p_{T}[0];Invariant Mass (ECAL) [GeV]", nbinsPt, Ptbins, nbinsZ, zBins);
-
+    TH2D *h_scale_vs_pt = new TH2D("h_scale_vs_pt_reweighted", "TH2D of invariant mass and p_{T} - 4D reweight;p_{T}[0];Invariant Mass (ECAL) [GeV]", nbinsPt, Ptbins, nbinsZ, zBins);
+    TH2D *h_invmass_vs_pt_all = new TH2D("h_invmass_vs_pt_all_reweighted", "TH2D of invariant mass and p_{T} - all events;p_{T}[0];Invariant Mass (ECAL) [GeV]", nbinsPt, Ptbins, nbinsZ, zBins);
+    TH2D *h_invmass_vs_pt_all_fullele = new TH2D("h_invmass_vs_pt_all_fullele", "TH2D of invariant mass and p_{T} - all events (full ele);p_{T}[0];Invariant Mass (ECAL) [GeV]", nbinsPt, Ptbins, nbinsZ, zBins);
+    TH2D *h_rawSC_vs_pt = new TH2D("h_rawSC_vs_pt_reweighted", "TH2D of raw invMass and p_{T}[0]; p_{T}[0]; Raw SC invMass [GeV]", nbinsPt, Ptbins, nbinsZ, zBins);
+    TH2D *h_invmass_vs_pt_fullele = new TH2D("h_invmass_vs_pt_fullele", "TH2D of invariant mass and p_{T} - full ele; p_{T}[0]; Invariant Mass (ECAL) [GeV]", nbinsPt, Ptbins, nbinsZ, zBins);
+    
     Long64_t nentries = fChain->GetEntriesFast();
     for (Long64_t jentry = 0; jentry < nentries; jentry++) {
         Long64_t ientry = LoadTree(jentry);
@@ -1307,28 +815,37 @@ void MyAnalysisSpicy::MonteCarloReweighting(){
         fChain->GetEntry(jentry);
         if (Cut(jentry)) {
             TLorentzVector P_ele1, P_ele2, P_JPsi;
-            P_ele1.SetPtEtaPhiE(ptEle[0], etaEle[0], phiEle[0], energy_ECAL_ele[0]);
-            P_ele2.SetPtEtaPhiE(ptEle[1], etaEle[1], phiEle[1], energy_ECAL_ele[1]);
+            P_ele1.SetPtEtaPhiE(ptEle[0], etaEle[0], phiEle[0], energyEle[0]);
+            P_ele2.SetPtEtaPhiE(ptEle[1], etaEle[1], phiEle[1], energyEle[1]);
             P_JPsi = P_ele1 + P_ele2;
             double costheta = P_ele1.Vect().Dot(P_ele2.Vect()) / (P_ele1.Vect().Mag() * P_ele2.Vect().Mag());
             int binidx1 = Weights1->FindBin(P_JPsi.Pt());
             int binidx2 = Weights2->FindBin(ptEle[0]);
             int binidx3 = Weights3->FindBin(ptEle[1]);
+            int binidx4 = Weights4->FindBin(static_cast<Int_t>(nPV));
             int nBins_w1 = Weights1->GetNbinsX();
             int nBins_w2 = Weights2->GetNbinsX();
             int nBins_w3 = Weights3->GetNbinsX();
+            int nBins_w4 = Weights4->GetNbinsX();
             if (binidx1 != 0 && binidx1 != nBins_w1 + 1 &&
                 binidx2 != 0 && binidx2 != nBins_w2 + 1 &&
-                binidx3 != 0 && binidx3 != nBins_w3 + 1) {
-                double w1 = Weights1->GetBinContent(binidx1);
+                binidx3 != 0 && binidx3 != nBins_w3 + 1 &&
+                binidx4 != 0 && binidx4 != nBins_w4 + 1) {
+                double w1 = Weights1->GetBinContent(binidx1); 
                 double w2 = Weights2->GetBinContent(binidx2);
                 double w3 = Weights3->GetBinContent(binidx3);
-                double weight = w1 * w2 * w3;
+                double w4 = Weights4->GetBinContent(binidx4);
+                double weight = w1 * w2 * w3 * w4;
                 int bin_index_pt0 = h_scale_vs_pt->GetXaxis()->FindBin(ptEle[0]);
                 int bin_index_pt1 = h_scale_vs_pt->GetXaxis()->FindBin(ptEle[1]);
                 if (bin_index_pt0 == bin_index_pt1) {
                     h_scale_vs_pt->Fill(ptEle[0], sqrt(2*energy_ECAL_ele[0]*energy_ECAL_ele[1]*(1 - costheta)), weight);
+                    h_rawSC_vs_pt->Fill(ptEle[0], invMass_rawSC, weight);
+                    h_invmass_vs_pt_fullele->Fill(ptEle[0], invMass, weight);
                 }
+                h_invmass_vs_pt_all->Fill(ptEle[0], sqrt(2*energy_ECAL_ele[0]*energy_ECAL_ele[1]*(1 - costheta)), weight);
+                h_invmass_vs_pt_all_fullele->Fill(ptEle[0], sqrt(2*energyEle[0]*energyEle[1]*(1 - costheta)), weight);
+                
             }
         }
     }
@@ -1336,6 +853,10 @@ void MyAnalysisSpicy::MonteCarloReweighting(){
     // Write output
     mcHistFile->cd();
     h_scale_vs_pt->Write();
+    h_invmass_vs_pt_all->Write();
+    h_invmass_vs_pt_fullele->Write();
+    h_rawSC_vs_pt->Write();
+    h_invmass_vs_pt_all_fullele->Write();
 
     mcHistFile->Close();
     dataHistFile->Close();
@@ -1356,7 +877,7 @@ void MyAnalysisSpicy::ApplyCorrectionsVsPtandRun(){
     TH2D *corr_1ele = (TH2D*)corrections_file->Get("h_corr_1ele");    
 
     //definisco binning vari per gli istogrammi
-    int Nbins_invm = 120, nbinsPt =6;
+    int Nbins_invm = 180, nbinsPt =6;
     double invm_min = 0;
     double invm_max = 6;
     double invmBins[Nbins_invm + 1];
@@ -1365,7 +886,7 @@ void MyAnalysisSpicy::ApplyCorrectionsVsPtandRun(){
         invmBins[i] = invm_min + i * invmStep;
     }
 
-    double Ptbins[] = {4, 7, 9, 11, 14, 20, 40}; 
+    double Ptbins[] = {4, 7.5, 9, 11, 14, 20, 40}; 
     double runBins[] = {356309, 356900, 357538, 357732, 360000, 360400, 361000, 361600, 362200, 362760}; 
     int nBinsRun = sizeof(runBins)/sizeof(double) - 1;
 
@@ -1405,11 +926,12 @@ void MyAnalysisSpicy::ApplyCorrectionsVsPtandRun(){
             //Calcolo la massa invariante corretta e riempio l'istogramma
             ene1_corrected = corr_1ele->GetBinContent(ptidx_1, runidx) * energy_ECAL_ele[0];
             ene2_corrected = corr_1ele->GetBinContent(ptidx_2, runidx) * energy_ECAL_ele[1];
+    
             //Correggo anche i quadrimpulsi per correggere l'angolo
-            P_ele1_corr.SetPtEtaPhiE(ptEle[0],etaEle[0],phiEle[0],ene1_corrected);
-            P_ele2_corr.SetPtEtaPhiE(ptEle[1],etaEle[1],phiEle[1],ene2_corrected);
+            P_ele1_corr.SetPtEtaPhiE(ptEle[0],etaEle[0],phiEle[0],energyEle[0]);
+            P_ele2_corr.SetPtEtaPhiE(ptEle[1],etaEle[1],phiEle[1],energyEle[1]);
             costheta_corr = P_ele1_corr.Vect().Dot(P_ele2_corr.Vect()) / (P_ele1_corr.Vect().Mag() * P_ele2_corr.Vect().Mag());
-
+ 
 
             h_invMass_ECAL_corrected->Fill(ptEle[0], runNumber, sqrt(2 * ene1_corrected * ene2_corrected*(1 - costheta_corr)));
             h_invmass_fromscratch->Fill(sqrt(2 * energy_ECAL_ele[0] * energy_ECAL_ele[1]*(1 - costheta)));
@@ -1472,38 +994,40 @@ void MyAnalysisSpicy::ApplyCorrectionsVsPtandRun(){
 }
 
 
-void MyAnalysisSpicy::ApplySmearingCorrections(){
-    TFile *smearing_file = TFile::Open("smearing_corrections.root", "READ");
-    if (!smearing_file || smearing_file->IsZombie()) {
-        std::cerr << "Error: Could not open smearing_corrections.root" << std::endl;
-        return;
-    }
 
-    TFile *MCHistFile = TFile::Open("outputHistograms_MC.root", "UPDATE");
+void MyAnalysisSpicy::ApplyCorrectionsFullEle(){
+
+    TFile *dataHistFile = TFile::Open("outputHistograms_DATA_partF.root", "UPDATE"); //Apro il file su cui salverò le quantità con la correzione applicata
+    TFile *corrections_file = TFile::Open("scale_corrections_fullEle.root", "READ"); //apro il file che contiene le correzioni di scala
 
     //Estraggo l'istogramma con le correzioni di singolo elettrone
-    TH1D *h_DeltaC = (TH1D*)smearing_file->Get("h_DeltaC");
+    TH2D *corr_1ele = (TH2D*)corrections_file->Get("h_corr_1ele_fullEle");    
 
     //definisco binning vari per gli istogrammi
-    int Nbins_invm = 120, nbinsPt =6;
+    int Nbins_invm = 180, nbinsPt =6;
     double invm_min = 0;
     double invm_max = 6;
-    double invmBins[Nbins_invm + 1];    
+    double invmBins[Nbins_invm + 1];
     double invmStep = (invm_max - invm_min) / Nbins_invm;
     for (int i = 0; i <= Nbins_invm; ++i) {
         invmBins[i] = invm_min + i * invmStep;
     }
 
-    double Ptbins[] = {4, 7, 9, 11, 14, 20, 40}; 
+    double Ptbins[] = {4, 7.5, 9, 11, 14, 20, 40}; 
     double runBins[] = {356309, 356900, 357538, 357732, 360000, 360400, 361000, 361600, 362200, 362760}; 
     int nBinsRun = sizeof(runBins)/sizeof(double) - 1;
 
-    TH2D *h_invMass_ECAL_corrected_smearing = new TH2D("h_invMass_ECAL_corrected_smearing", "Invariant mass from energies with smearing corrections applied; p_{T}[0]; m(e^{+}e^{-}) [GeV]",nbinsPt, Ptbins, Nbins_invm, invmBins);
-
+    TH3D *h_invMass_corrected = new TH3D("h_invMass_corrected", "Invariant mass from energies with scale corrections applied; p_{T}[0]; Run Number; m(e^{+}e^{-}) [GeV]",nbinsPt, Ptbins, nBinsRun, runBins, Nbins_invm, invmBins);
+    TH3D *h_invMass_check = new TH3D("h_invMass_check", "Invariant mass computed from ECAL energies; p_{T}[0]; Run Number; m(e^{+}e^{-}) [GeV]",nbinsPt, Ptbins, nBinsRun, runBins, Nbins_invm, invmBins); //stessa di prima ma senza applicare correzioni (per controllare che corrisponda a quella nelle ntuple)
+    TH3D *h_invMass_corr_offdiag = new TH3D("h_invMass_corr_offdiag", "Invariant mass with scale corrections applied - off diagonal categories; p_{T}[0]; Run Number; m(e^{+}e^{-}) [GeV]",nbinsPt, Ptbins, nBinsRun, runBins, Nbins_invm, invmBins);
+    TH3D *h_invMass_check_offdiag = new TH3D("h_invMass_check_offdiag", "Invariant mass computed from ECAL energies - off diagonal categories; p_{T}[0]; Run Number; m(e^{+}e^{-}) [GeV]",nbinsPt, Ptbins, nBinsRun, runBins, Nbins_invm, invmBins); 
+    TH3D *h_invMass_corr_diag = new TH3D("h_invMass_corr_diag", "Invariant mass with scale corrections applied - diagonal categories; p_{T}[0]; Run Number; m(e^{+}e^{-}) [GeV]",nbinsPt, Ptbins, nBinsRun, runBins, Nbins_invm, invmBins);
+    TH3D *h_invMass_check_diag = new TH3D("h_invMass_check_diag", "Invariant mass computed from ECAL energies - diagonal categories; p_{T}[0]; Run Number; m(e^{+}e^{-}) [GeV]",nbinsPt, Ptbins, nBinsRun, runBins, Nbins_invm, invmBins);
+    
     Long64_t nentries = fChain->GetEntriesFast(); 
     double ene1_corrected, ene2_corrected; //queste variabili conterranno le energie dei 2 elettroni corrette dalla scala
-    double costheta, DeltaC_1, DeltaC_2; //coseno dell'angolo compreso tra i due impulsi 
-    int ptidx_1, ptidx_2; //indici dei bin per i 2 elettroni (per trovare quale correzione applicare)
+    double costheta, costheta_corr; //coseno dell'angolo compreso tra i due impulsi 
+    int ptidx_1, ptidx_2, runidx; //indici dei bin per i 2 elettroni (per trovare quale correzione applicare)
 
     for (Long64_t jentry = 0; jentry < nentries; jentry++) {
         Long64_t ientry = LoadTree(jentry);
@@ -1513,35 +1037,177 @@ void MyAnalysisSpicy::ApplySmearingCorrections(){
         if(Cut(jentry)){
             //Calcolo l'angolo compreso tra i due impulsi
             TLorentzVector P_ele1, P_ele2, P_ele1_corr, P_ele2_corr;
-            P_ele1.SetPtEtaPhiE(ptEle[0],etaEle[0],phiEle[0],energy_ECAL_ele[0]);
-            P_ele2.SetPtEtaPhiE(ptEle[1],etaEle[1],phiEle[1],energy_ECAL_ele[1]);
+            P_ele1.SetPtEtaPhiE(ptEle[0],etaEle[0],phiEle[0],energyEle[0]);
+            P_ele2.SetPtEtaPhiE(ptEle[1],etaEle[1],phiEle[1],energyEle[1]);
             costheta = P_ele1.Vect().Dot(P_ele2.Vect()) / (P_ele1.Vect().Mag() * P_ele2.Vect().Mag());
             //controllo in che bin di Pt e Run number sono gli elettroni e correggo le energie di ECAL
-            ptidx_1 = h_invMass_ECAL_corrected_smearing->GetXaxis()->FindBin(ptEle[0]);
-            ptidx_2 = h_invMass_ECAL_corrected_smearing->GetXaxis()->FindBin(ptEle[1]);
+            ptidx_1 = h_invMass_corrected->GetXaxis()->FindBin(ptEle[0]);
+            runidx = h_invMass_corrected->GetYaxis()->FindBin(runNumber); //è lo stesso per entrambi gli elettroni obv
+            ptidx_2 = h_invMass_corrected->GetXaxis()->FindBin(ptEle[1]);
 
-            DeltaC_1 = h_DeltaC->GetBinContent(ptidx_1);
-            DeltaC_2 = h_DeltaC->GetBinContent(ptidx_2);
-
-            //Correggo le energie di ECAL
-            // Apply smearing: extract ene1_corrected from Gaussian(mean=energy_ECAL_ele[0], sigma=DeltaC_1*energy_ECAL_ele[0])
-            ene1_corrected = gRandom->Gaus(energy_ECAL_ele[0], DeltaC_1 * energy_ECAL_ele[0]);
-            ene2_corrected = gRandom->Gaus(energy_ECAL_ele[1], DeltaC_2 * energy_ECAL_ele[1]);
+            //Calcolo la massa invariante di controllo e riempio l'istogramma
+            h_invMass_check->Fill(ptEle[0], runNumber, sqrt(2*energyEle[0]*energyEle[1]*(1 - costheta)));
+            //Calcolo la massa invariante corretta e riempio l'istogramma
+            ene1_corrected = corr_1ele->GetBinContent(ptidx_1, runidx) * energyEle[0];
+            ene2_corrected = corr_1ele->GetBinContent(ptidx_2, runidx) * energyEle[1];
+            //Correggo anche i quadrimpulsi per correggere l'angolo
+            P_ele1_corr.SetPtEtaPhiE(ptEle[0],etaEle[0],phiEle[0],ene1_corrected);
+            P_ele2_corr.SetPtEtaPhiE(ptEle[1],etaEle[1],phiEle[1],ene2_corrected);
+            costheta_corr = P_ele1_corr.Vect().Dot(P_ele2_corr.Vect()) / (P_ele1_corr.Vect().Mag() * P_ele2_corr.Vect().Mag());
  
-            h_invMass_ECAL_corrected_smearing->Fill(ptEle[0], runNumber, sqrt(2 * ene1_corrected * ene2_corrected*(1 - costheta)));
+
+            h_invMass_corrected->Fill(ptEle[0], runNumber, sqrt(2 * ene1_corrected * ene2_corrected*(1 - costheta_corr)));
+
+            if(ptidx_1 != ptidx_2){
+                h_invMass_corr_offdiag->Fill(ptEle[0], runNumber, sqrt(2 * ene1_corrected * ene2_corrected*(1 - costheta_corr)));
+                h_invMass_check_offdiag->Fill(ptEle[0], runNumber, sqrt(2 * energyEle[0] * energyEle[1]*(1 - costheta)));
+            }
+            else{
+                h_invMass_corr_diag->Fill(ptEle[0], runNumber, sqrt(2 * ene1_corrected * ene2_corrected*(1 - costheta_corr)));
+                h_invMass_check_diag->Fill(ptEle[0], runNumber, sqrt(2 * energyEle[0] * energyEle[1]*(1 - costheta)));
+            }
+
 
             
+        }
 
+    }
+    //scrivo sul file gli istogrammi
+    dataHistFile->cd();
+    h_invMass_check->Write();
+    h_invMass_check_diag->Write();
+    h_invMass_corr_diag->Write();
+    h_invMass_corrected->Write();
+    h_invMass_check_offdiag->Write();
+
+    //creo un file per le projection da fittare vs run number
+   // TFile *verifycorr_file = new TFile("scale_validation.root", "RECREATE");
+
+
+    dataHistFile->Close();
+    delete dataHistFile;
+
+}
+
+
+void MyAnalysisSpicy::ApplySmearingCorrectionsFullEle(){
+
+    // Open smearing corrections
+    TFile *smearing_file = TFile::Open("smearing_corrections_fullele.root", "READ");
+    if (!smearing_file || smearing_file->IsZombie()) {
+        std::cerr << "Error: Could not open smearing_corrections.root" << std::endl;
+        return;
+    }
+
+    // Open MC and Data histogram files for reweighting
+    TFile *MCHistFile = TFile::Open("outputHistograms_MC.root", "UPDATE");
+    TFile *dataHistFile = TFile::Open("outputHistograms_DATA_partF.root", "UPDATE");
+
+    // Get histograms for ptjpsi, ptele1, ptele2, nPV
+    TH1F *h_ptjpsi_data = (TH1F*)dataHistFile->Get("h_Pt_JPsi");
+    TH1F *h_ptjpsi_mc = (TH1F*)MCHistFile->Get("h_Pt_JPsi");
+    TH1F *h_ptele1_data = (TH1F*)dataHistFile->Get("h_Pt_ele1");
+    TH1F *h_ptele1_mc = (TH1F*)MCHistFile->Get("h_Pt_ele1");
+    TH1F *h_ptele2_data = (TH1F*)dataHistFile->Get("h_Pt_ele2");
+    TH1F *h_ptele2_mc = (TH1F*)MCHistFile->Get("h_Pt_ele2");
+    TH1F *h_nPV_data = (TH1F*)dataHistFile->Get("h_nPV");
+    TH1F *h_nPV_mc = (TH1F*)MCHistFile->Get("h_nPV");
+
+    // Clone and normalize MC histograms
+    TH1F* h_ptjpsi_mc_copy = (TH1F*)h_ptjpsi_mc->Clone("h_ptjpsi_mc_copy");
+    TH1F* h_ptele1_mc_copy = (TH1F*)h_ptele1_mc->Clone("h_ptele1_mc_copy");
+    TH1F* h_ptele2_mc_copy = (TH1F*)h_ptele2_mc->Clone("h_ptele2_mc_copy");
+    TH1F* h_nPV_mc_copy = (TH1F*)h_nPV_mc->Clone("h_nPV_mc_copy");
+    h_ptjpsi_mc_copy->Scale(1.0 / h_ptjpsi_mc_copy->Integral());
+    h_ptjpsi_data->Scale(1.0 / h_ptjpsi_data->Integral());
+    h_ptele1_mc_copy->Scale(1.0 / h_ptele1_mc_copy->Integral());
+    h_ptele1_data->Scale(1.0 / h_ptele1_data->Integral());
+    h_ptele2_mc_copy->Scale(1.0 / h_ptele2_mc_copy->Integral());
+    h_ptele2_data->Scale(1.0 / h_ptele2_data->Integral());
+    h_nPV_mc_copy->Scale(1.0 / h_nPV_mc_copy->Integral());
+    h_nPV_data->Scale(1.0 / h_nPV_data->Integral());
+
+    // Create weight histograms
+    TH1F *Weights1 = Weights(h_ptjpsi_mc_copy, h_ptjpsi_data);
+    TH1F *Weights2 = Weights(h_ptele1_mc_copy, h_ptele1_data);
+    TH1F *Weights3 = Weights(h_ptele2_mc_copy, h_ptele2_data);
+    TH1F *Weights4 = Weights(h_nPV_mc_copy, h_nPV_data);
+
+    // Extract smearing corrections
+    TH1D *h_DeltaC = (TH1D*)smearing_file->Get("h_DeltaC");
+
+    // Define binning for output histogram
+    int Nbins_invm = 180, nbinsPt =6;
+    double invm_min = 0;
+    double invm_max = 6;
+    double invmBins[Nbins_invm + 1];    
+    double invmStep = (invm_max - invm_min) / Nbins_invm;
+    for (int i = 0; i <= Nbins_invm; ++i) {
+        invmBins[i] = invm_min + i * invmStep;
+    }
+    double Ptbins[] = {4, 7.5, 9, 11, 14, 20, 40}; 
+    TH2D *h_invMass_corrected_smearing = new TH2D("h_invMass_corrected_smearing", "Invariant mass from energies with smearing corrections applied; p_{T}[0]; m(e^{+}e^{-}) [GeV]",nbinsPt, Ptbins, Nbins_invm, invmBins);
+
+    Long64_t nentries = fChain->GetEntriesFast(); 
+    double ene1_corrected, ene2_corrected, correction1, correction2; //queste variabili conterranno le energie dei 2 elettroni corrette dalla scala
+    double costheta, DeltaC_1, DeltaC_2; //coseno dell'angolo compreso tra i due impulsi 
+    int ptidx_1, ptidx_2; //indici dei bin per i 2 elettroni (per trovare quale correzione applicare)
+
+    for (Long64_t jentry = 0; jentry < nentries; jentry++) {
+        Long64_t ientry = LoadTree(jentry);
+        if (ientry < 0) break;
+        fChain->GetEntry(jentry);
+
+        if(Cut(jentry)){
+            TLorentzVector P_ele1, P_ele2;
+            P_ele1.SetPtEtaPhiE(ptEle[0],etaEle[0],phiEle[0],energyEle[0]);
+            P_ele2.SetPtEtaPhiE(ptEle[1],etaEle[1],phiEle[1],energyEle[1]);
+            double costheta = P_ele1.Vect().Dot(P_ele2.Vect()) / (P_ele1.Vect().Mag() * P_ele2.Vect().Mag());
+
+            // Reweighting as in MonteCarloReweighting
+            TLorentzVector P_JPsi = P_ele1 + P_ele2;
+            int binidx1 = Weights1->FindBin(P_JPsi.Pt());
+            int binidx2 = Weights2->FindBin(ptEle[0]);
+            int binidx3 = Weights3->FindBin(ptEle[1]);
+            int binidx4 = Weights4->FindBin(static_cast<Int_t>(nPV));
+            int nBins_w1 = Weights1->GetNbinsX();
+            int nBins_w2 = Weights2->GetNbinsX();
+            int nBins_w3 = Weights3->GetNbinsX();
+            int nBins_w4 = Weights4->GetNbinsX();
+            double weight = 1.0;
+            if (binidx1 != 0 && binidx1 != nBins_w1 + 1 &&
+                binidx2 != 0 && binidx2 != nBins_w2 + 1 &&
+                binidx3 != 0 && binidx3 != nBins_w3 + 1 &&
+                binidx4 != 0 && binidx4 != nBins_w4 + 1) {
+                double w1 = Weights1->GetBinContent(binidx1);
+                double w2 = Weights2->GetBinContent(binidx2);
+                double w3 = Weights3->GetBinContent(binidx3);
+                double w4 = Weights4->GetBinContent(binidx4);
+                weight = w1 * w2 * w3 * w4;
+            }
+
+            // Smearing corrections
+            ptidx_1 = h_invMass_corrected_smearing->GetXaxis()->FindBin(ptEle[0]);
+            ptidx_2 = h_invMass_corrected_smearing->GetXaxis()->FindBin(ptEle[1]);
+            DeltaC_1 = h_DeltaC->GetBinContent(ptidx_1);
+            DeltaC_2 = h_DeltaC->GetBinContent(ptidx_2);
+            //ene1_corrected = gRandom->Gaus(energy_ECAL_ele[0], DeltaC_1 * energy_ECAL_ele[0]);
+            //ene2_corrected = gRandom->Gaus(energy_ECAL_ele[1], DeltaC_2 * energy_ECAL_ele[1]);
+            correction1 = gRandom->Gaus(1, DeltaC_1);
+            correction2 = gRandom->Gaus(1, DeltaC_2);
+
+            h_invMass_corrected_smearing->Fill(ptEle[0], invMass*sqrt(correction1*correction2), weight);
         }
     }
 
     MCHistFile->cd();
-    h_invMass_ECAL_corrected_smearing->Write();
-
+    h_invMass_corrected_smearing->Write();
 
     smearing_file->Close();
     delete smearing_file;
     MCHistFile->Close();
+    delete MCHistFile;
+    dataHistFile->Close();
     delete dataHistFile;
 }
 

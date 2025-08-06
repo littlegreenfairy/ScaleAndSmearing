@@ -71,6 +71,16 @@
         "MyClass.C": "cpp",
         "PlotProjections.C": "cpp",
         "PlotRatioScandsmVsCorrected.C": "cpp",
-        "FitDataPostSmearingcorr.C": "cpp"
+        "FitDataPostSmearingcorr.C": "cpp",
+        "ValidateSmearingCorrections.C": "cpp",
+        "FitRawScaleAndSmearing.C": "cpp",
+        "ProjectFullElectronHistograms.C": "cpp",
+        "ScaleonFullElectron.C": "cpp",
+        "FitDataPostcorrFullEle.C": "cpp",
+        "FitProjectionMCAllFullEle.C": "cpp",
+        "CutComparison_Data_MC.C": "cpp",
+        "CutComparison.C": "cpp",
+        "FitDataAllFullEle.C": "cpp",
+        "FitDataPostcorrDiagFullEle.C": "cpp"
     }
 }

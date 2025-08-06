@@ -150,14 +150,11 @@ public:
    virtual Bool_t   Notify(); //per gestire cambiamenti quando si passa da un file all'altro della chain
    virtual void     Show(Long64_t entry = -1); //visualizza i dati di una entry, quella corrente se non specificato
 
-   virtual void ReweightOnPt();
-   virtual void ReweightOnPtele1();
-   virtual void ReweightOnPtele2();
-   virtual void ReweightOnPileup();
    virtual void ApplyCorrectionsVsPtandRun();
    virtual void MonteCarloReweighting();
-   virtual void ApplySmearingCorrections();
-   
+   virtual void ApplySmearingCorrectionsFullEle();
+   virtual void ApplyCorrectionsFullEle();
+
     //N.B entry = evento
 
 

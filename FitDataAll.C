@@ -346,7 +346,7 @@ void FitDataAll(){
     tree->SetBranchAddress("alphaRError", &inc_alphaR);
 
     //Istogrammi 2D binnati su Pt e run number che conterranno i valori delle correzioni di scala
-    double Ptbins[] = {4, 7, 9, 11, 14, 20, 40}; 
+    double Ptbins[] = {4, 7.5, 9, 11, 14, 20, 40}; 
     double runBins[] = {356309, 356900, 357538, 357732, 360000, 360400, 361000, 361600, 362200, 362760}; //9 bins
     TH2D *h_scale = new TH2D("h_scale", "Scale between data and MC ; Pt ; Run number", NbinsPt, Ptbins, NbinsRun, runBins);
     TH2D *h_smearing = new TH2D("h_smearing", "Smearing between data and MC ; Pt ; Run number", NbinsPt, Ptbins, NbinsRun, runBins);

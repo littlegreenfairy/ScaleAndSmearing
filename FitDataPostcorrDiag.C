@@ -39,7 +39,7 @@ void PlotBackgroundFit(RooRealVar& mass, RooDataHist& data, RooAddPdf& backgroun
     data.plotOn(frame, RooFit::Name("Data"), RooFit::MarkerStyle(20), RooFit::MarkerSize(0.7));
 
     // Plot the background fit function
-    background.plotOn(frame, RooFit::Name("BackgroundFit"), RooFit::LineColor(kMagenta), RooFit::LineStyle(kDashed));
+    background.plotOn(frame, RooFit::Name("BackgroundFit"), RooFit::LineColor(kMagenta), RooFit::LineStyle(kDashed),  RooFit::LineWidth(8));
 
     // Add labels and titles
     frame->SetTitle(Form("Background Fit for Pt Bin %d and Run Bin %d", i+1, j+1));
@@ -163,11 +163,11 @@ void FitDataPostcorrDiag(){
 
     // Definisci i limiti personalizzati e fattore di rebinning
     double LeftLowLim[NbinsPt][NbinsRun] = {
-        {1.6, 1.4, 1.4, 1.6, 1.7, 1.6, 1.5, 1.6, 1.5}, 
+        {1.6, 1.4, 1.4, 1.6, 1.7, 1.5, 1.5, 1.6, 1.4}, 
         {1.6, 1.4, 1.4, 1.6, 1.7, 1.4, 1.4, 1.6, 1.7}, 
         {1.6, 1.3, 1.4, 1.6, 1.7, 1.6, 1.4, 1.6, 1.5}, 
-        {1.6, 1.4, 1.4, 1.5, 1.7, 1.6, 1.5, 1.6, 1.4},
-        {1.5, 1.5, 1.5, 1.5, 1.5, 1.6, 1.6, 1.6, 1.5}, 
+        {1.6, 1.4, 1.5, 1.5, 1.7, 1.6, 1.5, 1.6, 1.4},
+        {1.7, 1.7, 1.7, 1.7, 1.7, 1.7, 1.7, 1.7, 1.7}, 
         {1.8, 1.8, 1.8, 1.8, 1.8, 2, 1.5, 2, 2.45}
     };  // Limiti sinistri personalizzati
     
@@ -175,17 +175,17 @@ void FitDataPostcorrDiag(){
         {2.4, 2.5, 2.2, 2.2, 2.5, 2.4, 2.3, 2.4, 2.4}, 
         {2.4, 2.5, 2.2, 2.2, 2.5, 2.5, 2.3, 2.4, 2.5}, 
         {2.4, 2.4, 2.2, 2.2, 2.5, 2.4, 2.45, 2.4, 2.45}, 
-        {2.4, 2.5, 2.2, 2.45, 2.5, 2.5, 2.4, 2.4, 2.4},
-        {2.5, 2.5, 2.4, 2.5, 2.6, 2.4, 2.6, 2.4, 2.5}, 
+        {2.4, 2.5, 2.5, 2.45, 2.5, 2.5, 2.4, 2.4, 2.4},
+        {2.6, 2.6, 2.6, 2.6, 2.6, 2.6, 2.6, 2.6, 2.6}, 
         {2.5, 2.5, 2.5, 2.5, 2.5, 2.4, 2.3, 2.4, 2.8}
     };
     
     double RightLowLim[NbinsPt][NbinsRun] = {
         {3.6, 3.4, 3.6, 3.6, 3.6, 3.5, 3.6, 3.5, 3.5}, 
         {3.6, 3.4, 3.6, 3.6, 3.6, 3.5, 3.6, 3.5, 3.6}, 
-        {3.6, 3.4, 3.5, 3.5, 3.5, 3.5, 3.6, 3.5, 3.6}, 
-        {3.6, 3.4, 3.5, 3.6, 3.6, 3.5, 3.6, 3.5, 3.5}, 
-        {3.5, 3.55, 3.55, 3.55, 3.55, 3.55, 3.5, 3.5, 3.5}, 
+        {3.6, 3.4, 3.5, 3.5, 3.5, 3.5, 3.5, 3.5, 3.6}, 
+        {3.5, 3.5, 3.5, 3.6, 3.6, 3.5, 3.6, 3.5, 3.5}, 
+        {3.5, 3.5, 3.5, 3.5, 3.5, 3.5, 3.5, 3.5, 3.5}, 
         {3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6}
     }; // Limiti destri personalizzati
     
@@ -194,7 +194,7 @@ void FitDataPostcorrDiag(){
         {5, 5, 5, 5, 5, 5, 5.2, 5, 5}, 
         {5, 5, 5, 5, 5, 5, 5, 5, 5}, 
         {5, 5, 5, 5, 5, 5, 5, 5, 5}, 
-        {5, 5.2, 5, 5, 5, 5, 5, 5, 5}, 
+        {5, 5.2, 5, 5, 5.1, 5.1, 5, 5, 5}, 
         {5, 5, 5, 5, 5, 5, 5, 5, 5}
     };
 
@@ -202,7 +202,7 @@ void FitDataPostcorrDiag(){
     double LeftLowLim_incl[NbinsPt] = {1.3, 1.3, 1.6, 1.6, 1.8, 2.1};
     double LeftUpLim_incl[NbinsPt] = {2.45, 2.45, 2.45, 2.4, 2.6, 2.7};
     double RightLowLim_incl[NbinsPt] = {3.65, 3.5, 3.55, 3.55, 3.5, 3.55};
-    double RightUpLim_incl[NbinsPt] = {5.3, 5.2, 4.8, 5, 5.2, 5.2};
+    double RightUpLim_incl[NbinsPt] = {5.3, 5.2, 4.8, 5, 5, 5.2};
     
 
     double BackgroundYlims[NbinsPt][NbinsRun] = {
@@ -239,44 +239,44 @@ void FitDataPostcorrDiag(){
         {3.2, 3.5, 3.5, 3.2, 3.5, 3.3, 3.4, 3.3, 3.2},
         {3.2, 3.5, 3.2, 3.5, 3.5, 3.3, 3.4, 3.3, 3.2},
         {3.1, 3.5, 3.5, 3.5, 3.5, 3.3, 3.4, 3.3, 3.2},
-        {3.2, 3.5, 3.5, 3.5, 3.5, 3.3, 3.4, 3.3, 3.2},
+        {3.2, 3.2, 3.2, 3.2, 3.2, 3.3, 3.4, 3.3, 3.2},
         {3.2, 3.5, 3.5, 3.5, 3.5, 3.3, 3.4, 3.3, 3.2}
     };
     
     double Sigmacb_ini[NbinsPt][NbinsRun] = {
-        {0.1637, 0.1503, 0.1351, 0.1271, 0.15, 0.14, 0.13, 0.14, 0.15},
+        {0.1637, 0.1503, 0.1351, 0.1271, 0.1557, 0.1546, 0.13, 0.14, 0.15},
         {0.1333, 0.1413, 0.1351, 0.1271, 0.1115, 0.1342, 0.12, 0.13, 0.1452},
         {0.1637, 0.1503, 0.1337, 0.1271, 0.1115, 0.12, 0.11, 0.12, 0.14},
-        {0.1637, 0.1503, 0.1351, 0.1200, 0.1115, 0.11, 0.10, 0.11, 0.12},
-        {0.1637, 0.1503, 0.1351, 0.1271, 0.1115, 0.11, 0.10, 0.11, 0.12},
+        {0.1137, 0.1103, 0.1151, 0.1200, 0.1115, 0.11, 0.10, 0.11, 0.12},
+        {0.1, 0.1103, 0.1151, 0.1171, 0.1115, 0.11, 0.10, 0.11, 0.12},
         {0.09, 0.1503, 0.1351, 0.1271, 0.1115, 0.09, 0.09, 0.10, 0.11}
     };
     
     double Sigmacb_uplim[NbinsPt][NbinsRun] = {
-        {0.3, 0.5, 0.5, 0.5, 0.5, 0.4, 0.4, 0.4, 0.4},
+        {0.3, 0.5, 0.5, 0.5, 0.3, 0.3, 0.4, 0.4, 0.4},
         {0.3, 0.5, 0.5, 0.5, 0.15, 0.2, 0.3, 0.3, 0.3},
         {0.3, 0.5, 0.5, 0.5, 0.15, 0.3, 0.3, 0.3, 0.3},
-        {0.2, 0.5, 0.5, 0.5, 0.15, 0.3, 0.3, 0.3, 0.3},
-        {0.3, 0.5, 0.5, 0.5, 0.15, 0.3, 0.3, 0.3, 0.3},
+        {0.2, 0.25, 0.25, 0.25, 0.15, 0.3, 0.3, 0.3, 0.3},
+        {0.2, 0.2, 0.2, 0.2, 0.2, 0.3, 0.3, 0.3, 0.3},
         {0.3, 0.5, 0.5, 0.5, 0.15, 0.3, 0.3, 0.3, 0.3}
     };
     
     double Sigmacb_lowlim[NbinsPt][NbinsRun] = {
+        {0, 0.05, 0.05, 0.05, 0.05, 0.08, 0.05, 0.05, 0.05},
         {0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05},
         {0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05},
-        {0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05},
-        {0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05},
+        {0.07, 0.07, 0.07, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05},
         {0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05},
         {0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.02, 0.05, 0.05}
     };
 
     //parametri inclusivi in pt
-    double Mucb_ini_incl[NbinsPt] = {3.0470, 3.0421, 3.0343, 3.0714, 3.0867, 3.1217};
+    double Mucb_ini_incl[NbinsPt] = {3.0470, 3.0221, 3.0343, 3.0714, 3.0867, 3.1217};
     double Mucb_lowlim_incl[NbinsPt] = {2.9, 2.9, 2.5, 2.5, 2.8, 3};
     double Mucb_uplim_incl[NbinsPt] = {3.2, 3.2, 3.2, 3.2, 3.2, 3.2};
-    double Sigmacb_ini_incl[NbinsPt] = {0.1671, 0.149, 0.1440, 0.1203, 0.1267, 0.09};
+    double Sigmacb_ini_incl[NbinsPt] = {0.1671, 0.14, 0.1440, 0.1203, 0.1267, 0.09};
     double Sigmacb_uplim_incl[NbinsPt] = {0.3, 0.3, 0.3, 0.3, 0.3, 0.2};
-    double Sigmacb_lowlim_incl[NbinsPt] = {0.05, 0.05, 0.05, 0.05, 0.05, 0.05};
+    double Sigmacb_lowlim_incl[NbinsPt] = {0.05, 0.09, 0.05, 0.05, 0.05, 0.05};
 
 
     // Aggiungi gli array per i parametri della Gaussiana
@@ -294,7 +294,7 @@ void FitDataPostcorrDiag(){
         {3.5, 3.5, 3.6, 3.5, 3.5, 3.5, 3.5, 3.5, 3.5},
         {3.5, 3.5, 3.6, 3.5, 3.5, 3.5, 3.5, 3.5, 3.5},
         {3.5, 3.5, 3.6, 3.5, 3.5, 3.5, 3.5, 3.5, 3.5},
-        {3.5, 3.5, 3.5, 3.5, 3.5, 3.5, 3.5, 3.5, 3.5},
+        {3.55, 3.55, 3.55, 3.55, 3.55, 3.55, 3.55, 3.55, 3.55},
         {3.55, 3.55, 3.55, 3.55, 3.55, 3.55, 3.5, 3.55, 3.55}
     };   // Limiti inferiori per mu
     
@@ -336,11 +336,11 @@ void FitDataPostcorrDiag(){
 
     //parametri gaussiana inclusivi in pT
     double gauss_mu_init_incl[NbinsPt] = {3.55, 3.55, 3.5, 3.62, 3.65, 3.6195};
-    double gauss_mu_low_incl[NbinsPt] = {3.5, 3.4, 3.4, 3.5, 3.62, 3.5};
+    double gauss_mu_low_incl[NbinsPt] = {3.5, 3.4, 3.55, 3.55, 3.58, 3.5};
     double gauss_mu_up_incl[NbinsPt] = {3.7, 3.7, 3.7, 3.7, 3.8, 3.7};
 
-    double bincenters[NbinsPt] = {5.5, 8, 10, 12.5, 17, 30};
-    double binhalfwidths[NbinsPt] = {1.5, 1, 1, 1.5, 3, 10};
+    double bincenters[NbinsPt] = {5.75, 8.25, 10, 12.5, 17, 30};
+    double binhalfwidths[NbinsPt] = {1.75, 0.75, 1, 1.5, 3, 10};
 
     // Leggi i parametri della Crystal Ball dal file
     TFile *file_param = TFile::Open("fit_results.root", "READ");
@@ -369,7 +369,7 @@ void FitDataPostcorrDiag(){
     tree->SetBranchAddress("alphaRError", &inc_alphaR);
 
     //Istogrammi 2D binnati su Pt e run number che conterranno i valori delle correzioni di scala
-    double Ptbins[] = {4, 7, 9, 11, 14, 20, 40}; 
+    double Ptbins[] = {4, 7.5, 9, 11, 14, 20, 40}; 
     double runBins[] = {356309, 356900, 357538, 357732, 360000, 360400, 361000, 361600, 362200, 362760}; //9 bins
 
     //Estraggo gli istogrammi e proietto su ciascun bin di Pt
@@ -391,7 +391,7 @@ void FitDataPostcorrDiag(){
         return;
     }
 
-    TH1D *h_smearing_postcorr = new TH1D("h_smearing_postcorr", "Smearing after correction; p_{T} [GeV]", NbinsPt, Ptbins);
+    TH1D *h_smearing_postcorr = new TH1D("h_smearing_postcorr", "Smearing after scale correction; p_{T} [GeV]", NbinsPt, Ptbins);
     TH1D *h_DeltaC = new TH1D("h_DeltaC", "Delta C after scale correction; p_{T} [GeV]", NbinsPt, Ptbins);
 
     // Create directory for output plots

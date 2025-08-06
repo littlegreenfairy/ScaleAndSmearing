@@ -25,8 +25,10 @@
     Color_t gialloCMS = TColor::GetColor("#ffcc00");
     Color_t violaCMS = TColor::GetColor("#660099");
     Color_t rossoCMS = TColor::GetColor("#cc0000");
+    Color_t arancioneCMS = TColor::GetColor("#ca5200");
 
-void PlotBackgroundFit(RooRealVar& mass, RooDataHist& data, RooAddPdf& background, int i, int j) {
+void PlotBackgroundFit(RooRealVar& mass, RooDataHist& data, RooAddPdf& background, int i, int j, 
+                       double leftLow, double leftUp, double rightLow, double rightUp) {
     // Create a canvas to draw the background fit
     TCanvas* cBackgroundFit = new TCanvas(Form("cBackgroundFit_%d_%d", i+1, j+1), "Background Fit", 800, 600);
     gPad->SetLeftMargin(0.13);
@@ -37,22 +39,48 @@ void PlotBackgroundFit(RooRealVar& mass, RooDataHist& data, RooAddPdf& backgroun
     // Plot the data points on the frame
     data.plotOn(frame, RooFit::Name("Data"), RooFit::MarkerStyle(20), RooFit::MarkerSize(0.7));
 
-    // Plot the background fit function
-    background.plotOn(frame, RooFit::Name("BackgroundFit"), RooFit::LineColor(kMagenta), RooFit::LineStyle(kDashed));
+    // Plot the background fit function over the full range (including the middle region)
+    background.plotOn(frame, RooFit::Name("BackgroundFit"), RooFit::LineColor(kGreen+1), RooFit::LineStyle(kDashed), RooFit::LineWidth(8), RooFit::Range("FULL"));
 
     // Add labels and titles
-    frame->SetTitle(Form("Background Fit for Pt Bin %d and Run Bin %d", i+1, j+1));
+    frame->SetTitle("");
     frame->GetXaxis()->SetTitle("m(e^{+}e^{-}) [GeV/c^{2}]");
     frame->GetYaxis()->SetTitle("Events");
+    
 
     // Draw the frame on the canvas
     frame->Draw();
+    
+    // Add light pink shading for the sideband regions (fitting ranges)
+    // Get the y-axis range for the shading boxes
+    double yMin = frame->GetMinimum();
+    double yMax = frame->GetMaximum();
+    
+    // Create boxes for left and right sideband regions
+    TBox* leftSideband = new TBox(leftLow, yMin, leftUp, yMax);
+    leftSideband->SetFillColor(kPink-9);  // Light pink
+    leftSideband->SetFillStyle(3002);     // Semi-transparent pattern
+    leftSideband->SetLineWidth(0);        // No border
+    leftSideband->Draw("SAME");
+    
+    TBox* rightSideband = new TBox(rightLow, yMin, rightUp, yMax);
+    rightSideband->SetFillColor(kPink-9); // Light pink
+    rightSideband->SetFillStyle(3002);    // Semi-transparent pattern
+    rightSideband->SetLineWidth(0);       // No border
+    rightSideband->Draw("SAME");
+    
+    // Redraw the frame and data on top of the shading
+    frame->Draw("SAME");
 
     // Add legend for clarity
-    TLegend* legend = new TLegend(0.65, 0.75, 0.85, 0.85);
+    TLegend* legend = new TLegend(0.65, 0.7, 0.85, 0.85);
+    legend->SetBorderSize(0);
     legend->AddEntry(frame->findObject("Data"), "Data", "p");
     legend->AddEntry(frame->findObject("BackgroundFit"), "Background Fit", "l");
+    legend->AddEntry(leftSideband, "Fit Region", "f");
     legend->Draw();
+    frame->GetYaxis()->SetTitle("Events");
+
 
     // Estrai i parametri di interesse dal modello per la stampa
     RooRealVar* mu = (RooRealVar*)background.getVariables()->find(Form("gauss_mu_%d", i+1));
@@ -61,15 +89,18 @@ void PlotBackgroundFit(RooRealVar& mass, RooDataHist& data, RooAddPdf& backgroun
     //background.getVariables()->Print("v");
 
     // Optional: add text annotations for fit parameters
+    
     TLatex latex;
     latex.SetNDC();
     latex.SetTextSize(0.03);
     if(j == 999) {
-        latex.DrawLatex(0.15, 0.85, Form("Fit for Pt bin %d", i+1));
+        latex.DrawLatex(0.15, 0.85, Form("Fit for p_{T} bin %d", i+1));
     } else {
-        latex.DrawLatex(0.15, 0.85, Form("Fit for Pt bin %d, Run bin %d", i+1, j+1));
+        latex.DrawLatex(0.15, 0.85, Form("Fit for p_{T} bin %d, Run bin %d", i+1, j+1));
     }
-    latex.DrawLatex(0.15, 0.8, Form("#mu = %.4f +/- %.4f, #sigma = %.4f +/- %.4f", mu->getVal(), mu->getError(), sigma->getVal(), sigma->getError()));
+    latex.DrawLatex(0.15, 0.8, Form("#mu = %.4f #pm %.4f", mu->getVal(), mu->getError()));
+    latex.DrawLatex(0.15, 0.75, Form("#sigma = %.4f #pm %.4f", sigma->getVal(), sigma->getError()));
+    
 
     // Add CMS Preliminary label
     TLatex cmsLabel;
@@ -93,7 +124,7 @@ void PlotBackgroundFit(RooRealVar& mass, RooDataHist& data, RooAddPdf& backgroun
     lumiLabel.SetTextFont(42);
     lumiLabel.SetTextSize(0.045);
     lumiLabel.SetTextAlign(31);
-    lumiLabel.DrawLatex(0.88, 0.92, "38.01 fb^{-1} (2022, 13.7 TeV)");
+    lumiLabel.DrawLatex(0.88, 0.92, "34.7 fb^{-1} (2022, 13.7 TeV)");
 
     // Save the canvas as a file (optional)
     cBackgroundFit->SaveAs(Form("PlotConID2022/FitData_id2022/Pt_bin%d/BackgroundFit_Pt%d_Run%d.png", i+1, i+1, j+1));
@@ -144,15 +175,15 @@ void PlotDataFit(RooRealVar& mass, RooDataHist& data, RooAddPdf& model, RooAddPd
     // Optional: Add annotations for fit information
     TLatex latex;
     latex.SetNDC();
-    latex.SetTextSize(0.03);
+    latex.SetTextSize(0.025);
     //latex.DrawLatex(0.15, 0.85, Form("Fit for Pt bin %d, Run bin %d", i+1, j+1));
     /*if(fitstatus == 0){
         latex.DrawLatex(0.15, 0.8, "Fit converged");
     }else{
         latex.DrawLatex(0.15, 0.8, Form("Fit did not converge. Status %d", fitstatus));
     }*/
-    latex.DrawLatex(0.17, 0.8, Form("#mu = %.4f #pm %.4f GeV", mu->getVal(), mu->getError()));
-    latex.DrawLatex(0.17, 0.75, Form("#sigma = %.4f #pm %.4f GeV", sigma->getVal(), sigma->getError())); 
+    latex.DrawLatex(0.16, 0.8, Form("#mu = %.4f #pm %.4f GeV", mu->getVal(), mu->getError()));
+    latex.DrawLatex(0.16, 0.75, Form("#sigma = %.4f #pm %.4f GeV", sigma->getVal(), sigma->getError())); 
     //latex.DrawLatex(0.15, 0.66, Form("#chi^{2} = %.2f", chi2));
 
     // Add CMS Preliminary label
@@ -177,7 +208,7 @@ void PlotDataFit(RooRealVar& mass, RooDataHist& data, RooAddPdf& model, RooAddPd
     lumiLabel.SetTextFont(42);
     lumiLabel.SetTextSize(0.045);
     lumiLabel.SetTextAlign(31);
-    lumiLabel.DrawLatex(0.9, 0.92, "38.01 fb^{-1} (2022, 13.7 TeV)");
+    lumiLabel.DrawLatex(0.9, 0.92, "34.7 fb^{-1} (2022, 13.7 TeV)");
 
     // Save plot as image (optional)
     c->SaveAs(Form("PlotConID2022/FitData_id2022/Pt_bin%d/DataFit_Pt%d_Run%d.png", i+1, i+1, j+1));
@@ -192,30 +223,30 @@ void FitData(){
 
     // Definisci i limiti personalizzati e fattore di rebinning
     double LeftLowLim[NbinsPt][NbinsRun] = {
-        {1.6, 1.4, 1.4, 1.6, 1.7, 1.6, 1.5, 1.6, 1.5}, 
-        {1.5, 1.4, 1.4, 1.6, 1.7, 1.4, 1.5, 1.5, 1.7}, 
+        {1.6, 1.4, 1.4, 1.5, 1.7, 1.6, 1.4, 1.5, 1.35}, 
+        {1.5, 1.4, 1.4, 1.5, 1.7, 1.4, 1.5, 1.5, 1.6}, 
         {1.6, 1.4, 1.4, 1.6, 1.7, 1.6, 1.5, 1.6, 1.7}, 
         {1.6, 1.4, 1.4, 1.6, 1.7, 1.6, 1.5, 1.6, 1.7},
-        {1.6, 1.9, 1.9, 1.6, 1.7, 1.6, 1.6, 1.6, 1.7}, 
-        {2.45, 2.45, 2.45, 2, 2.45, 2, 1.5, 2, 2.45}
+        {1.7, 1.9, 1.9, 1.9, 2, 1.9, 1.9, 1.9, 1.9}, 
+        {2.45, 2.45, 2.45, 2.3, 2.45, 2.3, 2.3, 2.3, 2.4}
     };  // Limiti sinistri personalizzati
     
     double LeftUpLim[NbinsPt][NbinsRun] = {
         {2.4, 2.5, 2.2, 2.2, 2.5, 2.4, 2.3, 2.4, 2.4}, 
-        {2.4, 2.5, 2.2, 2.2, 2.5, 2.5, 2.3, 2.4, 2.5}, 
+        {2.4, 2.5, 2.2, 2.3, 2.5, 2.5, 2.3, 2.4, 2.45}, 
         {2.4, 2.5, 2.2, 2.3, 2.5, 2.4, 2.3, 2.4, 2.5}, 
         {2.4, 2.5, 2.2, 2.2, 2.5, 2.4, 2.3, 2.4, 2.5},
-        {2.4, 2.5, 2.2, 2.2, 2.6, 2.4, 2.6, 2.4, 2.5}, 
-        {2.8, 2.8, 2.8, 2.2, 2.8, 2.4, 2.3, 2.4, 2.8}
+        {2.7, 2.65, 2.7, 2.65, 2.65, 2.65, 2.65, 2.65, 2.65}, 
+        {2.8, 2.8, 2.85, 2.7, 2.8, 2.8, 2.7, 2.75, 2.8}
     };
     
     double RightLowLim[NbinsPt][NbinsRun] = {
         {3.6, 3.4, 3.6, 3.6, 3.6, 3.5, 3.6, 3.5, 3.5}, 
-        {3.6, 3.4, 3.6, 3.6, 3.6, 3.5, 3.6, 3.5, 3.6}, 
-        {3.6, 3.4, 3.6, 3.5, 3.6, 3.5, 3.55, 3.5, 3.6}, 
-        {3.6, 3.4, 3.6, 3.6, 3.6, 3.5, 3.6, 3.5, 3.6}, 
-        {3.6, 3.4, 3.6, 3.6, 3.6, 3.5, 3.6, 3.5, 3.6}, 
-        {3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6}
+        {3.6, 3.5, 3.6, 3.6, 3.6, 3.5, 3.6, 3.5, 3.5}, 
+        {3.5, 3.5, 3.6, 3.5, 3.5, 3.5, 3.5, 3.5, 3.6}, 
+        {3.6, 3.5, 3.6, 3.6, 3.5, 3.5, 3.5, 3.5, 3.5}, 
+        {3.6, 3.5, 3.5, 3.5, 3.55, 3.5, 3.45, 3.45, 3.45}, 
+        {3.6, 3.6, 3.6, 3.6, 3.65, 3.6, 3.5, 3.5, 3.6}
     }; // Limiti destri personalizzati
     
     double RightUpLim[NbinsPt][NbinsRun] = {
@@ -223,15 +254,15 @@ void FitData(){
         {5, 5, 5, 5, 5, 5, 5.2, 5, 5}, 
         {5, 5, 5, 5, 5, 5, 5, 5, 5}, 
         {5, 5, 5, 5, 5, 5, 5, 5, 5}, 
-        {5, 5, 5, 5, 5, 5, 5, 5, 5}, 
-        {5, 5, 5, 5, 5, 5, 5, 5, 5}
+        {5, 5, 5, 4.8, 5, 5, 4.9, 5, 5}, 
+        {4.7, 4.7, 5, 5, 4.7, 5, 5, 5, 5}
     };
 
     //limiti inclusivi in run number (aggiungere)
-    double LeftLowLim_incl[NbinsPt] = {1.15, 1.3, 1.6, 1.6, 1.65, 2};
+    double LeftLowLim_incl[NbinsPt] = {1.25, 1.3, 1.5, 1.6, 1.65, 2};
     double LeftUpLim_incl[NbinsPt] = {2.4, 2.5, 2.45, 2.4, 2.65, 2.7};
     double RightLowLim_incl[NbinsPt] = {3.65, 3.55, 3.55, 3.55, 3.55, 3.55};
-    double RightUpLim_incl[NbinsPt] = {5.2, 5.2, 4.8, 5, 5.2, 5.2};
+    double RightUpLim_incl[NbinsPt] = {5.2, 5.2, 4.8, 5.2, 5.2, 5.2};
     
 
     double BackgroundYlims[NbinsPt][NbinsRun] = {
@@ -250,34 +281,34 @@ void FitData(){
         {3.0442, 3.0337, 3.0898, 2.9975, 3.0782, 3.0550, 3.0600, 3.0650, 3.0700},
         {3.0442, 3.0337, 3.0943, 3.0489, 3.0782, 3.0600, 3.0650, 3.0700, 3.0750},
         {3.0442, 3.0337, 3.0422, 3.0489, 3.0782, 3.0650, 3.0700, 3.0750, 3.0800},
-        {3.0442, 3.0337, 3.0422, 3.0489, 3.1098, 3.0700, 3.0750, 3.0800, 3.0850},
-        {3.0442, 3.0337, 3.0422, 3.0489, 3.0782, 3.0750, 3.0800, 3.0850, 3.0900}
+        {3.11, 3.13, 3.13, 3.0489, 3.1098, 3.1000, 3.0750, 3.0800, 3.0850},
+        {3.0442, 3.16, 3.1, 3.0489, 3.0782, 3.0750, 3.0800, 3.0850, 3.0900}
     };
     
     double Mucb_lowlim[NbinsPt][NbinsRun] = {
         {2.8, 2.7, 2.5, 2.5, 2.8, 2.7, 2.6, 2.7, 2.8},
-        {2.8, 2.7, 2.5, 2.5, 2.8, 2.7, 2.6, 2.7, 2.8},
+        {2.8, 2.7, 2.7, 2.5, 2.8, 2.7, 2.6, 2.7, 2.8},
         {2.8, 2.7, 2.9, 2.5, 2.8, 2.7, 2.6, 2.7, 2.8},
         {2.8, 2.7, 2.5, 2.5, 2.8, 2.7, 2.6, 2.7, 2.8},
-        {2.8, 2.7, 2.5, 2.5, 2.8, 2.7, 2.6, 2.7, 2.8},
-        {2.8, 2.7, 2.5, 2.5, 2.8, 2.7, 2.6, 2.7, 2.8}
+        {2.8, 2.8, 2.8, 2.9, 2.8, 2.7, 2.6, 2.7, 2.8},
+        {2.8, 2.8, 2.8, 2.8, 2.8, 2.7, 2.8, 2.9, 2.8}
     };
     
     double Mucb_uplim[NbinsPt][NbinsRun] = {
         {3.2, 3.5, 3.5, 3.5, 3.2, 3.3, 3.4, 3.3, 3.2},
-        {3.2, 3.5, 3.5, 3.2, 3.5, 3.3, 3.4, 3.3, 3.2},
+        {3.2, 3.5, 3.3, 3.2, 3.5, 3.3, 3.4, 3.3, 3.2},
         {3.2, 3.5, 3.2, 3.5, 3.5, 3.3, 3.4, 3.3, 3.2},
         {3.2, 3.5, 3.5, 3.5, 3.5, 3.3, 3.4, 3.3, 3.2},
-        {3.2, 3.5, 3.5, 3.5, 3.5, 3.3, 3.4, 3.3, 3.2},
-        {3.2, 3.5, 3.5, 3.5, 3.5, 3.3, 3.4, 3.3, 3.2}
+        {3.2, 3.3, 3.3, 3.3, 3.3, 3.3, 3.4, 3.3, 3.2},
+        {3.2, 3.3, 3.3, 3.3, 3.3, 3.3, 3.4, 3.3, 3.2}
     };
     
     double Sigmacb_ini[NbinsPt][NbinsRun] = {
         {0.1637, 0.1503, 0.1351, 0.1271, 0.15, 0.14, 0.13, 0.14, 0.15},
         {0.1637, 0.1503, 0.1400, 0.1271, 0.1115, 0.1342, 0.12, 0.13, 0.1452},
         {0.1637, 0.1503, 0.1355, 0.1271, 0.1115, 0.12, 0.11, 0.12, 0.13},
-        {0.1637, 0.1503, 0.1351, 0.1271, 0.1115, 0.11, 0.10, 0.11, 0.12},
-        {0.1637, 0.1503, 0.1351, 0.1271, 0.1115, 0.11, 0.10, 0.11, 0.12},
+        {0.1637, 0.1503, 0.1351, 0.1271, 0.1136, 0.11, 0.10, 0.11, 0.12},
+        {0.12, 0.11, 0.12, 0.1171, 0.13, 0.11, 0.10, 0.11, 0.12},
         {0.1637, 0.1503, 0.1351, 0.1271, 0.1115, 0.10, 0.09, 0.10, 0.11}
     };
     
@@ -286,17 +317,17 @@ void FitData(){
         {0.3, 0.5, 0.3, 0.5, 0.15, 0.2, 0.3, 0.3, 0.3},
         {0.3, 0.5, 0.5, 0.5, 0.15, 0.3, 0.3, 0.3, 0.3},
         {0.3, 0.5, 0.5, 0.5, 0.15, 0.3, 0.3, 0.3, 0.3},
-        {0.3, 0.5, 0.5, 0.5, 0.15, 0.3, 0.3, 0.3, 0.3},
-        {0.3, 0.5, 0.5, 0.5, 0.15, 0.3, 0.3, 0.3, 0.3}
+        {0.3, 0.5, 0.5, 0.5, 0.3, 0.3, 0.3, 0.3, 0.3},
+        {0.3, 0.25, 0.5, 0.5, 0.15, 0.3, 0.3, 0.3, 0.3}
     };
     
     double Sigmacb_lowlim[NbinsPt][NbinsRun] = {
         {0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05},
         {0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05},
         {0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05},
-        {0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05},
-        {0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05},
-        {0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05}
+        {0, 0.05, 0.05, 0.05, 0.08, 0.05, 0.05, 0.05, 0.05},
+        {0.08, 0.08, 0.08, 0.08, 0.08, 0.08, 0.08, 0.08, 0.08},
+        {0, 0.03, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05}
     };
 
     //parametri inclusivi in pt
@@ -305,26 +336,25 @@ void FitData(){
     double Mucb_uplim_incl[NbinsPt] = {3.2, 3.2, 3.2, 3.2, 3.2, 3.2};
     double Sigmacb_ini_incl[NbinsPt] = {0.1613, 0.149, 0.1440, 0.1203, 0.11, 0.09};
     double Sigmacb_uplim_incl[NbinsPt] = {0.3, 0.3, 0.3, 0.3, 0.2, 0.2};
-    double Sigmacb_lowlim_incl[NbinsPt] = {0.05, 0.05, 0.05, 0.05, 0, 0.05};
+    double Sigmacb_lowlim_incl[NbinsPt] = {0.1, 0.05, 0.05, 0.05, 0, 0.05};
 
 
     // Aggiungi gli array per i parametri della Gaussiana
     double gauss_mu_init[NbinsPt][NbinsRun] = {
-        {3.6, 3.6, 3.7, 3.4, 3.5, 3.55, 3.6, 3.55, 3.5},
-        {3.6, 3.4, 3.7, 3.4, 3.4, 3.5, 3.55, 3.5, 3.45},
-        {3.6, 3.4, 3.7, 3.4, 3.4, 3.5, 3.55, 3.5, 3.45},
-        {3.6, 3.6, 3.7, 3.4, 3.4, 3.5, 3.55, 3.5, 3.6},
-        {3.6, 3.65, 3.7, 3.6, 3.6, 3.5, 3.55, 3.5, 3.45},
+        {3.6, 3.6, 3.7, 3.5, 3.5, 3.55, 3.6, 3.55, 3.5},
+        {3.6, 3.7, 3.7, 3.6, 3.6, 3.6, 3.55, 3.6, 3.6},
+        {3.6, 3.5, 3.7, 3.5, 3.5, 3.5, 3.55, 3.5, 3.5},
+        {3.6, 3.6, 3.7, 3.5, 3.5, 3.5, 3.55, 3.5, 3.6},
+        {3.6, 3.65, 3.7, 3.6, 3.6, 3.6, 3.55, 3.5, 3.5},
         {3.65, 3.65, 3.65, 3.65, 3.65, 3.65, 3.6, 3.65, 3.65}
     };  // Valori iniziali per mu della Gaussiana
-    
     double gauss_mu_low[NbinsPt][NbinsRun] = {
         {3.5, 3.5, 3.6, 3.5, 3.5, 3.5, 3.5, 3.5, 3.5},
-        {3.5, 3.2, 3.6, 3.2, 3.2, 3.4, 3.45, 3.4, 3.3},
-        {3.5, 3.2, 3.6, 3.2, 3.2, 3.4, 3.45, 3.4, 3.3},
-        {3.5, 3.5, 3.6, 3.2, 3.2, 3.4, 3.45, 3.4, 3.5},
-        {3.5, 3.6, 3.6, 3.5, 3.5, 3.4, 3.45, 3.4, 3.3},
-        {3.55, 3.55, 3.55, 3.55, 3.55, 3.55, 3.5, 3.55, 3.55}
+        {3.5, 3.6, 3.6, 3.5, 3.5, 3.5, 3.5, 3.5, 3.5},
+        {3.5, 3.5, 3.6, 3.5, 3.5, 3.5, 3.5, 3.5, 3.5},
+        {3.5, 3.6, 3.6, 3.5, 3.5, 3.5, 3.5, 3.5, 3.5},
+        {3.5, 3.6, 3.6, 3.6, 3.5, 3.5, 3.6, 3.6, 3.5},
+        {3.55, 3.55, 3.55, 3.55, 3.55, 3.55, 3.5, 3.55, 3.6}
     };   // Limiti inferiori per mu
     
     double gauss_mu_up[NbinsPt][NbinsRun] = {
@@ -332,26 +362,26 @@ void FitData(){
         {3.7, 3.75, 3.8, 3.7, 3.7, 3.7, 3.7, 3.7, 3.7},
         {3.7, 3.75, 3.8, 3.7, 3.7, 3.7, 3.7, 3.7, 3.7},
         {3.7, 3.8, 3.8, 3.7, 3.7, 3.7, 3.7, 3.7, 3.7},
-        {3.7, 3.8, 3.8, 3.7, 3.8, 3.7, 3.7, 3.7, 3.7},
-        {3.75, 3.75, 3.8, 3.75, 3.75, 3.75, 3.7, 3.75, 3.75}
+        {3.7, 3.8, 3.8, 3.7, 3.8, 3.7, 3.8, 3.7, 3.7},
+        {3.75, 3.75, 3.8, 3.75, 3.8, 3.75, 3.7, 3.75, 3.75}
     };    // Limiti superiori per mu
     
     double gauss_sigma_init[NbinsPt][NbinsRun] = {
         {0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1},
-        {0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1},
+        {0.1, 0.2, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1},
         {0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1},
         {0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1},
         {0.1, 0.0959, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1},
-        {0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15}
+        {0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.07, 0.15, 0.15}
     }; // Valori iniziali per sigma della Gaussiana
     
     double gauss_sigma_low[NbinsPt][NbinsRun] = {
         {0.05, 0.05, 0.02, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05},
-        {0.05, 0.05, 0.02, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05},
+        {0.05, 0.1, 0.02, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05},
         {0.05, 0.05, 0.02, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05},
         {0.05, 0.05, 0.02, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05},
         {0.1, 0.05, 0.02, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05},
-        {0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1}
+        {0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.03, 0.05, 0.05}
     }; // Limiti inferiori per sigma
     
     double gauss_sigma_up[NbinsPt][NbinsRun] = {
@@ -360,7 +390,7 @@ void FitData(){
         {0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2},
         {0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.3},
         {0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2},
-        {0.18, 0.18, 0.18, 0.18, 0.18, 0.18, 0.18, 0.18, 0.18}
+        {0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.15, 0.18, 0.2}
     }; // Limiti superiori per sigma
 
     //parametri gaussiana inclusivi in pT
@@ -368,8 +398,8 @@ void FitData(){
     double gauss_mu_low_incl[NbinsPt] = {3.5, 3.4, 3.4, 3.5, 3.55, 3.5};
     double gauss_mu_up_incl[NbinsPt] = {3.7, 3.7, 3.7, 3.7, 3.7, 3.7};
 
-    double bincenters[NbinsPt] = {5.5, 8, 10, 12.5, 17, 30};
-    double binhalfwidths[NbinsPt] = {1.5, 1, 1, 1.5, 3, 10};
+    double bincenters[NbinsPt] = {5.75, 8.25, 10, 12.5, 17, 30};
+    double binhalfwidths[NbinsPt] = {1.75, 0.75, 1, 1.5, 3, 10};
 
     // Leggi i parametri della Crystal Ball dal file
     TFile *file_param = TFile::Open("fit_results.root", "READ");
@@ -398,7 +428,7 @@ void FitData(){
     tree->SetBranchAddress("alphaRError", &inc_alphaR);
 
     //Istogrammi 2D binnati su Pt e run number che conterranno i valori delle correzioni di scala
-    double Ptbins[] = {4, 7, 9, 11, 14, 20, 40}; 
+    double Ptbins[] = {4, 7.5, 9, 11, 14, 20, 40}; 
     double runBins[] = {356309, 356900, 357538, 357732, 360000, 360400, 361000, 361600, 362200, 362760}; //9 bins
     TH2D *h_scale = new TH2D("h_scale", "Scale between data and MC ; Pt ; Run number", NbinsPt, Ptbins, NbinsRun, runBins);
     TH2D *h_smearing = new TH2D("h_smearing", "Smearing corrections for single electron energy; Pt ; Run number", NbinsPt, Ptbins, NbinsRun, runBins);
@@ -470,7 +500,9 @@ void FitData(){
             double gauss_sigma_val = gauss_sigma.getVal(), gauss_sigma_err = gauss_sigma.getError();
 
             //////////////////////////////////////////////////////// Plot solo fondo
-            PlotBackgroundFit(mass, data, background, i, j);
+            // Set up full range for plotting background function (including middle region)
+            mass.setRange("FULL", LeftLowLim[i][j], RightUpLim[i][j]);
+            PlotBackgroundFit(mass, data, background, i, j, LeftLowLim[i][j], LeftUpLim[i][j], RightLowLim[i][j], RightUpLim[i][j]);
 
             //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
             //                                          FIT SEGNALE + FONDO
@@ -483,10 +515,14 @@ void FitData(){
 
             RooRealVar mu_cb(Form("mu_cb_%d", i+1), "mu_cb", Mucb_ini[i][j], Mucb_lowlim[i][j], Mucb_uplim[i][j]);
             RooRealVar sigma_cb(Form("sigma_cb_%d", i+1), "sigma_cb", Sigmacb_ini[i][j], Sigmacb_lowlim[i][j], Sigmacb_uplim[i][j]);
-            RooRealVar alphaL_cb(Form("alphaL_cb_%d", i+1), "alphaL_cb", alphaL_ini, alphaL_ini - Nsigma*inc_alphaL, alphaL_ini + Nsigma*inc_alphaL);
-            RooRealVar nL_cb(Form("nL_cb_%d", i+1), "nL_cb", nL_ini, nL_ini - Nsigma*inc_nL, nL_ini + Nsigma*inc_nL);
-            RooRealVar alphaR_cb(Form("alphaR_cb_%d", i+1), "alphaR_cb", alphaR_ini, alphaR_ini - Nsigma*inc_alphaR, alphaR_ini + Nsigma*inc_alphaR);
-            RooRealVar nR_cb(Form("nR_cb_%d", i+1), "nR_cb", nR_ini, nR_ini - Nsigma*inc_nR, nR_ini + Nsigma*inc_nR);
+            
+            // Use 2*Nsigma for the fifth pt bin (i==4), Nsigma for all others
+            double sigma_factor = (i == 4) ? 2*Nsigma : Nsigma;
+            
+            RooRealVar alphaL_cb(Form("alphaL_cb_%d", i+1), "alphaL_cb", alphaL_ini, alphaL_ini - sigma_factor*inc_alphaL, alphaL_ini + sigma_factor*inc_alphaL);
+            RooRealVar nL_cb(Form("nL_cb_%d", i+1), "nL_cb", nL_ini, nL_ini - sigma_factor*inc_nL, nL_ini + sigma_factor*inc_nL);
+            RooRealVar alphaR_cb(Form("alphaR_cb_%d", i+1), "alphaR_cb", alphaR_ini, alphaR_ini - sigma_factor*inc_alphaR, alphaR_ini + sigma_factor*inc_alphaR);
+            RooRealVar nR_cb(Form("nR_cb_%d", i+1), "nR_cb", nR_ini, nR_ini - sigma_factor*inc_nR, nR_ini + sigma_factor*inc_nR);
 
 
             // Definisci la Crystal Ball
@@ -495,19 +531,19 @@ void FitData(){
             // Aggiorna i parametri della Gaussiana con i vincoli per il secondo fit
             gauss_mu.setVal(gauss_mu_val);
             gauss_sigma.setVal(gauss_sigma_val);
-            //gauss_mu.setRange(gauss_mu_val - Nsigma*gauss_mu_err, gauss_mu_val + Nsigma*gauss_mu_err);
+            //gauss_mu.setRange(gauss_mu_val - sigma_factor*gauss_mu_err, gauss_mu_val + sigma_factor*gauss_mu_err);
             gauss_mu.setConstant(true);
-            gauss_sigma.setRange(gauss_sigma_val - Nsigma*gauss_sigma_err, gauss_sigma_val + Nsigma*gauss_sigma_err);
+            gauss_sigma.setRange(gauss_sigma_val - sigma_factor*gauss_sigma_err, gauss_sigma_val + sigma_factor*gauss_sigma_err);
             A.setVal(A_val);
-            A.setRange(A_val - Nsigma * A_err, A_val + Nsigma * A_err);
+            A.setRange(A_val - sigma_factor * A_err, A_val + sigma_factor * A_err);
             B.setVal(B_val);
-            B.setRange(B_val - Nsigma * B_err, B_val + Nsigma * B_err);
+            B.setRange(B_val - sigma_factor * B_err, B_val + sigma_factor * B_err);
             C.setVal(C_val);
-            C.setRange(C_val - Nsigma * C_err, C_val + Nsigma * C_err);
+            C.setRange(C_val - sigma_factor * C_err, C_val + sigma_factor * C_err);
             D.setVal(D_val);
-            D.setRange(D_val - Nsigma * D_err, D_val + Nsigma * D_err);
+            D.setRange(D_val - sigma_factor * D_err, D_val + sigma_factor * D_err);
             E.setVal(E_val);
-            E.setRange(E_val - Nsigma * E_err, E_val + Nsigma * E_err);
+            E.setRange(E_val - sigma_factor * E_err, E_val + sigma_factor * E_err);
 
             RooRealVar frac("frac", "fraction of background", 0.5, 0.0, 1.0);
             RooAddPdf model("model", "signal + background", RooArgList(crystal, background), RooArgList(frac));
@@ -585,23 +621,29 @@ void FitData(){
             double gauss_mu_val = gauss_mu.getVal(), gauss_mu_err = gauss_mu.getError();
             double gauss_sigma_val = gauss_sigma.getVal(), gauss_sigma_err = gauss_sigma.getError();
             //////////////////////////////////////////////////////// Plot solo fondo
-            PlotBackgroundFit(mass, data_inclusiveRun, background, i, 999); //999 indica che è inclusivo in pt (volevo riciclare la funzione)
+            // Set up full range for plotting background function (including middle region) - inclusive case
+            mass.setRange("FULL", LeftLowLim_incl[i], RightUpLim_incl[i]);
+            PlotBackgroundFit(mass, data_inclusiveRun, background, i, 999, LeftLowLim_incl[i], LeftUpLim_incl[i], RightLowLim_incl[i], RightUpLim_incl[i]); //999 indica che è inclusivo in pt (volevo riciclare la funzione)
 
             //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
             //                                          FIT SEGNALE + FONDO
             //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
-            mass.setRange("range_full", LeftLowLim[i][0], RightUpLim[i][0]);
+            mass.setRange("range_full", LeftLowLim_incl[i], RightUpLim_incl[i]);
 
             // Leggi i parametri della Crystal Ball dal TTree per il bin corrente
             tree->GetEntry(i);
 
             RooRealVar mu_cb(Form("mu_cb_%d", i+1), "mu_cb", Mucb_ini_incl[i], Mucb_lowlim_incl[i], Mucb_uplim_incl[i]);
             RooRealVar sigma_cb(Form("sigma_cb_%d", i+1), "sigma_cb", Sigmacb_ini_incl[i], Sigmacb_lowlim_incl[i], Sigmacb_uplim_incl[i]);
-            RooRealVar alphaL_cb(Form("alphaL_cb_%d", i+1), "alphaL_cb", alphaL_ini, alphaL_ini - Nsigma*inc_alphaL, alphaL_ini + Nsigma*inc_alphaL);
-            RooRealVar nL_cb(Form("nL_cb_%d", i+1), "nL_cb", nL_ini, nL_ini - Nsigma*inc_nL, nL_ini + Nsigma*inc_nL);
-            RooRealVar alphaR_cb(Form("alphaR_cb_%d", i+1), "alphaR_cb", alphaR_ini, alphaR_ini - Nsigma*inc_alphaR, alphaR_ini + Nsigma*inc_alphaR);
-            RooRealVar nR_cb(Form("nR_cb_%d", i+1), "nR_cb", nR_ini, nR_ini - Nsigma*inc_nR, nR_ini + Nsigma*inc_nR);
+            
+            // Use 2*Nsigma for the fifth pt bin (i==4), Nsigma for all others
+            double sigma_factor = (i == 4) ? 2*Nsigma : Nsigma;
+            
+            RooRealVar alphaL_cb(Form("alphaL_cb_%d", i+1), "alphaL_cb", alphaL_ini, alphaL_ini - sigma_factor*inc_alphaL, alphaL_ini + sigma_factor*inc_alphaL);
+            RooRealVar nL_cb(Form("nL_cb_%d", i+1), "nL_cb", nL_ini, nL_ini - sigma_factor*inc_nL, nL_ini + sigma_factor*inc_nL);
+            RooRealVar alphaR_cb(Form("alphaR_cb_%d", i+1), "alphaR_cb", alphaR_ini, alphaR_ini - sigma_factor*inc_alphaR, alphaR_ini + sigma_factor*inc_alphaR);
+            RooRealVar nR_cb(Form("nR_cb_%d", i+1), "nR_cb", nR_ini, nR_ini - sigma_factor*inc_nR, nR_ini + sigma_factor*inc_nR);
 
 
             // Definisci la Crystal Ball
@@ -610,19 +652,19 @@ void FitData(){
             // Aggiorna i parametri della Gaussiana con i vincoli per il secondo fit
             gauss_mu.setVal(gauss_mu_val);
             gauss_sigma.setVal(gauss_sigma_val);
-            //gauss_mu.setRange(gauss_mu_val - Nsigma*gauss_mu_err, gauss_mu_val + Nsigma*gauss_mu_err);
+            //gauss_mu.setRange(gauss_mu_val - sigma_factor*gauss_mu_err, gauss_mu_val + sigma_factor*gauss_mu_err);
             gauss_mu.setConstant(true);
-            gauss_sigma.setRange(gauss_sigma_val - Nsigma*gauss_sigma_err, gauss_sigma_val + Nsigma*gauss_sigma_err);
+            gauss_sigma.setRange(gauss_sigma_val - sigma_factor*gauss_sigma_err, gauss_sigma_val + sigma_factor*gauss_sigma_err);
             A.setVal(A_val);
-            A.setRange(A_val - Nsigma * A_err, A_val + Nsigma * A_err);
+            A.setRange(A_val - sigma_factor * A_err, A_val + sigma_factor * A_err);
             B.setVal(B_val);
-            B.setRange(B_val - Nsigma * B_err, B_val + Nsigma * B_err);
+            B.setRange(B_val - sigma_factor * B_err, B_val + sigma_factor * B_err);
             C.setVal(C_val);
-            C.setRange(C_val - Nsigma * C_err, C_val + Nsigma * C_err);
+            C.setRange(C_val - sigma_factor * C_err, C_val + sigma_factor * C_err);
             D.setVal(D_val);
-            D.setRange(D_val - Nsigma * D_err, D_val + Nsigma * D_err);
+            D.setRange(D_val - sigma_factor * D_err, D_val + sigma_factor * D_err);
             E.setVal(E_val);
-            E.setRange(E_val - Nsigma * E_err, E_val + Nsigma * E_err);
+            E.setRange(E_val - sigma_factor * E_err, E_val + sigma_factor * E_err);
 
             RooRealVar frac("frac", "fraction of background", 0.5, 0.0, 1.0);
             RooAddPdf model("model", "signal + background", RooArgList(crystal, background), RooArgList(frac));
@@ -719,7 +761,7 @@ void FitData(){
     lumiLabel.SetTextFont(42);                  // regular font for the detail
     lumiLabel.SetTextSize(0.045);
     lumiLabel.SetTextAlign(31);                 // align top-right corner of text
-    lumiLabel.DrawLatex(0.88, 0.92, "38.01 fb^{-1} (2022, 13.7 TeV)");
+    lumiLabel.DrawLatex(0.88, 0.92, "34.7 fb^{-1} (2022, 13.7 TeV)");
 
     // (Optional) replicate on the second pad if you want them on both panels:
     c_scale_smear->cd(2);

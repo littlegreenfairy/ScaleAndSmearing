@@ -1,0 +1,125 @@
+# ScaleAndSmearing
+Scale and smearing corrections for ECAL on J/psi
+
+TChain *chain = new TChain("BToKLLdumper/selected");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partC_0_0_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partC_0_1_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partC_0_2_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partC_1_0_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partC_1_1_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partC_1_2_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partC_2_0_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partC_2_1_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partC_2_2_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partC_3_0_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partC_3_1_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partC_3_2_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partC_4_0_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partC_4_1_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partC_4_2_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partC_5_0_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partC_5_1_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partC_5_2_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partD_0_0_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partD_1_0_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partD_2_0_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partD_3_0_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partD_4_0_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partD_5_0_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partE_0_0_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partE_0_1_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partE_0_2_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partE_1_0_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partE_1_1_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partE_1_2_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partE_2_0_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partE_2_1_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partE_2_2_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partE_3_0_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partE_3_1_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partE_3_2_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partE_4_0_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partE_4_1_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partE_4_2_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partE_5_0_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partE_5_1_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partE_5_2_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partF_0_0_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partF_0_1_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partF_0_2_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partF_0_3_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partF_0_4_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partF_0_5_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partF_1_0_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partF_1_1_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partF_1_2_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partF_1_3_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partF_1_4_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partF_1_5_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partF_2_0_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partF_2_1_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partF_2_2_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partF_2_3_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partF_2_4_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partF_2_5_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partF_3_0_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partF_3_1_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partF_3_2_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partF_3_3_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partF_3_4_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partF_3_5_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partF_4_0_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partF_4_1_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partF_4_2_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partF_4_3_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partF_4_4_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partF_4_5_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partF_5_0_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partF_5_1_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partF_5_2_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partF_5_3_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partF_5_4_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partF_5_5_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partG_0_0_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partG_1_0_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partG_2_0_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partG_3_0_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partG_4_0_PromptReco_2025.root");
+chain->Add("../ECAL_ScaleSmear/Ntuple_id2022/Data/ParkingDoubleElectron_Run2022partG_5_0_PromptReco_2025.root");
+.L /Users/elenadesantis/Documents/CERN2024/ScaleAndSmearing/MyAnalysisSpicy.C+
+MyAnalysisSpicy analysis(chain, 0);
+analysis.Loop();
+TChain *chain_mc = new TChain("BToKLLmc_dumper/selected");
+chain_mc->Add("../ECAL_ScaleSmear/Ntuple_id2022/MC/CCToEEPrompt_mc_2025Apr25_postEE.root"); 
+chain_mc->Add("../ECAL_ScaleSmear/Ntuple_id2022/MC/CCToEEPrompt_mc_2025Apr25_preEE.root"); 
+MyAnalysisSpicy analysis_mc(chain_mc, 1);
+analysis_mc.Loop();
+analysis_mc.MonteCarloReweighting()
+
+then Run separately:
+
+.x FitProjectionMCFullEle.C
+.x FitDataFullEle.C
+
+and then after recreating the chain with the data run
+
+MyAnalysisSpicy analysis(chain, 0);
+analysis.ApplyCorrectionsFullEle();
+
+
+Validate the scale corrections running
+
+.x ScaleonFullElectron.C
+.x FitDataPostcorrDiagFullEle.C
+.x FitDataPostcorrFullEle.C
+
+This last macro also creates an histograms with smearing corrections and saves in a .root file
+
+Apply the corrections by running
+
+analysis_mc.ApplySmearingCorrectionsFullEle()
+
+Then fit again the invariant mass vs pt in all categories and for each bin plot smearing vs Run number using 
+
+.x ValidateSmearingCorrections.C
+

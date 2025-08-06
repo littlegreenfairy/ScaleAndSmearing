@@ -11,6 +11,7 @@
 #include <RooPolynomial.h>
 #include <RooAddPdf.h>
 #include <iostream>
+#include <iomanip>
 #include <TGraphErrors.h>
 #include <TAxis.h>
 #include <TF1.h>
@@ -75,6 +76,8 @@ void PlotBackgroundFit(RooRealVar& mass, RooDataHist& data, RooAddPdf& backgroun
 void PlotDataFit(RooRealVar& mass, RooDataHist& data, RooAddPdf& model, RooAddPdf& background, RooCrystalBall& crystal, double leftlim, double rightlim, int i, int j, int fitstatus) {
 
     // Create canvas for plotting
+
+    std::cout << "PLOT DATA FIT" << std::endl;
     TCanvas *c = new TCanvas(Form("c_bin_%d_%d", i+1, j+1), Form("Bin %d_%d", i+1, j+1), 950, 700);
     gPad->SetLeftMargin(0.13);
 
@@ -108,8 +111,15 @@ void PlotDataFit(RooRealVar& mass, RooDataHist& data, RooAddPdf& model, RooAddPd
     legend->Draw();
 
     // Estrai i parametri di interesse dal modello per la stampa
-    RooRealVar* mu = (RooRealVar*)model.getVariables()->find(Form("mu_cb_%d", i+1));
-    RooRealVar* sigma = (RooRealVar*)model.getVariables()->find(Form("sigma_cb_%d", i+1));
+    RooRealVar* mu = nullptr;
+    RooRealVar* sigma = nullptr;
+    if (j == 999) {
+        mu = (RooRealVar*)model.getVariables()->find(Form("mu_cb_incl_%d", i+1));
+        sigma = (RooRealVar*)model.getVariables()->find(Form("sigma_cb_incl_%d", i+1));
+    } else {
+        mu = (RooRealVar*)model.getVariables()->find(Form("mu_cb_%d", i+1));
+        sigma = (RooRealVar*)model.getVariables()->find(Form("sigma_cb_%d", i+1));
+    }
     double chi2 = frame->chiSquare();
 
     // Optional: Add annotations for fit information
@@ -142,27 +152,27 @@ void FitDataPostcorr(){
         {1.6, 1.4, 1.4, 1.6, 1.7, 1.6, 1.5, 1.6, 1.5}, 
         {1.6, 1.4, 1.4, 1.6, 1.7, 1.4, 1.5, 1.6, 1.7}, 
         {1.6, 1.3, 1.4, 1.6, 1.7, 1.6, 1.4, 1.6, 1.5}, 
-        {1.6, 1.4, 1.4, 1.5, 1.7, 1.6, 1.5, 1.6, 1.4},
+        {1.6, 1.4, 1.4, 1.5, 1.7, 1.6, 1.5, 1.5, 1.4},
         {1.5, 1.5, 1.5, 1.5, 1.5, 1.6, 1.6, 1.6, 1.5}, 
-        {1.8, 1.8, 1.8, 1.8, 1.8, 2, 1.5, 2, 2.45}
+        {1.8, 1.8, 1.8, 1.8, 1.8, 1.8, 1.8, 1.8, 2}
     };  // Limiti sinistri personalizzati
     
     double LeftUpLim[NbinsPt][NbinsRun] = {
         {2.4, 2.5, 2.2, 2.2, 2.5, 2.4, 2.3, 2.4, 2.4}, 
         {2.4, 2.5, 2.2, 2.2, 2.5, 2.5, 2.3, 2.4, 2.5}, 
-        {2.4, 2.4, 2.2, 2.2, 2.5, 2.4, 2.45, 2.4, 2.45}, 
+        {2.4, 2.4, 2.2, 2.4, 2.5, 2.4, 2.45, 2.4, 2.45}, 
         {2.4, 2.5, 2.2, 2.45, 2.5, 2.5, 2.4, 2.4, 2.4},
-        {2.5, 2.5, 2.4, 2.5, 2.6, 2.4, 2.6, 2.4, 2.5}, 
-        {2.5, 2.5, 2.5, 2.5, 2.5, 2.4, 2.3, 2.4, 2.8}
+        {2.5, 2.5, 2.4, 2.5, 2.6, 2.4, 2.6, 2.4, 2.6}, 
+        {2.5, 2.5, 2.5, 2.5, 2.5, 2.6, 2.6, 2.6, 2.6}
     };
     
     double RightLowLim[NbinsPt][NbinsRun] = {
         {3.6, 3.4, 3.6, 3.6, 3.6, 3.5, 3.6, 3.5, 3.5}, 
         {3.6, 3.4, 3.6, 3.6, 3.6, 3.5, 3.6, 3.5, 3.6}, 
         {3.6, 3.4, 3.5, 3.5, 3.5, 3.5, 3.6, 3.5, 3.6}, 
-        {3.6, 3.55, 3.5, 3.6, 3.6, 3.5, 3.6, 3.5, 3.5}, 
-        {3.5, 3.55, 3.55, 3.55, 3.55, 3.55, 3.5, 3.5, 3.5}, 
-        {3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.6}
+        {3.6, 3.5, 3.5, 3.6, 3.6, 3.5, 3.6, 3.5, 3.5}, 
+        {3.5, 3.5, 3.5, 3.55, 3.55, 3.55, 3.5, 3.5, 3.5}, 
+        {3.6, 3.6, 3.6, 3.6, 3.6, 3.6, 3.55, 3.55, 3.55}
     }; // Limiti destri personalizzati
     
     double RightUpLim[NbinsPt][NbinsRun] = {
@@ -175,9 +185,9 @@ void FitDataPostcorr(){
     };
 
     //limiti inclusivi in run number (aggiungere)
-    double LeftLowLim_incl[NbinsPt] = {1.2, 1.3, 1.6, 1.6, 1.6, 2};
-    double LeftUpLim_incl[NbinsPt] = {2.3, 2.5, 2.45, 2.4, 2.4, 2.7};
-    double RightLowLim_incl[NbinsPt] = {3.65, 3.55, 3.55, 3.55, 3.55, 3.55};
+    double LeftLowLim_incl[NbinsPt] = {1.2, 1.3, 1.6, 1.5, 1.6, 1.8};
+    double LeftUpLim_incl[NbinsPt] = {2.3, 2.5, 2.45, 2.4, 2.4, 2.6};
+    double RightLowLim_incl[NbinsPt] = {3.65, 3.55, 3.5, 3.55, 3.55, 3.55};
     double RightUpLim_incl[NbinsPt] = {5.1, 5.2, 4.8, 5, 5.2, 5.2};
     
 
@@ -194,8 +204,8 @@ void FitDataPostcorr(){
     ///////////////// Parametri Crystal Ball
     double Mucb_ini[NbinsPt][NbinsRun] = {
         {3.0442, 3.0337, 3.0422, 3.0489, 3.0, 3.0400, 3.0450, 3.0500, 3.0550},
-        {3.0442, 3.0337, 3.0422, 2.9975, 3.0782, 3.0550, 3.0600, 3.0650, 3.0700},
-        {3.0442, 3.0337, 3.0350, 3.0395, 3.0782, 3.0600, 3.0650, 3.0700, 3.0750},
+        {3.0442, 3.0337, 3.0422, 2.9975, 3.0782, 3.0550, 3.0600, 3.0650, 3.0},
+        {3.0442, 3.0337, 3.0350, 3.0395, 3.0782, 3.0500, 3.0650, 3.0400, 3.0750},
         {3.0642, 3.0637, 3.0622, 3.0689, 3.0782, 3.0650, 3.0700, 3.0750, 3.0800},
         {3.0442, 3.0337, 3.0422, 3.0489, 3.0719, 3.0700, 3.0750, 3.0800, 3.0850},
         {3.0442, 3.0337, 3.0422, 3.0689, 3.0782, 3.0750, 3.0800, 3.0850, 3.0900}
@@ -204,7 +214,7 @@ void FitDataPostcorr(){
     double Mucb_lowlim[NbinsPt][NbinsRun] = {
         {2.8, 2.7, 2.5, 2.5, 2.8, 2.7, 2.6, 2.7, 2.8},
         {2.8, 2.7, 2.5, 2.5, 2.8, 2.7, 2.6, 2.7, 2.8},
-        {2.8, 2.7, 2.9, 2.5, 2.8, 2.7, 2.6, 2.7, 2.8},
+        {2.8, 2.7, 2.9, 2.5, 2.8, 2.8, 2.6, 2.8, 2.8},
         {2.9, 2.7, 2.5, 2.5, 2.8, 2.7, 2.6, 2.7, 2.8},
         {2.8, 2.7, 2.5, 2.5, 2.8, 2.7, 2.6, 2.7, 2.8},
         {2.8, 2.7, 2.5, 2.5, 2.8, 2.7, 2.6, 2.7, 2.8}
@@ -213,7 +223,7 @@ void FitDataPostcorr(){
     double Mucb_uplim[NbinsPt][NbinsRun] = {
         {3.2, 3.5, 3.5, 3.5, 3.2, 3.3, 3.4, 3.3, 3.2},
         {3.2, 3.5, 3.5, 3.2, 3.5, 3.3, 3.4, 3.3, 3.2},
-        {3.2, 3.5, 3.2, 3.5, 3.5, 3.3, 3.4, 3.3, 3.2},
+        {3.2, 3.2, 3.2, 3.2, 3.2, 3.3, 3.2, 3.3, 3.2},
         {3.1, 3.5, 3.5, 3.5, 3.5, 3.3, 3.4, 3.3, 3.2},
         {3.2, 3.5, 3.5, 3.5, 3.5, 3.3, 3.4, 3.3, 3.2},
         {3.2, 3.5, 3.5, 3.5, 3.5, 3.3, 3.4, 3.3, 3.2}
@@ -222,7 +232,7 @@ void FitDataPostcorr(){
     double Sigmacb_ini[NbinsPt][NbinsRun] = {
         {0.1637, 0.1503, 0.1351, 0.1271, 0.15, 0.14, 0.13, 0.14, 0.15},
         {0.1637, 0.1503, 0.1351, 0.1271, 0.1115, 0.1342, 0.12, 0.13, 0.1452},
-        {0.1637, 0.1503, 0.1337, 0.1423, 0.1115, 0.12, 0.11, 0.12, 0.13},
+        {0.1237, 0.1203, 0.1337, 0.1423, 0.1115, 0.1343, 0.13, 0.12, 0.1315},
         {0.1637, 0.1503, 0.1351, 0.1271, 0.1115, 0.11, 0.10, 0.11, 0.12},
         {0.1637, 0.1503, 0.1351, 0.1271, 0.1197, 0.11, 0.10, 0.11, 0.12},
         {0.1637, 0.1503, 0.1351, 0.1271, 0.1115, 0.10, 0.09, 0.10, 0.11}
@@ -231,7 +241,7 @@ void FitDataPostcorr(){
     double Sigmacb_uplim[NbinsPt][NbinsRun] = {
         {0.3, 0.5, 0.5, 0.5, 0.5, 0.4, 0.4, 0.4, 0.4},
         {0.3, 0.5, 0.5, 0.5, 0.15, 0.2, 0.3, 0.3, 0.3},
-        {0.3, 0.5, 0.5, 0.5, 0.15, 0.3, 0.3, 0.3, 0.3},
+        {0.3, 0.3, 0.3, 0.2, 0.2, 0.2, 0.3, 0.2, 0.2},
         {0.2, 0.5, 0.5, 0.5, 0.15, 0.3, 0.3, 0.3, 0.3},
         {0.3, 0.5, 0.5, 0.5, 0.15, 0.3, 0.3, 0.3, 0.3},
         {0.3, 0.5, 0.5, 0.5, 0.15, 0.3, 0.3, 0.3, 0.3}
@@ -240,19 +250,19 @@ void FitDataPostcorr(){
     double Sigmacb_lowlim[NbinsPt][NbinsRun] = {
         {0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05},
         {0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05},
-        {0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05},
+        {0, 0.05, 0.05, 0.05, 0.05, 0.08, 0.05, 0.08, 0.05},
         {0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05},
         {0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05},
         {0, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05}
     };
 
     //parametri inclusivi in pt
-    double Mucb_ini_incl[NbinsPt] = {3.0470, 3.0421, 3.0343, 3.0714, 3.0839, 3.1217};
-    double Mucb_lowlim_incl[NbinsPt] = {2.9, 2.9, 2.5, 2.5, 2.8, 3};
+    double Mucb_ini_incl[NbinsPt] = {3.0470, 3.01, 3.0343, 3.0514, 3.0739, 3.1217};
+    double Mucb_lowlim_incl[NbinsPt] = {2.9, 2.9, 2.5, 2.8, 2.8, 3};
     double Mucb_uplim_incl[NbinsPt] = {3.2, 3.2, 3.2, 3.2, 3.2, 3.2};
-    double Sigmacb_ini_incl[NbinsPt] = {0.1671, 0.149, 0.1440, 0.1203, 0.1185, 0.09};
+    double Sigmacb_ini_incl[NbinsPt] = {0.1671, 0.147, 0.1440, 0.1203, 0.1051, 0.09};
     double Sigmacb_uplim_incl[NbinsPt] = {0.3, 0.3, 0.3, 0.3, 0.3, 0.2};
-    double Sigmacb_lowlim_incl[NbinsPt] = {0.05, 0.05, 0.05, 0.05, 0.05, 0.05};
+    double Sigmacb_lowlim_incl[NbinsPt] = {0.05, 0.05, 0.08, 0.05, 0.05, 0.05};
 
 
     // Aggiungi gli array per i parametri della Gaussiana
@@ -269,8 +279,8 @@ void FitDataPostcorr(){
         {3.5, 3.2, 3.6, 3.2, 3.4, 3.4, 3.5, 3.4, 3.4},
         {3.5, 3.2, 3.6, 3.2, 3.2, 3.4, 3.45, 3.4, 3.3},
         {3.5, 3.2, 3.6, 3.2, 3.2, 3.4, 3.45, 3.4, 3.3},
-        {3.5, 3.2, 3.6, 3.2, 3.2, 3.4, 3.45, 3.4, 3.3},
-        {3.5, 3.45, 3.45, 3.45, 3.45, 3.45, 3.45, 3.45, 3.45},
+        {3.5, 3.55, 3.6, 3.5, 3.5, 3.5, 3.5, 3.5, 3.5},
+        {3.5, 3.55, 3.55, 3.55, 3.55, 3.55, 3.55, 3.55, 3.55},
         {3.55, 3.55, 3.55, 3.55, 3.55, 3.55, 3.5, 3.55, 3.55}
     };   // Limiti inferiori per mu
     
@@ -315,8 +325,8 @@ void FitDataPostcorr(){
     double gauss_mu_low_incl[NbinsPt] = {3.5, 3.4, 3.4, 3.5, 3.55, 3.5};
     double gauss_mu_up_incl[NbinsPt] = {3.7, 3.7, 3.7, 3.7, 3.7, 3.7};
 
-    double bincenters[NbinsPt] = {5.5, 8, 10, 12.5, 17, 30};
-    double binhalfwidths[NbinsPt] = {1.5, 1, 1, 1.5, 3, 10};
+    double bincenters[NbinsPt] = {5.7, 8.25, 10, 12.5, 17, 30};
+    double binhalfwidths[NbinsPt] = {1.75, 0.75, 1, 1.5, 3, 10};
 
     // Leggi i parametri della Crystal Ball dal file
     TFile *file_param = TFile::Open("fit_results_all.root", "READ");
@@ -373,6 +383,17 @@ void FitDataPostcorr(){
         gSystem->Exec(Form("mkdir -p PlotConID2022/FitCorrectedData_id2022/Pt_bin%d", i+1));
     }*/
 
+
+    // Prepare arrays for TGraphErrors for smearing vs pt
+    double pt_centers[NbinsPt];
+    double smearing_vals[NbinsPt];
+    double smearing_errs[NbinsPt];
+    double sigma_vals[NbinsPt];
+    double sigma_errs[NbinsPt];
+    
+    // Arrays to store improvement calculations
+    double pt_bin_centers[NbinsPt];
+    double average_improvements[NbinsPt];
 
     for(int i=0; i < NbinsPt; i++){
 
@@ -527,6 +548,82 @@ void FitDataPostcorr(){
 
 
         } //FINE LOOP SU RUN NUMBER
+        
+        std::cout << "print1" << std::endl;
+        //....oooOO0OOooo........oooOO0OOooo.... Aggiungo un fit inclusivo in Run Number ....oooOO0OOooo........oooOO0OOooo....
+
+        TH1D *hist_corr_inclusive = (TH1D*)h2D_runN_invM_corr->ProjectionX(Form("h1D_runN_invM_corr_ptbin%d_inclusive", i+1), 1, NbinsRun);
+
+
+        // Define mass variable and RooDataHist
+        RooRealVar mass_incl("mass_incl", "m(e^{+}e^{-})", 0, 6);
+        RooDataHist data_incl("data_incl", "Dataset from inclusive histogram", mass_incl, hist_corr_inclusive);
+
+        // Background model (polynomial + gaussian)
+        RooRealVar A_incl(Form("A_incl_%d", i+1), "4th deg coeff", 0, -RooNumber::infinity(), RooNumber::infinity());
+        RooRealVar B_incl(Form("B_incl_%d", i+1), "3rd deg coeff", 0, -RooNumber::infinity(), RooNumber::infinity());
+        RooRealVar C_incl(Form("C_incl_%d", i+1), "2nd deg coeff", 0, -RooNumber::infinity(), RooNumber::infinity());
+        RooRealVar D_incl(Form("D_incl_%d", i+1), "1st deg coeff", 0, -RooNumber::infinity(), RooNumber::infinity());
+        RooRealVar E_incl(Form("E_incl_%d", i+1), "0 deg coeff", 0, -RooNumber::infinity(), RooNumber::infinity());
+        RooPolynomial poly_incl("poly_incl", "Polynomial of 4th degree", mass_incl, RooArgList(A_incl, B_incl, C_incl, D_incl, E_incl));
+
+        RooRealVar gauss_mu_incl(Form("gauss_mu_incl_%d", i+1), "Gaussian mean", gauss_mu_init_incl[i], gauss_mu_low_incl[i], gauss_mu_up_incl[i]);
+        RooRealVar gauss_sigma_incl(Form("gauss_sigma_incl_%d", i+1), "Gaussian sigma", 0.1, 0.05, 0.2);
+        RooGaussian gauss_incl("gauss_incl", "Gaussian component", mass_incl, gauss_mu_incl, gauss_sigma_incl);
+
+        RooRealVar frac_gauss_incl("frac_gauss_incl", "fraction of Gaussian", 0.3, 0.0, 1.0);
+        RooAddPdf background_incl("background_incl", "Background Model", RooArgList(poly_incl, gauss_incl), RooArgList(frac_gauss_incl));
+
+        // Set fit ranges
+        mass_incl.setRange("range1_incl", LeftLowLim_incl[i], LeftUpLim_incl[i]);
+        mass_incl.setRange("range2_incl", RightLowLim_incl[i], RightUpLim_incl[i]);
+
+        // Fit background only
+        RooFitResult *fit_result_incl = background_incl.fitTo(data_incl, RooFit::Range("range1_incl,range2_incl"), RooFit::MaxCalls(10000000), RooFit::Save(), RooFit::SumW2Error(true));
+
+        // Extract parameter values and errors as needed...
+
+        // Signal (Crystal Ball) parameters from MC
+        tree->GetEntry(i);
+        RooRealVar mu_cb_incl(Form("mu_cb_incl_%d", i+1), "mu_cb", Mucb_ini_incl[i], Mucb_lowlim_incl[i], Mucb_uplim_incl[i]);
+        RooRealVar sigma_cb_incl(Form("sigma_cb_incl_%d", i+1), "sigma_cb", Sigmacb_ini_incl[i], Sigmacb_lowlim_incl[i], Sigmacb_uplim_incl[i]);
+        RooRealVar alphaL_cb_incl(Form("alphaL_cb_incl_%d", i+1), "alphaL_cb", alphaL_ini, alphaL_ini - Nsigma*inc_alphaL, alphaL_ini + Nsigma*inc_alphaL);
+        RooRealVar nL_cb_incl(Form("nL_cb_incl_%d", i+1), "nL_cb", nL_ini, nL_ini - Nsigma*inc_nL, nL_ini + Nsigma*inc_nL);
+        RooRealVar alphaR_cb_incl(Form("alphaR_cb_incl_%d", i+1), "alphaR_cb", alphaR_ini, alphaR_ini - Nsigma*inc_alphaR, alphaR_ini + Nsigma*inc_alphaR);
+        RooRealVar nR_cb_incl(Form("nR_cb_incl_%d", i+1), "nR_cb", nR_ini, nR_ini - Nsigma*inc_nR, nR_ini + Nsigma*inc_nR);
+
+        RooCrystalBall crystal_incl("crystal_incl", "crystal ball", mass_incl, mu_cb_incl, sigma_cb_incl, alphaL_cb_incl, nL_cb_incl, alphaR_cb_incl, nR_cb_incl);
+
+        // Fix/limit background params as in the per-run fit...
+
+        RooRealVar frac_incl("frac_incl", "fraction of background", 0.5, 0.0, 1.0);
+        RooAddPdf model_incl("model_incl", "signal + background", RooArgList(crystal_incl, background_incl), RooArgList(frac_incl));
+
+        // Full fit range
+        mass_incl.setRange("range_full_incl", LeftLowLim_incl[i], RightUpLim_incl[i]);
+
+        // Fit signal+background
+        fit_result_incl = model_incl.fitTo(data_incl, RooFit::Range("range_full_incl"), RooFit::MaxCalls(10000000), RooFit::Save(), RooFit::SumW2Error(true));
+
+        std::cout << "print2" << std::endl;
+
+        // Plot and extract scale as in the per-run fit
+        PlotDataFit(mass_incl, data_incl, model_incl, background_incl, crystal_incl, LeftLowLim_incl[i], RightUpLim_incl[i], i, 999, fit_result_incl->status());
+
+
+        double sigma_data_incl = sigma_cb_incl.getVal();
+        double inc_sigma_data_incl = sigma_cb_incl.getError();
+        double smearing_postcorr = sigma_data_incl / sigma_ini;
+        double inc_smearing_postcorr = (sigma_data_incl / sigma_ini) * sqrt((inc_sigma_data_incl / sigma_data_incl)*(inc_sigma_data_incl / sigma_data_incl) + (inc_sigma / sigma_ini)*(inc_sigma / sigma_ini));
+
+        // Store pt center, smearing and error for TGraphErrors
+        pt_centers[i] = bincenters[i];
+        smearing_vals[i] = smearing_postcorr;
+        smearing_errs[i] = inc_smearing_postcorr;
+        sigma_vals[i] = sigma_data_incl;
+        sigma_errs[i] = inc_sigma_data_incl;
+
+        //....oooOO0OOooo........oooOO0OOooo....oooOO0OOooo....oooOO0OOooo........oooOO0OOooo....
 
         //Confronto la scala prima e dopo la correzione in ogni bin di Pt
 
@@ -577,6 +674,32 @@ void FitDataPostcorr(){
         h_scale_before->Draw("PE");
         h_scale_postcorr->Draw("PE SAME");
 
+        // Calculate improvement for each run bin in this pt bin
+        //double sum_improvement = 0.0;
+        double sum_scalebefore = 0.0;
+        double sum_scaleafter = 0.0;
+        int valid_bins = 0;
+        
+        std::cout << "Pt bin " << i+1 << " improvement analysis:" << std::endl;
+        for (int run_bin = 1; run_bin <= NbinsRun; run_bin++) {
+            double scale_before = h_scale_before->GetBinContent(run_bin);
+            double scale_after = h_scale_postcorr->GetBinContent(run_bin);
+            
+            if (scale_before != 0) {  // Avoid division by zero
+                //double improvement = (fabs(scale_before) - fabs(scale_after)) / fabs(scale_before);
+                sum_scalebefore += fabs(scale_before);
+                sum_scaleafter += fabs(scale_after);
+                valid_bins++;
+                //std::cout << "  Run bin " << run_bin << ": |" << scale_before << " - " << scale_after << "| / |" << scale_before << "| = " << improvement << std::endl;
+            }
+        }
+        
+        // Calculate average improvement for this pt bin
+        double avg_improvement = (valid_bins > 0) ? (sum_scaleafter / NbinsRun - sum_scalebefore / NbinsRun) / (sum_scalebefore / NbinsRun) : 0.0;
+        pt_bin_centers[i] = bincenters[i];
+        average_improvements[i] = avg_improvement;
+        std::cout << "  Average improvement for Pt bin " << i+1 << ": " << avg_improvement << std::endl << std::endl;
+
         // Create and draw the legend in the lower right corner
         TLegend *legend = new TLegend(0.65, 0.15, 0.89, 0.29);
         legend->AddEntry(h_scale_before, "Before Correction", "lp");
@@ -607,7 +730,7 @@ void FitDataPostcorr(){
         lumiLabel.SetTextFont(42);  // Regular font
         lumiLabel.SetTextSize(0.045);
         lumiLabel.SetTextAlign(31);
-        lumiLabel.DrawLatex(0.90, 0.92, "38.01 fb^{-1} (2022, 13.7 TeV)");
+        lumiLabel.DrawLatex(0.90, 0.92, "34.7 fb^{-1} (2022, 13.7 TeV)");
 
         // Save the canvas
         cCompare->SaveAs(Form("PlotConID2022/FitCorrectedData_id2022/Pt_bin%d/Scale_Comparison_Pt%d.png", i+1, i+1));
@@ -615,4 +738,49 @@ void FitDataPostcorr(){
 
 
     }    //....oooOO0OOooo........oooOO0OOooo.... FINE LOOP SU PT BIN ....oooOO0OOooo........oooOO0OOooo....
+
+    // Create TGraphErrors for smearing vs pt (from inclusive fits)
+    TGraphErrors* gr_smearing_vs_pt = new TGraphErrors(NbinsPt, pt_centers, smearing_vals, 0, smearing_errs);
+    gr_smearing_vs_pt->SetTitle("Smearing (inclusive fit) vs p_{T};p_{T} [GeV];Smearing");
+    gr_smearing_vs_pt->SetMarkerStyle(21);
+    gr_smearing_vs_pt->SetMarkerColor(kRed+1);
+    gr_smearing_vs_pt->SetLineColor(kRed+1);
+
+    // Create TGraphErrors for sigma vs pt (from inclusive fits)
+    TGraphErrors* gr_sigma_vs_pt = new TGraphErrors(NbinsPt, pt_centers, sigma_vals, 0, sigma_errs);
+    gr_sigma_vs_pt->SetTitle("#sigma_{CB} (inclusive fit) vs p_{T};p_{T} [GeV];#sigma_{CB} [GeV]");
+
+    // Draw and save the smearing graph
+    TCanvas* cSmearing = new TCanvas("cSmearing_vs_pt", "Smearing vs p_{T} (inclusive)", 800, 600);
+    gr_smearing_vs_pt->Draw("AP");
+    cSmearing->SaveAs("PlotConID2022/FitCorrectedData_id2022/Smearing_vs_pt_inclusive.png");
+
+    // Write both graphs to smearing_corrections.root in update mode
+    TFile* fsmear = new TFile("smearing_corrections.root", "UPDATE");
+    if (fsmear && !fsmear->IsZombie()) {
+        gr_smearing_vs_pt->Write("gr_smearing_vs_pt_postscalecorr");
+        gr_sigma_vs_pt->Write("sigma_data_postscalecorr");
+        fsmear->Close();
+        delete fsmear;
+    } else {
+        std::cerr << "Error: Could not open smearing_corrections.root for update!" << std::endl;
+    }
+
+    delete gr_smearing_vs_pt;
+    delete gr_sigma_vs_pt;
+    
+    // Print summary table of improvements
+    std::cout << "\n========================================" << std::endl;
+    std::cout << "SCALE CORRECTION IMPROVEMENT SUMMARY" << std::endl;
+    std::cout << "========================================" << std::endl;
+    std::cout << "Pt Bin\t| Pt Range [GeV]\t| Average Improvement" << std::endl;
+    std::cout << "------\t| --------------\t| ------------------" << std::endl;
+    
+    for (int i = 0; i < NbinsPt; i++) {
+        double pt_low = bincenters[i] - binhalfwidths[i];
+        double pt_high = bincenters[i] + binhalfwidths[i];
+        std::cout << (i+1) << "\t| " << std::fixed << std::setprecision(1) << pt_low << " - " << pt_high << "\t\t| " 
+                  << std::setprecision(4) << average_improvements[i] << std::endl;
+    }
+    std::cout << "========================================" << std::endl;
 }

@@ -81,27 +81,30 @@ void FitProjectionMC() {
     //bin 4
     //bin 5 (aggiustare per ButoKJpsi)
     sigmas[4] = 0.1152;
-    means[4] = 3.0743;
+    means[4] = 3.0843;
+    meanInf[4] = 3.0;
+    meanSup[4] = 3.2;
+
     //nRs[4] = 15;
     nLs[4] = 100;
     //bin 6 (nell'altro MC no constraints su bin 6)
-    means[5] = 3.0916;
-    sigmas[5] = 0.12;
+    means[5] = 3.10;
+    sigmas[5] = 0.057;
     meanInf[5] = 2.9;
     meanSup[5] = 3.2;
     double mu[Nbins], inc_mu[Nbins], val_sigma[Nbins], inc_sigma[Nbins];
     double val_nL[Nbins], inc_nL[Nbins], val_alphL[Nbins], inc_alphL[Nbins], val_nR[Nbins], inc_nR[Nbins], val_alphR[Nbins], inc_alphR[Nbins]; //array per salvare i parametri
 
     
-    double massMin[Nbins] = {2.2, 2.2, 2.3, 2.1, 2.65, 2.65};  // Limiti inferiori personalizzati
+    double massMin[Nbins] = {2, 2.2, 2.3, 2.1, 2.65, 2.5};  // Limiti inferiori personalizzati
     double massMax[Nbins] = {3.9, 3.9, 3.8,3.8, 3.5, 3.5};  // Limiti superiori personalizzati
-    double Bin_centers[Nbins] = {5.5, 8, 10.5, 12.5, 17, 30}; //Centri dei bin in P_t
-    double Bin_halfwidth[Nbins] = {1.5, 1, 1.5, 1.5, 3, 10}; //Larghezze dei bin in P_t
+    double Bin_centers[Nbins] = {5.75, 8.25, 10.5, 12.5, 17, 30}; //Centri dei bin in P_t
+    double Bin_halfwidth[Nbins] = {1.75, 0.75, 1.5, 1.5, 3, 10}; //Larghezze dei bin in P_t
 
     
 
 
-    int rebin_factor[Nbins] = {1, 1, 1, 1, 1, 2}; //{1, 1, 1, 1, 2, 1};
+    int rebin_factor[Nbins] = {2, 1, 1, 1, 1, 2}; //{1, 1, 1, 1, 2, 1};
 
     // Loop su tutti i bin di pt
     for (int i = 0; i < Nbins; i++) {
@@ -125,7 +128,7 @@ void FitProjectionMC() {
 
         // Definisci i parametri della Crystal Ball asimmetrica
         RooRealVar cb_mean(Form("cb_mean_%d", i+1), "Mean of CB", means[i], meanInf[i], meanSup[i]);
-        RooRealVar cb_sigma(Form("cb_sigma_%d", i+1), "Sigma of CB", sigmas[i], 0.1 * sigmas[i], 2 * sigmas[i]);
+        RooRealVar cb_sigma(Form("cb_sigma_%d", i+1), "Sigma of CB", sigmas[i], 0.1 * sigmas[i], 3 * sigmas[i]);
         RooRealVar cb_alphaL(Form("cb_alphaL_%d", i+1), "AlphaL of CB", alphaLs[i], 0, 15.0);
         RooRealVar cb_nL(Form("cb_nL_%d", i+1), "nL of CB", nLs[i], 0, 500.0);
         RooRealVar cb_alphaR(Form("cb_alphaR_%d", i+1), "AlphaR of CB", alphaRs[i], 0, 15.0);
@@ -300,12 +303,12 @@ void FitProjectionMC() {
     //Plot mu vs Pt
 
     TGraphErrors *gr = new TGraphErrors(Nbins, Bin_centers, mu, Bin_halfwidth, inc_mu);
-    gr->SetTitle("Peak center vs Pt;P_{t} [GeV]; Inv Mass [GeV]");
+    gr->SetTitle("Peak center vs Pt;p_{T} [GeV]; m_{J/\\psi} [GeV]");
 
     //TGraphErrors *gr2 = new TGraphErrors(Nbins, Bin_centers, val_sigma, Bin_halfwidth, inc_sigma);
     TGraphErrors *gr2 = new TGraphErrors(Nbins, Bin_centers, sigma_over_mu, Bin_halfwidth, inc_sigma_over_mu);
     //gr2->SetTitle("Peak width vs Pt;P_{t} [GeV]; #sigma [GeV]");
-    gr2->SetTitle("Peak width vs Pt;P_{t} [GeV]; #sigma/#mu");
+    gr2->SetTitle("Peak width vs Pt;p_{T} [GeV]; #sigma/#mu");
 
     // Stile del grafico
     gr->SetMarkerStyle(21);

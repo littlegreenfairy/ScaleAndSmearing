@@ -94,13 +94,11 @@ chain_mc->Add("../ECAL_ScaleSmear/Ntuple_id2022/MC/CCToEEPrompt_mc_2025Apr25_pos
 chain_mc->Add("../ECAL_ScaleSmear/Ntuple_id2022/MC/CCToEEPrompt_mc_2025Apr25_preEE.root"); 
 MyAnalysisSpicy analysis_mc(chain_mc, 1);
 analysis_mc.Loop();
-analysis_mc.ReweightOnPt();
-analysis_mc.ReweightOnPtele1();
-analysis_mc.ReweightOnPtele2();
+analysis_mc.MonteCarloReweighting()
 
 then Run separately:
 
-.x FitProjectionsMC.C
+.x FitProjectionMC.C
 .x FitData.C
 
 and then after recreating the chain with the data run
@@ -110,16 +108,20 @@ analysis.Loop();
 analysis.ApplyCorrectionsVsPtandRun();
 
 
-Validate the projections running
+Validate the scale corrections running
 
-.x FitDataPostCorr.C
-.x FitDataPostCorrDiag.C
+.x FitProjectionMCAll.C (fits Monte-Carlo on diagonal and off-diagonal categories)
+.x FitDataAll
+.x FitDataPostcorrDiag.C
+.x FitDataPostcorr.C
 
 This last macro also creates an histograms with smearing corrections and saves in a .root file
 
 Apply the corrections by running
 
-analysis.ApplySmearingCorrections()
+analysis_mc.ApplySmearingCorrections()
 
-Then fit again the invariant mass vs pt and run number in all categories and for each bin plot scale and smearing vs Run number
+Then fit again the invariant mass vs pt in all categories and for each bin plot smearing vs Run number using 
+
+.x ValidateSmearingCorrections.C
 
